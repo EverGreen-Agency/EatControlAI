@@ -1,10 +1,10 @@
 # Estrutura do repositório e estado atual — Eat Control AI
 
-> **O que é este documento.** O mapa do repositório: o que existe, o que é real, o que é dado de
-> demonstração e o que cada peça precisa virar. Ponto de entrada para quem chega no projeto.
+> Mapa do repositório: o que existe, o que é real, o que é dado de demonstração e o que cada peça
+> precisa virar. Ponto de entrada para quem chega no projeto.
 >
-> Não substitui o `docs/contexto-gpt.md` (visão de produto / North Star) nem o `docs/PRD.md`.
-> Descreve o **repositório**, não o produto.
+> Não substitui o `docs/contexto-gpt.md` (visão de produto) nem o `docs/PRD.md`. Descreve o
+> **repositório**, não o produto.
 >
 > Atualizado em **13 de agosto de 2026**.
 
@@ -12,337 +12,221 @@
 
 ## 1. Resumo
 
-1. A **visão de produto está madura** — provavelmente o ativo mais forte do projeto.
-2. O **app do paciente está completo na navegação**: cinco telas, tema próprio, e a vertical do
-   rótulo funcionando ponta a ponta com OCR real.
-3. **26 testes passam** e o **Decision Success Rate está em 100% (19/19 cenários)**.
-4. O **DAT saiu de "não sei" para "sei exatamente o que falta"**: versão 0.9.0, dois bloqueios de
-   credencial, nenhum deles técnico. Ver §5-A.
-5. O prazo mais próximo **não é código**: é a **Entrega Final da Ideia em 22 de agosto** (documento
-   + apresentação, em template obrigatório da organização).
+1. **Duas verticais fecham ponta a ponta**: rótulo (OCR) e código de barras (EAN-13 lido de
+   verdade), ambas com resposta por áudio e latência medida por etapa.
+2. **Voz funciona**: reconhecimento on-device escolhe a trilha e dispara a análise.
+3. **Três fontes de captura** atrás da mesma interface: óculos simulados, câmera do celular
+   (CameraX) e — quando as credenciais saírem — o DAT.
+4. **50 testes passam**, DSR em 100% (19/19). Release com R8 e split por ABI: **22,2 MB** no
+   aparelho-alvo, contra 76 MB do debug.
+5. O que falta para o DAT são **duas credenciais**, nenhuma técnica. Ver §5-A.
 
 ---
 
-## 2. Linha do tempo do programa (extraída do edital)
+## 2. Linha do tempo do programa
 
 | Data (2026) | Etapa |
 | :--- | :--- |
-| 15–27 de julho | Inscrições |
-| 28 de julho | Primeiro Filtro / inscrições homologadas |
-| 1 de agosto | Liberação dos cursos online |
-| **15 de agosto (sáb)** | **Ideathon online** — palestra de DAT às 10h30 |
-| **22 de agosto** | **Entrega Final da Ideia** — documento + apresentação, em **template obrigatório** |
+| **15 de agosto (sáb)** | **Ideathon online** — palestra de DAT às 10h30, entregáveis às 09h30 |
+| **22 de agosto** | **Entrega Final da Ideia** — documento + apresentação |
 | 23–29 de agosto | Segundo Filtro |
 | 31 de agosto | Resultado: 5 equipes selecionadas |
 | **18 de setembro (sex)** | **Hackathon presencial — Meta São Paulo, 1 único dia** |
 
-### Consequências práticas
+Consequências que continuam valendo:
 
-- **O hackathon é um dia só.** Arquitetura, mocks e componentes precisam chegar prontos.
-- **Os óculos e o smartphone são fornecidos pela organização no dia** e devolvidos no fim. A equipe
-  só leva **notebooks próprios**. Vale manter um **APK assinado pronto** para `adb install`.
-- Os óculos de um integrante são **ativo de teste antes do evento**, não o aparelho da demo.
-- **Segundo Filtro:** viabilidade técnica (30), aderência ao toolkit/hardware (20), impacto (30),
+- **Óculos e smartphone são fornecidos pela organização no dia** e devolvidos no fim; a equipe só
+  leva notebooks. Vale manter um **APK de release pronto** para `adb install`.
+- **Critérios do Segundo Filtro:** viabilidade técnica (30), aderência ao toolkit (20), impacto (30),
   ética/privacidade/segurança (20).
-- **Checkpoints obrigatórios do dia:** uso de IA; câmera ou microfone como entrada principal; output
-  por áudio; **privacidade e dados**; **eficiência de bateria**.
+- **Checkpoints do dia:** uso de IA; câmera ou microfone como entrada; output por áudio;
+  privacidade e dados; eficiência de bateria.
 
 ---
 
 ## 3. Mapa do repositório
 
-Legenda: ✅ pronto · 🟡 parcial · ⬜ template · ⚠️ pendência
-
 ### 3.1 Raiz
 
-| Caminho | O que é | Status |
-| :--- | :--- | :--- |
-| `README.md` | Decisão-base e trilhas do MVP | ✅ |
-| `preview.html` | Protótipo de UI em HTML que originou o design system | ✅ referência |
-| `.gitignore` | Ignora PDFs dos cursos (150 MB), assets de página salva, históricos de IDE, keystores | ✅ |
-| `scripts/benchmark.sh` | Roda o benchmark de modelos no aparelho físico | ✅ |
-| `build.gradle.kts` · `settings.gradle.kts` · `gradle/` | AGP 9.1.1, Kotlin 2.2.10, Gradle 9.3.1, Compose BOM 2026.02.01, ML Kit 16.0.1 | ✅ |
-| `.codex-history/` | Transcrições de **outro projeto** (EMDCREDITO). Ignorado pelo git; apagar quando quiser | ⚠️ |
+| Caminho | O que é |
+| :--- | :--- |
+| `README.md` | Decisão-base e trilhas do MVP |
+| `scripts/benchmark.sh` | Benchmark de modelos no aparelho físico |
+| `gradle/libs.versions.toml` | AGP 9.1.1, Kotlin 2.2.10, Compose BOM 2026.02.01, ML Kit, CameraX 1.3.4, DataStore 1.1.1 |
+| `.gitignore` | Ignora PDFs dos cursos, assets de página salva, históricos de IDE, keystores |
+| `.codex-history/` | Transcrições de **outro projeto** (EMDCREDITO). Ignorado pelo git; apagar quando quiser |
 
-Versionamento: repositório em `EverGreen-Agency/EatControlAI` (privado), 99 arquivos.
+Versionamento: `EverGreen-Agency/EatControlAI`, privado.
 
-### 3.2 `docs/`
+### 3.2 `docs/` e `docs/adr/`
 
-| Arquivo | Conteúdo | Status |
-| :--- | :--- | :--- |
-| `contexto-gpt.md` | **North Star.** 77 seções de visão, safety, arquitetura e negócio | ✅ |
-| `00_PRODUCT_OVERVIEW.md` | Problema, proposta, limites, *reliability-first* | ✅ |
-| `01_ESTRUTURA_E_ESTADO_ATUAL.md` | Este documento | ✅ |
-| `SPEC.md` | Tipos de evidência, precedência, 4 estados, regra de segurança | ✅ implementado 1:1 |
-| `METRICS.md` | DSR, latências, *false-safe rate*, *uncertainty recall* | ✅ DSR automatizado |
-| `MODEL_BENCHMARK.md` | Protocolo de 10 passos + score ponderado | ✅ harness implementado |
-| `PRD.md` · `SRS.md` · `SDD.md` · `USER_FLOWS.md` | Requisitos e desenho | 🟡 sem critérios de aceite |
-| `DATA_SOURCES.md` | OFF, TBCA, USDA + dataset de visão | 🟡 |
-| `ROADMAP.md` | Fases 0 a 3 | ⚠️ sem datas |
+`contexto-gpt.md` é o North Star. `SPEC.md` e `METRICS.md` estão implementados 1:1.
+`PRD`, `SRS`, `SDD` e `USER_FLOWS` seguem sem critérios de aceite verificáveis — ver §5-E.
 
-### 3.3 `docs/adr/`
+ADRs 0001–0005 aceitos e implementados. **ADR-0006 (DAT 0.9.0)** com coordenadas conhecidas e
+bloqueado por credencial.
 
-| ADR | Decisão | Status |
-| :--- | :--- | :--- |
-| `0001` | App nativo Kotlin/Android | Accepted |
-| `0002` | Caminho crítico sem nuvem | Accepted |
-| `0003` | Providers atrás de interfaces estáveis | Accepted — implementado |
-| `0004` | ML Kit OCR primeiro | Proposed — implementado |
-| `0005` | TTS/STT nativo primeiro | Proposed — TTS implementado |
-| `0006` | **Meta DAT 0.9.0** | **Proposed** — coordenadas conhecidas, bloqueado por credenciais |
+### 3.3 `app/src/main/` — o código
 
-### 3.4 `app/src/main/` — 33 arquivos, ~4.100 linhas
-
-**Domínio** (Kotlin puro, sem Android — é o que os testes exercitam)
+**Domínio** — Kotlin puro, sem Android; é o que os testes exercitam.
 
 | Arquivo | Papel |
 | :--- | :--- |
-| `core/model/Models.kt` | `DecisionState`, `EvidenceType` (com `rank`), `Allergen`, `Restriction` (severidade + política de incerteza), `Evidence`, `UserProfile`, `MealRecord`, `PrivacySettings` |
-| `domain/label/TextNormalizer.kt` | Caixa alta, sem acento, hifenização de quebra de linha recomposta |
-| `domain/label/AllergenDictionary.kt` | Sinônimos de rótulo brasileiro, casamento por fronteira de palavra |
-| `domain/label/LabelParser.kt` | Marcador + escopo de frase → `LabelClaim` |
+| `core/model/Models.kt` | Estados, `EvidenceType` com `rank`, `Restriction` (severidade + política de incerteza), `MealRecord`, `PrivacySettings` |
+| `domain/label/` | `TextNormalizer`, `AllergenDictionary`, `LabelParser` (marcador + escopo de frase) |
 | `domain/evidence/EvidenceBuilder.kt` | Promove `OCR_TEXT` (rank 5) a `DECLARED_LABEL` (rank 2) |
-| `domain/decision/FoodDecisionEngine.kt` | Precedência, 4 estados, severidade e política de incerteza |
+| `domain/decision/FoodDecisionEngine.kt` | Precedência, 4 estados, severidade e política |
+| `domain/barcode/BarcodeRepository.kt` | Catálogo local de demonstração; afirmações vêm do `LabelParser` |
+| `domain/voice/VoiceIntentParser.kt` | Comando falado → trilha + alérgeno em foco, determinístico |
 
-**Percepção e dispositivo**
+**Percepção e captura**
 
 | Arquivo | Papel |
 | :--- | :--- |
-| `inference/Providers.kt` · `ModelRegistry.kt` | Interfaces trocáveis + `ProviderSet` ativo |
-| `inference/mlkit/MlKitOcrProvider.kt` | OCR on-device |
+| `inference/Providers.kt` · `ModelRegistry.kt` | Interfaces trocáveis + conjunto ativo |
+| `inference/mlkit/` | `MlKitOcrProvider`, `MlKitBarcodeProvider` |
 | `inference/androidtts/AndroidTtsProvider.kt` | TTS pt-BR com *time-to-first-audio* |
-| `glasses/GlassesGateway.kt` | Fronteira do dispositivo + `GlassesStatus` + `DatGlassesGateway` (TODO) |
-| `glasses/MockGlassesGateway.kt` · `MockLabelRenderer.kt` · `MockScene.kt` | Óculos simulados; 5 cenas com gabarito de decisão |
-| `orchestration/InteractionOrchestrator.kt` | Costura a UF-01 e cronometra cada etapa |
-| `metrics/MetricsRecorder.kt` | 9 etapas de `METRICS.md`; guarda só números |
+| `inference/androidstt/AndroidSttProvider.kt` | STT com `createOnDeviceSpeechRecognizer` (sem rede) |
+| `glasses/GlassesGateway.kt` | Fronteira do dispositivo + `GlassesStatus` |
+| `glasses/MockGlassesGateway.kt` · `MockLabelRenderer` · `Ean13Renderer` | Óculos simulados; renderiza rótulo e barras EAN-13 reais |
+| `glasses/PhoneCameraGateway.kt` | Câmera do celular via CameraX, com correção de rotação |
+| `glasses/CaptureSourceRouter.kt` | Troca de fonte em runtime sem recriar nada a jusante |
+| `orchestration/InteractionOrchestrator.kt` | Trilhas de rótulo e de produto, cronometradas |
+| `metrics/MetricsRecorder.kt` | 9 etapas de `METRICS.md`; só números |
 | `benchmark/ProviderBenchmark.kt` | Harness compartilhado entre terminal e tela de Laboratório |
+| `data/` | `LocalStore` (DataStore), `Serialization` (org.json), repositórios com hidratação |
 
-**Interface**
+**Interface** — `ui/` com tema próprio, navegação de 5 destinos e as telas Hoje, Analisar,
+Meu plano, Histórico, Perfil, mais o Laboratório em build de debug.
 
-| Arquivo | Papel |
-| :--- | :--- |
-| `ui/theme/` | Paleta, tipografia e tema escuro portados do `preview.html` |
-| `ui/components/Components.kt` | `EcCard`, `EcChip`, `StateBadge`, `StatCard`, `EcToggle`, `DemoTag` |
-| `ui/EatControlRoot.kt` | Navegação de 5 destinos, barra inferior, snackbar |
-| `ui/EatControlViewModel.kt` | Estado único do app + loop de confirmação + benchmark |
-| `ui/home/HomeScreen.kt` | Hoje: hero, métricas, últimas escolhas, card dos óculos |
-| `ui/analyze/AnalyzeScreen.kt` · `ResultSheet.kt` | Modos, POV, análise e resultado em bottom sheet |
-| `ui/plan/PlanScreen.kt` | Restrições com severidade, precedência de evidência, jornada GLP-1 |
-| `ui/history/HistoryScreen.kt` | Registros reais agrupados por dia |
-| `ui/profile/ProfileScreen.kt` | Privacidade, óculos, processamento |
-| `ui/lab/LabScreen.kt` | Laboratório de modelos (só em build de debug) |
-| `data/Repositories.kt` | Perfil, privacidade e histórico em memória |
-
-**Testes** — 26 no total
+**Testes — 50 unitários + 2 instrumentados**
 
 | Arquivo | Cobre |
 | :--- | :--- |
-| `test/.../LabelParserTest.kt` | 12 casos: dois-pontos, negação, sinônimos, escopo de frase, hifenização |
-| `test/.../FoodDecisionEngineTest.kt` | 13 casos: 4 estados, NFR-003, precedência, severidade, políticas, confirmação |
-| `test/.../DecisionScenariosTest.kt` | Lê `benchmark/decision_scenarios.csv` e calcula o **DSR** |
-| `androidTest/.../OcrBenchmarkTest.kt` | Benchmark de OCR em aparelho físico |
-
-### 3.5 `benchmark/`, `checklists/`, `datasets/`
-
-| Caminho | O que é | Status |
-| :--- | :--- | :--- |
-| `benchmark/decision_scenarios.csv` | **19 cenários** — a spec executável do `FR-008` | ✅ |
-| `benchmark/candidates.yaml` | Catálogo de candidatos por tarefa | ✅ |
-| `benchmark/scenarios.csv` | 4 cenários de percepção que referenciam imagens inexistentes | ⚠️ |
-| `checklists/MVP_CHECKLIST.md` | Estado real por trilha + privacidade/bateria | ✅ |
-| `checklists/REAL_GLASSES_TEST.md` | 19 itens de teste com óculos reais | ✅ |
+| `LabelParserTest` | 12 casos de leitura de rótulo |
+| `FoodDecisionEngineTest` | 13 casos: 4 estados, NFR-003, precedência, severidade, confirmação |
+| `DecisionScenariosTest` | 19 cenários do CSV → **DSR** |
+| `BarcodeRepositoryTest` | Catálogo, EANs válidos, gabarito das cenas |
+| `Ean13RendererTest` | Dígito verificador, 95 módulos, guardas, paridade |
+| `VoiceIntentParserTest` | Trilha, foco e transcrição vazia |
+| `SerializationTest` | Ida e volta, JSON corrompido, enum de versão futura |
+| `OcrBenchmarkTest` *(aparelho)* | Latência e DSR por provider |
+| `BarcodeScanInstrumentedTest` *(aparelho)* | ML Kit decodifica as barras renderizadas |
 
 ---
 
 ## 4. O que é real e o que é demonstração
 
-Decisão de projeto: **nada na tela finge ser medido**. Números que o app não calcula levam a marca
-`DEMO`, e campos que a fonte não reporta ficam vazios.
+Regra: **nada na tela finge ser medido**. Números que o app não calcula levam a marca `DEMO`, e
+campos que a fonte não reporta ficam vazios.
 
 | Tela | Real | Demonstração |
 | :--- | :--- | :--- |
-| Hoje | Análises registradas, últimas escolhas, estado dos óculos | Proteína e hidratação (marcados `DEMO`) |
-| Analisar | Captura, OCR, parser, decisão, TTS, latências | — |
-| Meu plano | Restrições, severidade, política de incerteza, precedência, orientações | Prioridades do dia (marcadas `DEMO`) |
-| Histórico | Todos os registros | — |
-| Perfil | Chaves de privacidade, teste de câmera e áudio | — |
+| Hoje | Análises registradas, últimas escolhas, estado da fonte | Proteína e hidratação |
+| Analisar | Captura, OCR, barcode, voz, decisão, TTS, latências | — |
+| Meu plano | Restrições, severidade, política, precedência, orientações | Prioridades do dia |
+| Histórico | Todos os registros, persistidos | — |
+| Perfil | Privacidade, apagar histórico, testes de câmera e áudio | — |
 
-Dois exemplos concretos da regra:
-
-- A bateria dos óculos aparece como **"—"**, não como "74%": a fonte simulada não reporta bateria.
-- Não existe percentual de confiança em componentes visuais, porque não existe modelo de visão. O
-  protótipo HTML mostrava "87%" — um número que ninguém consegue explicar se a banca perguntar.
+A bateria dos óculos aparece como **"—"**: nem o mock nem a câmera do celular reportam bateria de
+wearable. E não existe percentual de confiança visual, porque não existe modelo de visão.
 
 ---
 
 ## 5. Achados e pendências
 
-### ⚠️ A — DAT: dois bloqueios, nenhum técnico
+### ⚠️ A — DAT: duas credenciais, nenhuma técnica
 
-O `ADR-0006` saiu de TODO. O SDK é a versão **0.9.0**, artefatos `com.meta.wearable:mwdat-core`,
-`mwdat-camera` e `mwdat-mockdevice` (o `mwdat-display` não serve — os óculos do programa não têm
-display). O que falta:
+Versão **0.9.0**, artefatos `com.meta.wearable:mwdat-core`, `mwdat-camera` e `mwdat-mockdevice`
+(o `mwdat-display` não serve — os óculos do programa não têm display). Falta:
 
-1. **Token do GitHub com escopo `read:packages`.** O SDK não está no Maven Central; está no GitHub
-   Packages, e sem o token o Gradle não baixa nada.
-2. **Projeto no Wearables Developer Center**, que emite `APPLICATION_ID` e `CLIENT_TOKEN` para a
-   atestação do app.
+1. **Token do GitHub com escopo `read:packages`** — o SDK está no GitHub Packages, não no Maven
+   Central.
+2. **Projeto no Wearables Developer Center** — emite `APPLICATION_ID` e `CLIENT_TOKEN`.
 
-Consequência que costuma passar batido: **o Mock Device Kit oficial da Meta também está atrás dessas
-credenciais.** É por isso que o `MockGlassesGateway` deste repositório existe.
+O **Mock Device Kit oficial da Meta está atrás das mesmas credenciais**. É por isso que o
+`MockGlassesGateway` existe.
 
-### ⚠️ B — Privacidade e bateria ainda não são requisitos
+### ⚠️ B — Base de produtos é catálogo de demonstração
 
-São checkpoints pontuados no dia 18/09. O `SRS.md` só tem o `NFR-005`. O código já se comporta bem —
-nenhuma imagem é gravada em disco, a telemetria guarda só latência e versão de modelo, e a tela de
-Perfil expõe as chaves — mas comportamento não documentado não pontua.
+`BarcodeRepository` tem 4 EANs fictícios. A integração real com Open Food Facts / TBCA
+(`docs/DATA_SOURCES.md`) é trabalho seguinte e entra atrás da mesma interface.
 
-### ⚠️ C — Persistência
+### ⚠️ C — Dataset de percepção é sintético
 
-Perfil, privacidade e histórico vivem em memória e se perdem ao fechar o app. É trabalho de
-DataStore/Room, não de UI.
+As imagens são renderizadas, não fotografadas. Serve para regressão e benchmark comparativo, mas não
+mede o que acontece com rótulo curvo, reflexo de embalagem e luz de supermercado — que é o que o
+`datasets/README.md` pede.
 
-### ⚠️ D — Tamanho do pacote
+### ⚠️ D — Medições de aparelho pendentes
 
-APK de debug: **76 MB**. O modelo de OCR custa **1,5 MB**; o peso é 41 MB de bibliotecas nativas em
-4 ABIs e 32 MB de dex sem minificação. Um release com `isMinifyEnabled` e só `arm64-v8a` deve cair
-para poucas dezenas de MB. Medir e registrar antes de 18/09.
+O harness existe (`./scripts/benchmark.sh`) e nunca rodou em hardware. Faltam também os 10 minutos de
+consumo de bateria do `MVP_CHECKLIST`.
 
-### ⚠️ E — `ROADMAP.md` sem datas
+### 🟡 E — Documentos ainda não são *spec driven*
 
-O calendário está na §2 deste documento, mas o roadmap ainda trata as fases como blocos sem prazo.
-
-### 🟡 F — Documentos ainda não são *spec driven*
-
-O motor de decisão tem spec executável (CSV → DSR no build). `PRD`, `SRS`, `SDD` e `USER_FLOWS`
-continuam sem critérios de aceite verificáveis. O caminho é repetir o padrão do CSV.
+O motor de decisão tem spec executável. `PRD`, `SRS`, `SDD` e `USER_FLOWS` continuam sem critérios de
+aceite verificáveis.
 
 ### ✅ Resolvidos nesta rodada
 
-Pacote unificado em `com.eatcontrolai` e `applicationId` definitivo (importa porque o registro no
-Wearables Developer Center fica atrelado ao package name); versionamento inicializado; motor de
-decisão com os quatro estados alcançáveis e os falsos negativos de rótulo cobertos por teste;
-navegação e design system completos.
+Barcode passou a decodificar de verdade; STT deixou de devolver string fixa; a câmera do celular
+deixou de ser um stub delegando ao mock; perfil, privacidade e histórico persistem; APK de release
+caiu de 68 MB para 22 MB.
 
 ---
 
 ## 6. Como rodar
 
-### 6.1 O aplicativo
-
 ```bash
-./gradlew :app:assembleDebug     # gera app/build/outputs/apk/debug/app-debug.apk
-./gradlew installDebug           # instala no aparelho conectado
-./gradlew :app:testDebugUnitTest # 26 testes e o DSR
+./gradlew installDebug            # instala no aparelho conectado
+./gradlew :app:testDebugUnitTest  # 50 testes e o DSR
+./gradlew :app:assembleRelease    # APKs por ABI em app/build/outputs/apk/release/
+./scripts/benchmark.sh            # benchmark de modelos no aparelho físico
 ```
 
-No Android Studio: escolher o aparelho e apertar ▶ **Run**.
+### Roteiro de demonstração
 
-**O roteiro de demonstração mais forte hoje:** aba **Analisar** → cena **"Iogurte zero lactose"** →
-**Analisar rótulo**. Dá `INCOMPATÍVEL`, porque o verso declara `CONTÉM LEITE` apesar do "zero
-lactose" na frente. Depois vá em **Meu plano**, desligue a restrição de leite e repita: mesma imagem,
-mesmo OCR, decisão diferente.
+1. **Analisar → Rótulo → "Iogurte zero lactose" → Analisar.** Dá `INCOMPATÍVEL`: o verso declara
+   `CONTÉM LEITE` apesar do "zero lactose" na frente.
+2. **Meu plano → desligar a restrição de leite → repetir.** Mesma imagem, mesmo OCR, decisão
+   diferente.
+3. **Rótulo → "Barra de proteína".** Abre a **pergunta de confirmação**; a resposta entra como
+   evidência de rank 4 e a decisão é recalculada pelo mesmo motor.
+4. **Código de barras → "EAN · Iogurte natural".** O ML Kit lê o EAN das barras renderizadas e a
+   composição vem do catálogo, com rank acima de qualquer OCR.
+5. **Falar** → "posso comer isso?" → a análise dispara sozinha.
+6. **Fonte de captura → Câmera do celular** → aponte para uma embalagem real.
 
-O segundo momento: escolha **"Barra de proteína"** (que diz `PODE CONTER LEITE`). O resultado abre a
-**pergunta de confirmação** — e a resposta entra como evidência de rank 4, com a decisão recalculada
-pelo mesmo motor. Não é texto trocado na tela.
+### Tamanho do pacote
 
-### 6.2 Benchmark de modelos no aparelho
+| Build | Tamanho |
+| :--- | ---: |
+| Debug universal | 76 MB |
+| Release universal (R8) | 67,7 MB |
+| **Release arm64-v8a** | **22,2 MB** |
+| Modelos de IA embarcados | 2,4 MB |
 
-```bash
-./scripts/benchmark.sh
-```
+O peso nunca foi a inteligência: são bibliotecas nativas em múltiplas ABIs.
 
-Roda `OcrBenchmarkTest` no celular conectado por USB, com warm-up e repetições, e imprime p50/p90/p95
-e o DSR por provider. Para comparar um candidato novo, acrescente-o à lista `providers` do teste.
+### Onde se troca de modelo
 
-A mesma coisa dentro do app: build de debug → **Hoje** → **Laboratório de modelos**. É o mesmo
-`ProviderBenchmark`, então os números batem.
-
-A qualidade é medida por **decisão acertada**, não por texto idêntico: um OCR que lê "CONTEM LEITF"
-pode ter erro de caractere baixo e ainda produzir a decisão errada — e é a decisão que chega ao
-usuário.
-
-### 6.3 Onde se troca de modelo
-
-Um lugar só: o `ModelRegistry` montado em `AppContainer` ([EatControlApp.kt](../app/src/main/java/com/eatcontrolai/EatControlApp.kt)).
-
-```kotlin
-val models = ModelRegistry(
-    ProviderSet(ocr = MlKitOcrProvider(), tts = tts)
-)
-```
-
-Trocar de OCR é trocar essa linha; em runtime, `models.swap(outroConjunto)`. Nenhuma tela conhece o
-ML Kit. O catálogo de candidatos está em `benchmark/candidates.yaml` e a régua em
-`docs/MODEL_BENCHMARK.md`.
-
-### 6.4 O "simulador dos óculos"
-
-Não há nada a inicializar: o `MockGlassesGateway` **é** a fonte de captura do app e conecta sozinho
-ao abrir. Ele renderiza a embalagem em bitmap e entrega o JPEG para o OCR real — substitui o
-**hardware**, não a **inteligência**.
-
-| | **Mock Device Kit (Meta)** | **`MockGlassesGateway` (nosso)** |
-| :--- | :--- | :--- |
-| Simula | O dispositivo para a API do DAT | O dispositivo para o nosso app |
-| Precisa de | Token `read:packages` + credenciais do Developer Center | Nada |
-| Disponível | Depois do §5-A | **Funcionando** |
-
-Quando o DAT entrar, `DatGlassesGateway` implementa a mesma interface e o resto do app não muda.
-
-### 6.5 Para que serve o Android Studio
-
-Não é só emulador. **Compose Preview** renderiza uma tela sem instalar o app — muda o ritmo do
-trabalho de UI. O **Profiler de energia/CPU/memória** é literalmente o checkpoint de bateria do dia
-18/09. Mais Logcat, debugger, Layout Inspector e o `adb`.
-
-Rodar no aparelho físico por USB é melhor e deve continuar assim: o `NFR-006` exige benchmark em
-hardware real, e ML Kit e TTS se comportam diferente no emulador. Emulador serve para conferir
-tamanhos de tela.
+Um lugar só — o `ModelRegistry` em `AppContainer`
+([EatControlApp.kt](../app/src/main/java/com/eatcontrolai/EatControlApp.kt)). Nenhuma tela conhece o
+ML Kit. Catálogo de candidatos em `benchmark/candidates.yaml`, régua em `docs/MODEL_BENCHMARK.md`.
 
 ---
 
-## 7. Sequência de trabalho
+## 7. Próximos passos
 
-### ✅ Concluído
-
-Fundação (pacote, `applicationId`, dependências, permissões, git), vertical do rótulo com OCR real,
-motor determinístico com spec executável, design system, navegação de 5 telas, loop de confirmação,
-harness de benchmark por terminal e por tela.
-
-### Próximo
-
-1. Barcode (ML Kit) + cache local do Open Food Facts.
-2. CameraX — mesma pipeline, outra fonte de frame; e fotos reais de rótulo no lugar do bitmap.
-3. Persistência com DataStore/Room.
-4. STT para a pergunta falada.
-5. `SRS.md` com requisitos de privacidade e bateria.
-6. Medição de bateria em 10 min de uso, no aparelho físico.
-
-### Depois
-
-Modelo visual de prato, quantização, backend e sincronização.
-
-### Fora do código, no caminho crítico até 22/08
-
-1. **Conseguir o template obrigatório de entrega.** Tarefa nº 1 — é o único item que pode reprovar a
-   entrega por questão formal.
-2. **Gerar o token do GitHub e criar o projeto no Wearables Developer Center** (§5-A).
-3. Dividir papéis dos três integrantes.
-4. Datar o `ROADMAP.md` e escrever o que **não** será feito no dia 18/09.
+1. **Destravar o DAT** (§5-A) — são dois cadastros.
+2. Rodar `./scripts/benchmark.sh` no aparelho e registrar os números.
+3. Fotografar rótulos reais e colocar no dataset de percepção.
+4. Open Food Facts de verdade no lugar do catálogo de demonstração.
+5. Medir bateria em 10 minutos de uso.
+6. Trilha de prato (visão) — só depois das anteriores, e com incerteza explícita.
 
 ---
 
-## 8. Perguntas em aberto
-
-1. A equipe recebeu o **template obrigatório** da Entrega Final da Ideia?
-2. Qual o modelo exato dos óculos do integrante, e ele é compatível com o DAT?
-3. Existe acesso a nutricionista/médico para validar linguagem e regras antes de 22/08? A matriz de
-   ideias coloca isso como condição para a submissão final.
-4. O projeto no Wearables Developer Center já foi criado?
-
----
-
-*Base: leitura completa de `docs/`, do edital, da matriz de ideias, do deck, do `preview.html` e de
-todo o código em `app/src/`.*
+*Base: leitura completa de `docs/`, do edital, da matriz de ideias, do deck e de todo o código em
+`app/src/`.*
