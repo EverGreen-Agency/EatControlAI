@@ -1,7 +1,9 @@
 package com.eatcontrolai.orchestration
 
 import com.eatcontrolai.core.model.Decision
+import com.eatcontrolai.core.model.Evidence
 import com.eatcontrolai.core.model.UserProfile
+import com.eatcontrolai.domain.barcode.BarcodeRepository
 import com.eatcontrolai.domain.decision.FoodDecisionEngine
 import com.eatcontrolai.domain.evidence.EvidenceBuilder
 import com.eatcontrolai.glasses.GlassesGateway
@@ -18,24 +20,21 @@ data class InteractionResult(
     val frameJpeg: ByteArray,
     val metrics: List<StageMetric>
 ) {
-    // frameJpeg é ByteArray: equals/hashCode gerados por data class comparariam referência.
     override fun equals(other: Any?) = this === other
     override fun hashCode() = interactionId.hashCode()
 }
 
 /**
- * Costura a vertical do rótulo (UF-01 de `docs/USER_FLOWS.md`):
+ * Costura as verticais do produto (UF-01 Rótulo e UF-02 Barcode de `docs/USER_FLOWS.md`):
  *
- * `captura → OCR → parser → evidência → regra determinística → resposta curta → áudio`
- *
- * Cada etapa é cronometrada. A pipeline é a mesma independentemente de o frame vir dos óculos, da
- * câmera do celular ou do mock (`contexto-gpt.md` §13) — é o [GlassesGateway] que muda, não isto.
+ * `captura → OCR / Barcode → parser / lookup → evidência → regra determinística → resposta curta → áudio`
  */
 class InteractionOrchestrator(
     private val glasses: GlassesGateway,
     private val models: ModelRegistry,
     private val decisionEngine: FoodDecisionEngine,
-    private val metrics: MetricsRecorder
+    private val metrics: MetricsRecorder,
+    private val barcodeRepository: BarcodeRepository = BarcodeRepository()
 ) {
 
     suspend fun analyzeLabel(profile: UserProfile, speakResult: Boolean = true): InteractionResult {
@@ -50,8 +49,23 @@ class InteractionOrchestrator(
         record(interactionId, Stage.OCR, ocr.meta.latencyMs, ocr.meta.providerId, ocr.meta.version)
 
         val ruleStart = System.nanoTime()
-        val evidence = EvidenceBuilder.fromLabelOcr(ocr.text, ocr.meta.providerId, ocr.meta.version)
-        val decision = decisionEngine.decide(profile, evidence)
+        val evidenceList = mutableListOf<Evidence>()
+        evidenceList.addAll(EvidenceBuilder.fromLabelOcr(ocr.text, ocr.meta.providerId, ocr.meta.version))
+
+        // Se houver leitor de barcode ativo, tenta extrair barcode do frame
+        val barcodeProvider = models.current().barcode
+        if (barcodeProvider != null) {
+            val barcodeResult = barcodeProvider.decode(frame)
+            record(interactionId, Stage.BARCODE, barcodeResult.meta.latencyMs, barcodeResult.meta.providerId, barcodeResult.meta.version)
+            if (!barcodeResult.rawValue.isNullOrBlank()) {
+                val product = barcodeRepository.findByEan(barcodeResult.rawValue)
+                if (product != null) {
+                    evidenceList.add(barcodeRepository.toEvidence(product))
+                }
+            }
+        }
+
+        val decision = decisionEngine.decide(profile, evidenceList)
         record(interactionId, Stage.RULE_ENGINE, sinceMs(ruleStart), "deterministic_rules_v1")
 
         if (speakResult) {

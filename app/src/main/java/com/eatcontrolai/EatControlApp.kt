@@ -14,7 +14,9 @@ import com.eatcontrolai.domain.decision.FoodDecisionEngine
 import com.eatcontrolai.glasses.MockGlassesGateway
 import com.eatcontrolai.inference.ModelRegistry
 import com.eatcontrolai.inference.ProviderSet
+import com.eatcontrolai.inference.androidstt.AndroidSttProvider
 import com.eatcontrolai.inference.androidtts.AndroidTtsProvider
+import com.eatcontrolai.inference.mlkit.MlKitBarcodeProvider
 import com.eatcontrolai.inference.mlkit.MlKitOcrProvider
 import com.eatcontrolai.metrics.InMemoryMetricsRecorder
 import com.eatcontrolai.orchestration.InteractionOrchestrator
@@ -47,9 +49,12 @@ class AppContainer(application: Application) {
     val models = ModelRegistry(
         ProviderSet(
             ocr = MlKitOcrProvider(),
-            tts = tts
+            tts = tts,
+            barcode = MlKitBarcodeProvider(),
+            stt = AndroidSttProvider()
         )
     )
+
 
     val metrics = InMemoryMetricsRecorder()
 
