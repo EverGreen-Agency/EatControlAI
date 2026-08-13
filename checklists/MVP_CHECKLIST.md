@@ -25,8 +25,8 @@
 
 ## AI
 - [x] OCR baseline — ML Kit on-device, `MlKitOcrProvider`
-- [ ] Barcode baseline
-- [ ] STT baseline
+- [x] Barcode baseline — ML Kit on-device (`MlKitBarcodeProvider`) + Open Food Facts cache (`BarcodeRepository`)
+- [x] STT baseline — `AndroidSttProvider` on-device
 - [x] TTS baseline — `AndroidTtsProvider`, pt-BR, com métrica de *time-to-first-audio*
 - [x] Rule engine — `FoodDecisionEngine` com precedência de evidência e os 4 estados
 - [~] Dataset de benchmark — 15 cenários de decisão em `benchmark/decision_scenarios.csv`;
@@ -38,14 +38,15 @@
 ## Demo
 - [x] Rótulo "contém leite" — cenário `DEC-001`, e o caso melhor: `DEC-009` (iogurte "zero lactose"
       que declara `CONTÉM LEITE` no verso)
-- [ ] Barcode
+- [x] Barcode — busca por EAN 13/8 com promoção de evidência
 - [x] Caso ambíguo — `DEC-006` e `DEC-014`
 - [x] Resposta por áudio
 - [x] Métricas visíveis — latência por etapa na tela de análise
-- [x] Plano B se óculos falharem — o app funciona inteiro sem hardware
+- [x] Plano B se óculos falharem — `CameraXGlassesGateway` + `MockGlassesGateway`
 
 ## Privacidade e bateria (checkpoints pontuados no dia 18/09)
-- [~] Nenhuma imagem persistida; telemetria só com números — falta virar requisito no `SRS.md`
+- [x] Nenhuma imagem persistida; telemetria só com números — requisitos `NFR-008` e `NFR-009` no `SRS.md`
 - [ ] Tela de privacidade com opt-in (salvar fotos / usar dados para melhoria)
 - [ ] Estratégia de bateria documentada (captura sob demanda, duty-cycle, sem stream contínuo)
 - [ ] Medir consumo em 10 min de uso no aparelho físico
+
