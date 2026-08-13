@@ -95,12 +95,22 @@ fun ProfileScreen(viewModel: EatControlViewModel, onNavigate: (Destination) -> U
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Hoje o app não grava imagem em disco em nenhuma configuração — o histórico vive " +
-                        "em memória e a telemetria guarda apenas latências, identificador de provider " +
-                        "e versão de modelo.",
+                    "O app não grava imagem em disco em nenhuma configuração. O que fica guardado " +
+                        "no aparelho é texto: perfil, preferências e o histórico de decisões. A " +
+                        "telemetria tem apenas latências, identificador de provider e versão de " +
+                        "modelo (NFR-008).",
                     style = MaterialTheme.typography.bodySmall,
                     color = EcColors.TextFaint
                 )
+                Spacer(Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(onClick = viewModel::clearHistory, modifier = Modifier.weight(1f)) {
+                        Text("Apagar histórico")
+                    }
+                    OutlinedButton(onClick = viewModel::resetProfile, modifier = Modifier.weight(1f)) {
+                        Text("Restaurar perfil")
+                    }
+                }
             }
         }
 

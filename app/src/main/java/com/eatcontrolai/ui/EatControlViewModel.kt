@@ -14,9 +14,13 @@ import com.eatcontrolai.core.model.MealRecord
 import com.eatcontrolai.core.model.Restriction
 import com.eatcontrolai.core.model.RestrictionSeverity
 import com.eatcontrolai.core.model.UncertaintyPolicy
+import com.eatcontrolai.domain.voice.VoiceIntentParser
+import com.eatcontrolai.glasses.CaptureSource
 import com.eatcontrolai.glasses.GlassesStatus
 import com.eatcontrolai.glasses.MockScene
 import com.eatcontrolai.glasses.MockScenes
+import com.eatcontrolai.glasses.SceneKind
+import com.eatcontrolai.orchestration.AnalysisTrack
 import com.eatcontrolai.orchestration.InteractionResult
 import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,13 +29,34 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Modos de entrada de `contexto-gpt.md` §12.4. Só RÓTULO está implementado ponta a ponta. */
-enum class AnalyzeMode(val label: String, val glyph: String, val prompt: String, val ready: Boolean) {
-    LABEL("Rótulo", "Aa", "\"Tem algo aqui que conflita com meu plano?\"", true),
-    PLATE("Prato", "◉", "\"Como está esse prato para mim?\"", false),
-    BARCODE("Código de barras", "▦", "\"Posso incluir esse produto?\"", false),
-    MENU("Cardápio", "≡", "\"Qual opção parece mais alinhada comigo?\"", false)
+/**
+ * Modos de entrada de `contexto-gpt.md` §12.4.
+ *
+ * [track] nulo significa que a trilha ainda não existe: a UI mostra o modo mas não deixa analisar,
+ * em vez de fingir que funciona.
+ */
+enum class AnalyzeMode(
+    val label: String,
+    val glyph: String,
+    val prompt: String,
+    val track: AnalysisTrack?,
+    val sceneKind: SceneKind?
+) {
+    LABEL("Rótulo", "Aa", "\"Tem algo aqui que conflita com meu plano?\"", AnalysisTrack.LABEL, SceneKind.LABEL),
+    BARCODE("Código de barras", "▦", "\"Posso incluir esse produto?\"", AnalysisTrack.BARCODE, SceneKind.BARCODE),
+    PLATE("Prato", "◉", "\"Como está esse prato para mim?\"", null, null),
+    MENU("Cardápio", "≡", "\"Qual opção parece mais alinhada comigo?\"", null, null);
+
+    val ready: Boolean get() = track != null
 }
+
+data class VoiceState(
+    val listening: Boolean = false,
+    val transcript: String = "",
+    val onDevice: Boolean = false,
+    val available: Boolean = true,
+    val permissionDenied: Boolean = false
+)
 
 data class LabState(
     val running: Boolean = false,
@@ -41,7 +66,7 @@ data class LabState(
 
 data class AnalyzeState(
     val mode: AnalyzeMode = AnalyzeMode.LABEL,
-    val scenes: List<MockScene> = MockScenes.all,
+    val source: CaptureSource = CaptureSource.MOCK_GLASSES,
     val selectedSceneId: String = MockScenes.default.id,
     val isAnalyzing: Boolean = false,
     val result: InteractionResult? = null,
@@ -49,7 +74,14 @@ data class AnalyzeState(
     val showResult: Boolean = false,
     val error: String? = null
 ) {
-    val selectedScene: MockScene get() = scenes.first { it.id == selectedSceneId }
+    val scenes: List<MockScene>
+        get() = mode.sceneKind?.let { MockScenes.forKind(it) } ?: emptyList()
+
+    val selectedScene: MockScene?
+        get() = scenes.firstOrNull { it.id == selectedSceneId } ?: scenes.firstOrNull()
+
+    /** O seletor de cena só faz sentido quando a fonte é simulada. */
+    val showsSceneSelector: Boolean get() = source == CaptureSource.MOCK_GLASSES && scenes.isNotEmpty()
 }
 
 class EatControlViewModel(private val container: AppContainer) : ViewModel() {
@@ -64,16 +96,19 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
     private val _glasses = MutableStateFlow(container.glasses.status)
     val glasses: StateFlow<GlassesStatus> = _glasses.asStateFlow()
 
-    private val _toast = MutableStateFlow<String?>(null)
-    val toast: StateFlow<String?> = _toast.asStateFlow()
+    private val _voice = MutableStateFlow(VoiceState(available = container.stt.isAvailable()))
+    val voice: StateFlow<VoiceState> = _voice.asStateFlow()
 
     private val _lab = MutableStateFlow(LabState())
     val lab: StateFlow<LabState> = _lab.asStateFlow()
 
+    private val _toast = MutableStateFlow<String?>(null)
+    val toast: StateFlow<String?> = _toast.asStateFlow()
+
     init {
         viewModelScope.launch {
             container.glasses.connect()
-            _glasses.value = container.glasses.status
+            refreshGlasses()
         }
     }
 
@@ -85,28 +120,53 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
         _toast.value = null
     }
 
+    private fun refreshGlasses() {
+        _glasses.value = container.glasses.status
+    }
+
     // ---------------------------------------------------------------- analisar
 
     fun selectMode(mode: AnalyzeMode) {
-        _analyze.update { it.copy(mode = mode, result = null, error = null) }
+        _analyze.update {
+            val scenes = mode.sceneKind?.let { kind -> MockScenes.forKind(kind) }.orEmpty()
+            it.copy(
+                mode = mode,
+                selectedSceneId = scenes.firstOrNull()?.id ?: it.selectedSceneId,
+                result = null,
+                error = null
+            )
+        }
+        _analyze.value.selectedScene?.let { container.mockGlasses.selectScene(it.id) }
         if (!mode.ready) {
-            showToast("${mode.label} ainda não está implementado. Rótulo é a trilha fechada.")
+            showToast("${mode.label} ainda não tem trilha implementada. Rótulo e código de barras estão prontos.")
         }
     }
 
     fun selectScene(sceneId: String) {
-        container.glasses.selectScene(sceneId)
+        container.mockGlasses.selectScene(sceneId)
         _analyze.update { it.copy(selectedSceneId = sceneId, result = null, error = null) }
     }
 
+    fun selectSource(source: CaptureSource) {
+        container.glasses.select(source)
+        _analyze.update { it.copy(source = source, result = null, error = null) }
+        refreshGlasses()
+    }
+
+    /** Chamado pela tela quando a câmera do celular liga ou desliga. */
+    fun onCameraBindingChanged() = refreshGlasses()
+
     fun analyze() {
-        if (_analyze.value.isAnalyzing) return
+        val state = _analyze.value
+        val track = state.mode.track ?: return
+        if (state.isAnalyzing) return
+
         _analyze.update { it.copy(isAnalyzing = true, error = null) }
 
         viewModelScope.launch {
-            runCatching { container.orchestrator.analyzeLabel(profile.value) }
+            runCatching { container.orchestrator.analyze(track, profile.value) }
                 .onSuccess { result ->
-                    val record = result.toRecord(_analyze.value.selectedScene.title)
+                    val record = result.toRecord()
                     container.history.add(record)
                     _analyze.update {
                         it.copy(
@@ -122,7 +182,7 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
                     _analyze.update {
                         it.copy(
                             isAnalyzing = false,
-                            error = throwable.message ?: "Falha ao analisar o rótulo."
+                            error = throwable.message ?: "Falha ao analisar."
                         )
                     }
                 }
@@ -134,9 +194,9 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
     /**
      * Fecha o loop de confirmação do `contexto-gpt.md` §56 (Cenário 3).
      *
-     * A resposta do usuário entra como [EvidenceType.USER_CONFIRMATION] — rank 4, acima de OCR
-     * bruto e de inferência visual — e a decisão é **recalculada pelo mesmo motor**. Não é um texto
-     * trocado na tela: a evidência nova realmente muda o resultado.
+     * A resposta do usuário entra como [EvidenceType.USER_CONFIRMATION] — rank 4, acima de OCR bruto
+     * e de inferência visual — e a decisão é **recalculada pelo mesmo motor**. Não é um texto trocado
+     * na tela: a evidência nova realmente muda o resultado.
      */
     fun confirmIngredient(allergen: Allergen, present: Boolean) {
         val current = _analyze.value.result ?: return
@@ -146,7 +206,7 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
             type = EvidenceType.USER_CONFIRMATION,
             value = if (present) "usuário confirmou presença de ${allergen.displayName}"
             else "usuário confirmou ausência de ${allergen.displayName}",
-            source = "user",
+            source = "confirmação do usuário",
             claims = listOf(
                 LabelClaim(
                     allergen = allergen,
@@ -162,13 +222,57 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
 
         _analyze.update { it.copy(result = updated) }
         if (recordId != null) {
-            container.history.replace(
-                updated.toRecord(_analyze.value.selectedScene.title)
-                    .copy(id = recordId, userConfirmed = true)
-            )
+            container.history.replace(updated.toRecord().copy(id = recordId, userConfirmed = true))
         }
 
         viewModelScope.launch { container.glasses.playSpeech(decision.shortMessage) }
+    }
+
+    // --------------------------------------------------------------------- voz
+
+    fun onAudioPermissionResult(granted: Boolean) {
+        _voice.update { it.copy(permissionDenied = !granted) }
+        if (granted) listen()
+    }
+
+    /**
+     * Escuta a pergunta, interpreta o comando e dispara a análise correspondente.
+     *
+     * A interpretação é determinística ([VoiceIntentParser]) — um LLM aqui só acrescentaria latência
+     * e dependência de rede no caminho crítico.
+     */
+    fun listen() {
+        if (_voice.value.listening) return
+        val provider = container.models.current().stt ?: return
+
+        _voice.update { it.copy(listening = true, transcript = "") }
+
+        viewModelScope.launch {
+            runCatching { provider.transcribe() }
+                .onSuccess { result ->
+                    val intent = VoiceIntentParser.parse(result.text)
+                    _voice.update {
+                        it.copy(
+                            listening = false,
+                            transcript = result.text,
+                            onDevice = container.stt.usingOnDevice
+                        )
+                    }
+
+                    if (!intent.recognized) {
+                        showToast("Não entendi. Tente de novo mais perto do microfone.")
+                        return@onSuccess
+                    }
+
+                    val mode = AnalyzeMode.entries.firstOrNull { it.track == intent.track }
+                    if (mode != null && mode != _analyze.value.mode) selectMode(mode)
+                    analyze()
+                }
+                .onFailure { throwable ->
+                    _voice.update { it.copy(listening = false) }
+                    showToast("Reconhecimento de voz falhou: ${throwable.message}")
+                }
+        }
     }
 
     // ------------------------------------------------------------- meu plano
@@ -214,6 +318,16 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
 
     fun toggleSyncHistory() = container.privacy.update { it.copy(syncHistory = !it.syncHistory) }
 
+    fun clearHistory() {
+        container.history.clear()
+        showToast("Histórico apagado do aparelho.")
+    }
+
+    fun resetProfile() {
+        container.profiles.reset()
+        showToast("Perfil restaurado para o de demonstração.")
+    }
+
     // ------------------------------------------------------------------ óculos
 
     fun testAudio() {
@@ -237,11 +351,11 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
      * Roda o mesmo harness do benchmark de terminal, dentro do app.
      *
      * Números iguais aos de `./scripts/benchmark.sh` porque é literalmente o mesmo código
-     * ([ProviderBenchmark]) — a tela existe para conferir no aparelho sem precisar do notebook.
+     * ([ProviderBenchmark]).
      */
     fun runBenchmark(repetitions: Int = 3) {
         if (_lab.value.running) return
-        _lab.update { it.copy(running = true, results = emptyList()) }
+        _lab.update { it.copy(running = true, results = emptyList(), error = null) }
 
         viewModelScope.launch {
             runCatching {
@@ -258,16 +372,24 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
         }
     }
 
-    private fun InteractionResult.toRecord(title: String) = MealRecord(
-        id = UUID.randomUUID().toString(),
-        timestampMillis = System.currentTimeMillis(),
-        title = title,
-        decisionState = decision.state,
-        shortMessage = decision.shortMessage,
-        recognizedText = recognizedText,
-        evidenceLabels = decision.evidence.map { it.type.label },
-        endToEndMs = metrics.firstOrNull { it.stage.key == "end_to_end_ms" }?.latencyMs ?: 0L
-    )
+    private fun InteractionResult.toRecord(): MealRecord {
+        val title = productName
+            ?: _analyze.value.selectedScene?.title
+            ?: when (track) {
+                AnalysisTrack.LABEL -> "Rótulo analisado"
+                AnalysisTrack.BARCODE -> "Produto escaneado"
+            }
+        return MealRecord(
+            id = UUID.randomUUID().toString(),
+            timestampMillis = System.currentTimeMillis(),
+            title = title,
+            decisionState = decision.state,
+            shortMessage = decision.shortMessage,
+            recognizedText = recognizedText,
+            evidenceLabels = decision.evidence.map { it.type.label },
+            endToEndMs = metrics.firstOrNull { it.stage.key == "end_to_end_ms" }?.latencyMs ?: 0L
+        )
+    }
 
     class Factory(private val container: AppContainer) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")

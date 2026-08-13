@@ -61,6 +61,14 @@ fun ResultSheet(
             StateBadge(decision.state)
             Spacer(Modifier.height(10.dp))
             Text(decision.shortMessage, style = MaterialTheme.typography.headlineSmall)
+            result.scannedEan?.let { ean ->
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    result.productName?.let { "$it · EAN $ean" } ?: "EAN $ean · fora do catálogo",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = EcColors.TextMuted
+                )
+            }
         }
 
         if (decision.reasons.isNotEmpty()) {

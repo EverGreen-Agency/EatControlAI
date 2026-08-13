@@ -1,6 +1,11 @@
 package com.eatcontrolai.ui.analyze
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,19 +30,29 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import com.eatcontrolai.EatControlApp
+import com.eatcontrolai.glasses.CaptureSource
 import com.eatcontrolai.ui.AnalyzeMode
 import com.eatcontrolai.ui.EatControlViewModel
 import com.eatcontrolai.ui.components.EcCard
@@ -50,7 +66,26 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
     val state by viewModel.analyze.collectAsState()
     val profile by viewModel.profile.collectAsState()
     val glasses by viewModel.glasses.collectAsState()
+    val voice by viewModel.voice.collectAsState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    val context = LocalContext.current
+    var cameraGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
+                PackageManager.PERMISSION_GRANTED
+        )
+    }
+    val cameraPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        cameraGranted = granted
+        if (!granted) viewModel.showToast("Sem permissão de câmera. Voltando para os óculos simulados.")
+        if (!granted) viewModel.selectSource(CaptureSource.MOCK_GLASSES)
+    }
+    val audioPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted -> viewModel.onAudioPermissionResult(granted) }
 
     LazyColumn(
         modifier = Modifier.fillMaxWidth().statusBarsPadding(),
@@ -60,9 +95,39 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
         item {
             SectionHeader(
                 title = "Analisar",
-                subtitle = "A câmera captura, o OCR roda no aparelho e o motor determinístico cruza " +
-                    "com o seu plano antes de responder por áudio."
+                subtitle = "A captura acontece no aparelho, o OCR e a leitura de barras rodam local, " +
+                    "e o motor determinístico cruza com o seu plano antes de responder por áudio."
             )
+        }
+
+        item {
+            EcCard(title = "Fonte de captura", subtitle = glasses.sourceLabel) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    CaptureSource.entries.forEach { source ->
+                        EcChip(
+                            label = source.label,
+                            tone = EcColors.BlueSoft,
+                            selected = source == state.source,
+                            onClick = {
+                                if (source == CaptureSource.PHONE_CAMERA && !cameraGranted) {
+                                    cameraPermission.launch(Manifest.permission.CAMERA)
+                                } else {
+                                    viewModel.selectSource(source)
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+                if (state.source == CaptureSource.PHONE_CAMERA) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "A câmera liga só nesta tela e captura sob demanda — sem stream contínuo (NFR-009).",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = EcColors.TextFaint
+                    )
+                }
+            }
         }
 
         item {
@@ -85,32 +150,33 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
             }
         }
 
-        item {
-            EcCard(
-                title = "O que os óculos estão vendo",
-                subtitle = glasses.sourceLabel
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    state.scenes.chunked(2).forEach { row ->
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            row.forEach { scene ->
-                                EcChip(
-                                    label = scene.title,
-                                    tone = EcColors.BlueSoft,
-                                    selected = scene.id == state.selectedSceneId,
-                                    onClick = { viewModel.selectScene(scene.id) },
-                                    modifier = Modifier.weight(1f)
-                                )
+        if (state.showsSceneSelector) {
+            item {
+                EcCard(title = "O que os óculos estão vendo") {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        state.scenes.chunked(2).forEach { row ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                row.forEach { scene ->
+                                    EcChip(
+                                        label = scene.title,
+                                        tone = EcColors.BlueSoft,
+                                        selected = scene.id == state.selectedSceneId,
+                                        onClick = { viewModel.selectScene(scene.id) },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                if (row.size == 1) Spacer(Modifier.weight(1f))
                             }
-                            if (row.size == 1) Spacer(Modifier.weight(1f))
+                        }
+                        state.selectedScene?.let { scene ->
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                scene.subtitle,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = EcColors.TextFaint
+                            )
                         }
                     }
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        state.selectedScene.subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = EcColors.TextFaint
-                    )
                 }
             }
         }
@@ -120,15 +186,30 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .height(230.dp)
+                        .height(260.dp)
                         .clip(RoundedCornerShape(14.dp))
                         .background(EcColors.BackgroundDeep)
                         .border(1.dp, EcColors.Line, RoundedCornerShape(14.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    val frame = state.result?.frameJpeg
-                    if (frame == null) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    when {
+                        state.source == CaptureSource.PHONE_CAMERA && cameraGranted ->
+                            CameraPreview(viewModel)
+
+                        state.result?.frameJpeg != null -> {
+                            val frame = state.result!!.frameJpeg
+                            val image = remember(frame) {
+                                BitmapFactory.decodeByteArray(frame, 0, frame.size).asImageBitmap()
+                            }
+                            Image(
+                                bitmap = image,
+                                contentDescription = "Frame capturado",
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("◉", style = MaterialTheme.typography.headlineMedium, color = EcColors.TextFaint)
                             Spacer(Modifier.height(6.dp))
                             Text(
@@ -137,25 +218,17 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                                 color = EcColors.TextFaint
                             )
                         }
-                    } else {
-                        val image = remember(frame) {
-                            BitmapFactory.decodeByteArray(frame, 0, frame.size).asImageBitmap()
-                        }
-                        Image(
-                            bitmap = image,
-                            contentDescription = "Frame capturado",
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier.fillMaxWidth()
-                        )
                     }
                 }
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    "O rótulo é renderizado e lido pelo OCR real. O mock substitui o hardware, " +
-                        "não a inteligência.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = EcColors.TextFaint
-                )
+                if (state.source == CaptureSource.MOCK_GLASSES) {
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        "A embalagem é renderizada e lida pelo OCR e pelo leitor de barras reais. " +
+                            "O mock substitui o hardware, não a inteligência.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = EcColors.TextFaint
+                    )
+                }
             }
         }
 
@@ -177,15 +250,20 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                     )
                     Text("   Analisando…")
                 } else {
-                    Text(if (state.mode.ready) "Analisar ${state.mode.label.lowercase()}" else "Modo indisponível")
+                    Text(
+                        if (state.mode.ready) "Analisar ${state.mode.label.lowercase()}"
+                        else "Trilha não implementada"
+                    )
                 }
             }
         }
 
+        item { VoiceCard(voice, viewModel) { audioPermission.launch(Manifest.permission.RECORD_AUDIO) } }
+
         item {
             Text(
-                "Perfil ativo: ${profile.restrictions.joinToString { it.allergen.displayName }
-                    .ifBlank { "sem restrições cadastradas" }}",
+                "Perfil ativo: " + profile.restrictions.joinToString { it.allergen.displayName }
+                    .ifBlank { "sem restrições cadastradas" },
                 style = MaterialTheme.typography.bodySmall,
                 color = EcColors.TextMuted
             )
@@ -213,6 +291,89 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                 onDismiss = viewModel::dismissResult
             )
         }
+    }
+}
+
+/**
+ * Preview da câmera do celular.
+ *
+ * A câmera é ligada ao entrar e desligada ao sair — é o duty-cycle do NFR-009, não um detalhe de
+ * implementação.
+ */
+@Composable
+private fun CameraPreview(viewModel: EatControlViewModel) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val gateway = remember { (context.applicationContext as EatControlApp).container.phoneCamera }
+    val previewView = remember { PreviewView(context).apply { scaleType = PreviewView.ScaleType.FILL_CENTER } }
+
+    LaunchedEffect(previewView) {
+        runCatching { gateway.bind(lifecycleOwner, previewView.surfaceProvider) }
+            .onFailure { viewModel.showToast("Falha ao abrir a câmera: ${it.message}") }
+        viewModel.onCameraBindingChanged()
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            gateway.unbind()
+            viewModel.onCameraBindingChanged()
+        }
+    }
+
+    AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
+}
+
+@Composable
+private fun VoiceCard(
+    voice: com.eatcontrolai.ui.VoiceState,
+    viewModel: EatControlViewModel,
+    onRequestPermission: () -> Unit
+) {
+    EcCard(
+        title = "Perguntar por voz",
+        subtitle = if (voice.available) {
+            if (voice.onDevice) "Reconhecimento on-device, sem rede"
+            else "Reconhecimento do sistema"
+        } else {
+            "Este aparelho não tem reconhecimento de fala disponível"
+        }
+    ) {
+        OutlinedButton(
+            onClick = onRequestPermission,
+            enabled = voice.available && !voice.listening,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (voice.listening) {
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                Text("   Ouvindo…")
+            } else {
+                Text("⌁  Falar")
+            }
+        }
+
+        if (voice.transcript.isNotBlank()) {
+            Spacer(Modifier.height(10.dp))
+            Text("VOCÊ DISSE", style = MaterialTheme.typography.labelSmall, color = EcColors.TextMuted)
+            Spacer(Modifier.height(4.dp))
+            Text("\"${voice.transcript}\"", style = MaterialTheme.typography.bodyMedium)
+        }
+
+        if (voice.permissionDenied) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Sem permissão de microfone. A trilha de voz fica desligada; o resto do app continua funcionando.",
+                style = MaterialTheme.typography.bodySmall,
+                color = EcColors.Amber
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "O comando é interpretado por regra determinística, não por LLM: \"código de barras\" " +
+                "leva para a trilha de produto, o resto vai para rótulo.",
+            style = MaterialTheme.typography.bodySmall,
+            color = EcColors.TextFaint
+        )
     }
 }
 
@@ -259,9 +420,4 @@ private fun ModeCard(
             color = if (mode.ready) EcColors.Mint else EcColors.TextFaint
         )
     }
-}
-
-@Composable
-internal fun sheetDivider() {
-    Box(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(alpha = 0.06f)))
 }
