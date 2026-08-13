@@ -6,10 +6,14 @@ import com.eatcontrolai.core.model.DecisionState
 import com.eatcontrolai.core.model.Evidence
 import com.eatcontrolai.core.model.EvidenceType
 import com.eatcontrolai.core.model.LabelClaim
+import com.eatcontrolai.core.model.Restriction
+import com.eatcontrolai.core.model.RestrictionSeverity
+import com.eatcontrolai.core.model.UncertaintyPolicy
 import com.eatcontrolai.core.model.UserProfile
 import com.eatcontrolai.domain.evidence.EvidenceBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -19,7 +23,7 @@ import org.junit.Test
 class FoodDecisionEngineTest {
 
     private val engine = FoodDecisionEngine()
-    private val milkProfile = UserProfile(id = "t", restrictions = setOf(Allergen.MILK))
+    private val milkProfile = UserProfile(id = "t", restrictions = setOf(Restriction(Allergen.MILK)))
 
     private fun decideFromLabel(text: String, profile: UserProfile = milkProfile) =
         engine.decide(profile, EvidenceBuilder.fromLabelOcr(text, "test_ocr"))
@@ -45,7 +49,6 @@ class FoodDecisionEngineTest {
 
     @Test
     fun `ausencia de declaracao nunca vira compativel`() {
-        // O rótulo foi lido e declara alérgicos, mas não fala de leite.
         val decision = decideFromLabel("ALÉRGICOS: CONTÉM TRIGO E SOJA.")
         assertEquals(DecisionState.NEEDS_CONFIRMATION, decision.state)
         assertNotEquals(DecisionState.COMPATIBLE, decision.state)
@@ -53,8 +56,10 @@ class FoodDecisionEngineTest {
 
     @Test
     fun `sem evidencia declara incerteza`() {
-        val decision = engine.decide(milkProfile, emptyList())
-        assertEquals(DecisionState.INSUFFICIENT_INFORMATION, decision.state)
+        assertEquals(
+            DecisionState.INSUFFICIENT_INFORMATION,
+            engine.decide(milkProfile, emptyList()).state
+        )
     }
 
     @Test
@@ -68,8 +73,10 @@ class FoodDecisionEngineTest {
                 claims = listOf(LabelClaim(Allergen.MILK, ClaimPolarity.FREE_OF, "sem laticínio visível"))
             )
         )
-        val decision = engine.decide(milkProfile, visualOnly)
-        assertEquals(DecisionState.INSUFFICIENT_INFORMATION, decision.state)
+        assertEquals(
+            DecisionState.INSUFFICIENT_INFORMATION,
+            engine.decide(milkProfile, visualOnly).state
+        )
     }
 
     @Test
@@ -92,16 +99,102 @@ class FoodDecisionEngineTest {
     }
 
     @Test
+    fun `confirmacao do usuario resolve a incerteza`() {
+        // Rótulo lido, mas silencioso sobre leite: precisa confirmar.
+        val base = EvidenceBuilder.fromLabelOcr("ALÉRGICOS: CONTÉM SOJA.", "test_ocr")
+        val before = engine.decide(milkProfile, base)
+        assertEquals(DecisionState.NEEDS_CONFIRMATION, before.state)
+        assertEquals(listOf(Allergen.MILK), before.unresolved)
+
+        val confirmed = base + Evidence(
+            type = EvidenceType.USER_CONFIRMATION,
+            value = "usuário confirmou ausência de leite",
+            source = "user",
+            claims = listOf(LabelClaim(Allergen.MILK, ClaimPolarity.FREE_OF, "confirmado por você"))
+        )
+        assertEquals(DecisionState.COMPATIBLE, engine.decide(milkProfile, confirmed).state)
+    }
+
+    @Test
     fun `pior caso prevalece entre multiplas restricoes`() {
-        val profile = UserProfile(id = "t", restrictions = setOf(Allergen.MILK, Allergen.PEANUT))
-        val decision = decideFromLabel("ALÉRGICOS: CONTÉM LEITE. PODE CONTER AMENDOIM.", profile)
-        assertEquals(DecisionState.INCOMPATIBLE, decision.state)
+        val profile = UserProfile(
+            id = "t",
+            restrictions = setOf(Restriction(Allergen.MILK), Restriction(Allergen.PEANUT))
+        )
+        assertEquals(
+            DecisionState.INCOMPATIBLE,
+            decideFromLabel("ALÉRGICOS: CONTÉM LEITE. PODE CONTER AMENDOIM.", profile).state
+        )
+    }
+
+    @Test
+    fun `preferencia informa mas nao bloqueia`() {
+        val profile = UserProfile(
+            id = "t",
+            restrictions = setOf(
+                Restriction(Allergen.SOY, severity = RestrictionSeverity.PREFERENCE)
+            )
+        )
+        val decision = decideFromLabel("ALÉRGICOS: CONTÉM SOJA.", profile)
+        assertEquals(DecisionState.COMPATIBLE, decision.state)
+        assertTrue(
+            "A preferência deveria aparecer como observação",
+            decision.reasons.any { it.allergen == Allergen.SOY }
+        )
+    }
+
+    @Test
+    fun `politica apenas informar nao trava por falta de declaracao`() {
+        val profile = UserProfile(
+            id = "t",
+            restrictions = setOf(
+                Restriction(
+                    allergen = Allergen.MILK,
+                    severity = RestrictionSeverity.MODERATE,
+                    uncertaintyPolicy = UncertaintyPolicy.INFORM_ONLY
+                )
+            )
+        )
+        assertEquals(
+            DecisionState.COMPATIBLE,
+            decideFromLabel("ALÉRGICOS: CONTÉM SOJA.", profile).state
+        )
+    }
+
+    @Test
+    fun `politica ignorar visual descarta evidencia probabilistica`() {
+        val profile = UserProfile(
+            id = "t",
+            restrictions = setOf(
+                Restriction(Allergen.MILK, uncertaintyPolicy = UncertaintyPolicy.IGNORE_VISUAL)
+            )
+        )
+        val evidence = listOf(
+            Evidence(
+                type = EvidenceType.DECLARED_LABEL,
+                value = "CONTAINS soja",
+                source = "label_parser_v1",
+                claims = listOf(LabelClaim(Allergen.SOY, ClaimPolarity.CONTAINS, "CONTEM … SOJA"))
+            ),
+            Evidence(
+                type = EvidenceType.VISUAL_INFERENCE,
+                value = "parece ter queijo",
+                source = "detector_v0",
+                confidence = 0.71f,
+                claims = listOf(LabelClaim(Allergen.MILK, ClaimPolarity.CONTAINS, "queijo visível"))
+            )
+        )
+        // A visão apontou leite, mas a política do usuário manda ignorá-la para esta restrição.
+        assertEquals(DecisionState.NEEDS_CONFIRMATION, engine.decide(profile, evidence).state)
     }
 
     @Test
     fun `perfil sem restricao nao gera alarme`() {
         val profile = UserProfile(id = "t", restrictions = emptySet())
-        assertEquals(DecisionState.COMPATIBLE, decideFromLabel("ALÉRGICOS: CONTÉM LEITE.", profile).state)
+        assertEquals(
+            DecisionState.COMPATIBLE,
+            decideFromLabel("ALÉRGICOS: CONTÉM LEITE.", profile).state
+        )
     }
 
     @Test
@@ -121,8 +214,9 @@ class FoodDecisionEngineTest {
     fun `resposta e curta o suficiente para TTS`() {
         val decision = decideFromLabel("ALÉRGICOS: CONTÉM LEITE.")
         // contexto-gpt.md §21: resposta curta, não um podcast.
-        assert(decision.shortMessage.length <= 160) {
-            "Mensagem longa demais para áudio: ${decision.shortMessage.length} caracteres"
-        }
+        assertTrue(
+            "Mensagem longa demais para áudio: ${decision.shortMessage.length} caracteres",
+            decision.shortMessage.length <= 160
+        )
     }
 }

@@ -1,5 +1,8 @@
 > Cenários do motor determinístico. Delimitador: | (o texto do rótulo contém vírgulas).
 > restrictions: alérgenos do perfil separados por ; — vazio significa perfil sem restrição.
+>   sintaxe: ALERGENO[@SEVERIDADE][:POLITICA]
+>   severidade: CRITICAL (padrão) | MODERATE | PREFERENCE
+>   política: ASK_CONFIRMATION (padrão) | INFORM_ONLY | IGNORE_VISUAL
 > critical=true: cenário que não pode falhar. Falha crítica reprova o build.
 > Este arquivo é a especificação executável do FoodDecisionEngine: cada linha vira um teste JUnit
 > e o conjunto produz o Decision Success Rate (DSR) de docs/METRICS.md.
@@ -19,3 +22,7 @@ DEC-012|PEANUT|CONTÉM LEITE. FABRICADO EM LINHA QUE TAMBÉM PROCESSA AMENDOIM.|
 DEC-013||ALÉRGICOS: CONTÉM LEITE.|COMPATIBLE|false|Perfil sem restrição cadastrada
 DEC-014|MILK|SEM LACTOSE. ALÉRGICOS: CONTÉM SOJA.|NEEDS_CONFIRMATION|true|Zero lactose não comprova ausência de proteína do leite
 DEC-015|GLUTEN|INGREDIENTES: ÁGUA, AMIDO DE MILHO, SAL. ALÉRGICOS: PODE CONTER TRIGO.|NEEDS_CONFIRMATION|true|Traços de trigo em produto sem glúten na lista
+DEC-016|SOY@PREFERENCE|ALÉRGICOS: CONTÉM SOJA.|COMPATIBLE|false|Preferência sinaliza mas não bloqueia a refeição
+DEC-017|MILK@MODERATE:INFORM_ONLY|ALÉRGICOS: CONTÉM SOJA.|COMPATIBLE|false|Política apenas informar não trava por falta de declaração
+DEC-018|MILK;SOY@PREFERENCE|ALÉRGICOS: CONTÉM SOJA. NÃO CONTÉM LEITE.|COMPATIBLE|false|Restrição crítica resolvida; preferência apenas anotada
+DEC-019|PEANUT@CRITICAL|ALÉRGICOS: PODE CONTER AMENDOIM.|NEEDS_CONFIRMATION|true|Traços em restrição crítica nunca viram compatível

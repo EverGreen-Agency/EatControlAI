@@ -36,6 +36,8 @@ android {
     }
     buildFeatures {
         compose = true
+        // A tela de Laboratório só aparece em build de debug (BuildConfig.DEBUG).
+        buildConfig = true
     }
     testOptions {
         unitTests {

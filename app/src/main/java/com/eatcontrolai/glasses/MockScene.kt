@@ -1,5 +1,7 @@
 package com.eatcontrolai.glasses
 
+import com.eatcontrolai.core.model.DecisionState
+
 /**
  * Uma cena que o mock "enxerga".
  *
@@ -11,13 +13,17 @@ data class MockScene(
     val id: String,
     val title: String,
     val subtitle: String,
-    val labelText: String
+    val labelText: String,
+    /** Estado esperado para o perfil de demonstração (restrição crítica a leite). */
+    val expectedForMilkProfile: DecisionState
 )
 
 /**
  * Cenários de demonstração, escritos no formato de rotulagem brasileira (RDC 26/2015).
  *
  * Cada um existe para exercitar um estado de decisão diferente — inclusive os desconfortáveis.
+ * O campo [MockScene.expectedForMilkProfile] transforma esta lista no gabarito do benchmark de OCR:
+ * um modelo que lê mal produz decisão errada, e isso aparece como número.
  */
 object MockScenes {
 
@@ -26,6 +32,7 @@ object MockScenes {
             id = "biscoito_recheado",
             title = "Biscoito recheado",
             subtitle = "declaração explícita de leite",
+            expectedForMilkProfile = DecisionState.INCOMPATIBLE,
             labelText = """
                 BISCOITO RECHEADO SABOR CHOCOLATE
                 INGREDIENTES: FARINHA DE TRIGO ENRIQUECIDA COM FERRO E ÁCIDO FÓLICO,
@@ -39,6 +46,7 @@ object MockScenes {
             id = "iogurte_zero_lactose",
             title = "Iogurte \"zero lactose\"",
             subtitle = "marketing na frente, leite no verso",
+            expectedForMilkProfile = DecisionState.INCOMPATIBLE,
             labelText = """
                 IOGURTE INTEGRAL ZERO LACTOSE
                 INGREDIENTES: LEITE DESNATADO, PREPARADO DE MORANGO, FERMENTO LÁCTEO,
@@ -50,9 +58,10 @@ object MockScenes {
             id = "bebida_aveia",
             title = "Bebida vegetal de aveia",
             subtitle = "ausência declarada explicitamente",
+            expectedForMilkProfile = DecisionState.COMPATIBLE,
             labelText = """
                 BEBIDA VEGETAL DE AVEIA
-                INGREDIENTES: ÁGUA, AVEIA INTEGRAL (12%), ÓLEO DE GIRASSOL E SAL MARINHO.
+                INGREDIENTES: ÁGUA, AVEIA INTEGRAL, ÓLEO DE GIRASSOL E SAL MARINHO.
                 ALÉRGICOS: CONTÉM AVEIA. NÃO CONTÉM LEITE.
             """.trimIndent()
         ),
@@ -60,6 +69,7 @@ object MockScenes {
             id = "barra_proteina",
             title = "Barra de proteína",
             subtitle = "contaminação cruzada possível",
+            expectedForMilkProfile = DecisionState.NEEDS_CONFIRMATION,
             labelText = """
                 BARRA DE PROTEÍNA VEGETAL
                 INGREDIENTES: PROTEÍNA ISOLADA DE ERVILHA, TÂMARAS, CACAU E ÓLEO DE COCO.
@@ -70,6 +80,7 @@ object MockScenes {
             id = "embalagem_promocional",
             title = "Frente da embalagem",
             subtitle = "sem informação útil",
+            expectedForMilkProfile = DecisionState.INSUFFICIENT_INFORMATION,
             labelText = """
                 NOVO!
                 LEVE 3 PAGUE 2

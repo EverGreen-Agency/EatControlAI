@@ -2,6 +2,9 @@ package com.eatcontrolai.benchmark
 
 import com.eatcontrolai.core.model.Allergen
 import com.eatcontrolai.core.model.DecisionState
+import com.eatcontrolai.core.model.Restriction
+import com.eatcontrolai.core.model.RestrictionSeverity
+import com.eatcontrolai.core.model.UncertaintyPolicy
 import com.eatcontrolai.core.model.UserProfile
 import com.eatcontrolai.domain.decision.FoodDecisionEngine
 import com.eatcontrolai.domain.evidence.EvidenceBuilder
@@ -23,7 +26,7 @@ class DecisionScenariosTest {
 
     private data class Scenario(
         val id: String,
-        val restrictions: Set<Allergen>,
+        val restrictions: Set<Restriction>,
         val labelText: String,
         val expected: DecisionState,
         val critical: Boolean,
@@ -85,7 +88,7 @@ class DecisionScenariosTest {
                     id = cols[0].trim(),
                     restrictions = cols[1].split(";")
                         .filter { it.isNotBlank() }
-                        .map { Allergen.valueOf(it.trim()) }
+                        .map { parseRestriction(it.trim()) }
                         .toSet(),
                     labelText = cols[2],
                     expected = DecisionState.valueOf(cols[3].trim()),
@@ -93,5 +96,22 @@ class DecisionScenariosTest {
                     notes = cols[5].trim()
                 )
             }
+    }
+
+    /** Sintaxe do CSV: `ALERGENO[@SEVERIDADE][:POLITICA]`. */
+    private fun parseRestriction(spec: String): Restriction {
+        val (allergenAndSeverity, policy) = spec.split(":").let {
+            it[0] to it.getOrNull(1)
+        }
+        val (allergen, severity) = allergenAndSeverity.split("@").let {
+            it[0] to it.getOrNull(1)
+        }
+        return Restriction(
+            allergen = Allergen.valueOf(allergen),
+            severity = severity?.let { RestrictionSeverity.valueOf(it) }
+                ?: RestrictionSeverity.CRITICAL,
+            uncertaintyPolicy = policy?.let { UncertaintyPolicy.valueOf(it) }
+                ?: UncertaintyPolicy.ASK_CONFIRMATION
+        )
     }
 }

@@ -1,58 +1,38 @@
 package com.eatcontrolai.ui.theme
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+private val EatControlColorScheme = darkColorScheme(
+    primary = EcColors.Mint,
+    onPrimary = EcColors.OnMint,
+    secondary = EcColors.Blue,
+    onSecondary = EcColors.TextPrimary,
+    tertiary = EcColors.Purple,
+    background = EcColors.Background,
+    onBackground = EcColors.TextPrimary,
+    surface = EcColors.Surface,
+    onSurface = EcColors.TextPrimary,
+    surfaceVariant = EcColors.SurfaceRaised,
+    onSurfaceVariant = EcColors.TextSoft,
+    outline = EcColors.TextMuted,
+    outlineVariant = EcColors.Line,
+    error = EcColors.Red,
+    onError = EcColors.OnMint
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-)
-
+/**
+ * O app é escuro em qualquer configuração do sistema — [isSystemInDarkTheme] é ignorado de
+ * propósito para que a demo tenha aparência previsível em qualquer aparelho, inclusive no celular
+ * emprestado pela organização no dia do hackathon.
+ */
 @Composable
-fun EatControlAITheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
-) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
+fun EatControlAITheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
+        colorScheme = EatControlColorScheme,
+        typography = EatControlTypography,
         content = content
     )
 }

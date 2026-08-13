@@ -13,12 +13,29 @@ import com.eatcontrolai.inference.InferenceMeta
  *  - [MockGlassesGateway] — funciona hoje, sem hardware e sem SDK;
  *  - [DatGlassesGateway] — bloqueada até `docs/adr/0006-dat-version.md` sair de TODO.
  */
+/**
+ * Estado do dispositivo para a UI.
+ *
+ * [batteryPercent] é nulo quando a fonte não reporta bateria — e o mock não reporta. A tela mostra
+ * "—" nesse caso em vez de um número inventado.
+ */
+data class GlassesStatus(
+    val sourceLabel: String,
+    val isMock: Boolean,
+    val connected: Boolean,
+    val batteryPercent: Int? = null,
+    val cameraReady: Boolean = false,
+    val audioReady: Boolean = false
+)
+
 interface GlassesGateway {
 
     /** Identificação legível da fonte de captura, para a UI e para o log de métricas. */
     val sourceId: String
 
     val isConnected: Boolean
+
+    val status: GlassesStatus
 
     suspend fun connect()
 
@@ -44,6 +61,11 @@ interface GlassesGateway {
 class DatGlassesGateway : GlassesGateway {
     override val sourceId: String = "dat_glasses"
     override val isConnected: Boolean = false
+    override val status = GlassesStatus(
+        sourceLabel = "Ray-Ban Meta (DAT 0.9.0)",
+        isMock = false,
+        connected = false
+    )
     override suspend fun connect() = TODO("Integrar a versão do DAT registrada no ADR-0006")
     override suspend fun disconnect() = TODO("Integrar DAT")
     override suspend fun capturePhoto(): ByteArray = TODO("Integrar câmera via DAT")
