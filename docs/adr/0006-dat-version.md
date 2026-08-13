@@ -54,6 +54,32 @@ device é alimentado pela câmera do telefone.
 Adotar a **0.9.0** assim que os dois bloqueios abaixo forem resolvidos, e manter todo o SDK dentro de
 `DatGlassesGateway`, atrás da interface `GlassesGateway` já existente.
 
+## Hardware compatível
+
+Ray-Ban Meta (Gen 1 e Gen 2), Ray-Ban Meta Optics e Meta Ray-Ban Display. Confirmar qual modelo o
+integrante da equipe possui — é o primeiro item de `checklists/REAL_GLASSES_TEST.md`.
+
+## Como o app é ativado
+
+O toolkit **não** dá stream contínuo por padrão. O fluxo é explícito:
+
+```text
+Wearables.createSession(...)   → abre a sessão
+  → attach de capability       → câmera (foto ou stream) / microfone
+  → captura                    → foto única com EXIF e correção de orientação
+  → fim da sessão
+```
+
+O `Stream` é uma *capability* que precisa ser anexada de propósito; a foto é um disparo. Ou seja, a
+arquitetura do SDK já empurra para captura sob demanda, que é o que o `NFR-009` pede e o que o
+checkpoint de bateria do edital cobra.
+
+O Developer Center pede justificativa de permissão separada para **câmera, microfone e invocação por
+voz** — o que indica que existe um caminho de invocação por voz para app de terceiro. Confirmar o
+gatilho exato na palestra de DAT do Ideathon (15/08, 10h30).
+
+Apps em developer mode aparecem para o usuário em **Meta AI → App connections → Developer mode apps**.
+
 ## Bloqueios (nenhum é técnico — são de credencial)
 
 1. **Token do GitHub com escopo `read:packages`.** Sem ele o Gradle não baixa nem o `mwdat-core` nem
