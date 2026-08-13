@@ -16,10 +16,10 @@
    verdade), ambas com resposta por áudio e latência medida por etapa.
 2. **Voz funciona**: reconhecimento on-device escolhe a trilha e dispara a análise.
 3. **Três fontes de captura** atrás da mesma interface: óculos simulados, câmera do celular
-   (CameraX) e — quando as credenciais saírem — o DAT.
-4. **50 testes passam**, DSR em 100% (19/19). Release com R8 e split por ABI: **22,2 MB** no
-   aparelho-alvo, contra 76 MB do debug.
-5. O que falta para o DAT são **duas credenciais**, nenhuma técnica. Ver §5-A.
+   (CameraX) e o DAT — este último escrito sobre a API real, aguardando validação em hardware.
+4. **50 testes passam**, DSR em 100% (19/19). Release com R8 e split por ABI: **30,2 MB** no
+   aparelho-alvo, contra 130 MB do debug.
+5. **O SDK do DAT está integrado** e o `DatGlassesGateway` compila contra a API 0.9.0. Ver §5-A.
 
 ---
 
@@ -135,17 +135,22 @@ wearable. E não existe percentual de confiança visual, porque não existe mode
 
 ## 5. Achados e pendências
 
-### ⚠️ A — DAT: duas credenciais, nenhuma técnica
+### ⚠️ A — DAT integrado, falta validar em hardware
 
-Versão **0.9.0**, artefatos `com.meta.wearable:mwdat-core`, `mwdat-camera` e `mwdat-mockdevice`
-(o `mwdat-display` não serve — os óculos do programa não têm display). Falta:
+O SDK **0.9.0** resolve e compila: `mwdat-core`, `mwdat-camera` e `mwdat-mockdevice` (este só em
+debug). `DatGlassesGateway` usa o ciclo real de sessão. O mapa completo da API, levantado por
+inspeção dos AARs, está no `ADR-0006`.
 
-1. **Token do GitHub com escopo `read:packages`** — o SDK está no GitHub Packages, não no Maven
-   Central.
-2. **Projeto no Wearables Developer Center** — emite `APPLICATION_ID` e `CLIENT_TOKEN`.
+O que falta é hardware:
 
-O **Mock Device Kit oficial da Meta está atrás das mesmas credenciais**. É por isso que o
-`MockGlassesGateway` existe.
+- confirmar o formato do frame (assumimos NV21 com `compressVideo = false`);
+- entender `PhotoData`, que é uma interface **vazia** na 0.9.0 — `capturePhoto()` existe mas não
+  expõe os bytes pela API pública;
+- preencher **Package** e **App signature** na Configuration do Developer Center e ligar **Camera
+  access**.
+
+Enquanto isso, o gateway fica fora do `CaptureSourceRouter`: botão que não funciona é pior que
+ausência de botão.
 
 ### ⚠️ B — Base de produtos é catálogo de demonstração
 
@@ -202,9 +207,9 @@ caiu de 68 MB para 22 MB.
 
 | Build | Tamanho |
 | :--- | ---: |
-| Debug universal | 76 MB |
-| Release universal (R8) | 67,7 MB |
-| **Release arm64-v8a** | **22,2 MB** |
+| Debug universal | 130 MB |
+| Release universal (R8) | 89,6 MB |
+| **Release arm64-v8a** | **30,2 MB** |
 | Modelos de IA embarcados | 2,4 MB |
 
 O peso nunca foi a inteligência: são bibliotecas nativas em múltiplas ABIs.
