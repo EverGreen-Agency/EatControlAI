@@ -1,0 +1,35 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+**/build/
+.env
+*.keystore
+*.jks
+models/private/
+datasets/raw/
+benchmark/results/
+
+# Transcrições de sessões de IDE/assistente — ruído local, não são artefato do projeto.
+# (.codex-history/ é inclusive de outro projeto: EMDCREDITO.)
+.codex-history/
+.claude-code-history/
+
+# PDFs dos cursos da Meta: 150 MB de material que todo integrante já acessa pelo programa.
+# Ficam locais para não pesar o clone do time. Para versionar, remova estas duas linhas.
+docs/fontes/Un*_curso_meta.pdf
+docs/fontes/Un*_Material_de_apoio_Meta.pdf
+
+# Assets da página salva do plano de estudo (~180 arquivos JS/CSS). O .html continua versionado.
+docs/fontes/*_files/

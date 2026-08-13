@@ -1,0 +1,21 @@
+> Cenários do motor determinístico. Delimitador: | (o texto do rótulo contém vírgulas).
+> restrictions: alérgenos do perfil separados por ; — vazio significa perfil sem restrição.
+> critical=true: cenário que não pode falhar. Falha crítica reprova o build.
+> Este arquivo é a especificação executável do FoodDecisionEngine: cada linha vira um teste JUnit
+> e o conjunto produz o Decision Success Rate (DSR) de docs/METRICS.md.
+scenario_id|restrictions|label_text|expected_state|critical|notes
+DEC-001|MILK|ALÉRGICOS: CONTÉM LEITE.|INCOMPATIBLE|true|Declaração direta do fabricante
+DEC-002|MILK|ALÉRGICOS: CONTÉM: LEITE E SOJA.|INCOMPATIBLE|true|Dois-pontos depois de CONTÉM quebrava o casamento por substring
+DEC-003|MILK|INGREDIENTES: FARINHA DE TRIGO, AÇÚCAR, LEITE EM PÓ INTEGRAL.|INCOMPATIBLE|true|Declarado apenas na lista de ingredientes
+DEC-004|MILK|ALÉRGICOS: CONTÉM DERIVADOS DE LEITE.|INCOMPATIBLE|true|Sinônimo mais específico que a palavra base
+DEC-005|MILK|ALÉRGICOS: NÃO CONTÉM LEITE.|COMPATIBLE|false|Negação; casamento ingênuo dava incompatível
+DEC-006|MILK|ALÉRGICOS: PODE CONTER LEITE.|NEEDS_CONFIRMATION|true|Contaminação cruzada declarada
+DEC-007|MILK|ALÉRGICOS: CONTÉM TRIGO E SOJA.|NEEDS_CONFIRMATION|true|Rótulo lido não fala de leite; ausência não é permissão
+DEC-008|MILK|NOVO! LEVE 3 PAGUE 2. SABOR IRRESISTÍVEL.|INSUFFICIENT_INFORMATION|true|Frente da embalagem sem informação útil
+DEC-009|MILK|IOGURTE ZERO LACTOSE. INGREDIENTES: LEITE DESNATADO. ALÉRGICOS: CONTÉM LEITE.|INCOMPATIBLE|true|Marketing da frente contradiz o verso
+DEC-010|GLUTEN|ALÉRGICOS: NÃO CONTÉM GLÚTEN.|COMPATIBLE|false|Ausência declarada explicitamente
+DEC-011|MILK;PEANUT|ALÉRGICOS: CONTÉM LEITE. PODE CONTER AMENDOIM.|INCOMPATIBLE|true|Pior caso entre múltiplas restrições prevalece
+DEC-012|PEANUT|CONTÉM LEITE. FABRICADO EM LINHA QUE TAMBÉM PROCESSA AMENDOIM.|NEEDS_CONFIRMATION|true|Escopo de frase impede o amendoim de herdar CONTÉM
+DEC-013||ALÉRGICOS: CONTÉM LEITE.|COMPATIBLE|false|Perfil sem restrição cadastrada
+DEC-014|MILK|SEM LACTOSE. ALÉRGICOS: CONTÉM SOJA.|NEEDS_CONFIRMATION|true|Zero lactose não comprova ausência de proteína do leite
+DEC-015|GLUTEN|INGREDIENTES: ÁGUA, AMIDO DE MILHO, SAL. ALÉRGICOS: PODE CONTER TRIGO.|NEEDS_CONFIRMATION|true|Traços de trigo em produto sem glúten na lista

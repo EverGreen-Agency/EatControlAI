@@ -1,0 +1,21 @@
+# Checklist — Teste com óculos reais
+
+- [ ] Confirmar modelo de óculos suportado
+- [ ] Atualizar Meta AI app
+- [ ] Atualizar firmware dos óculos
+- [ ] Habilitar Developer Mode
+- [ ] Parear óculos com o telefone
+- [ ] Instalar build de desenvolvimento
+- [ ] Confirmar registro do app/DAT
+- [ ] Conceder permissões do Android
+- [ ] Conceder permissões do toolkit no fluxo Meta AI
+- [ ] Testar uma captura única
+- [ ] Testar 20 capturas sequenciais
+- [ ] Testar stream prolongado
+- [ ] Configurar HFP antes de iniciar fluxo com áudio
+- [ ] Testar STT com ruído de restaurante
+- [ ] Testar TTS
+- [ ] Medir p50/p95 end-to-end
+- [ ] Medir bateria/temperatura
+- [ ] Executar smoke test em modo avião
+- [ ] Registrar versão DAT, Meta AI, firmware e modelo do telefone

@@ -1,0 +1,35 @@
+tasks:
+  ocr:
+    providers:
+      - id: mlkit_text_v2
+        runtime: mlkit
+        status: baseline
+  barcode:
+    providers:
+      - id: mlkit_barcode
+        runtime: mlkit
+        status: baseline
+  object_detection:
+    providers:
+      - id: yolo_n_int8_litert
+        runtime: litert
+        status: candidate
+      - id: mediapipe_detector
+        runtime: mediapipe
+        status: candidate
+  stt:
+    providers:
+      - id: android_on_device_speech
+        runtime: android
+        status: baseline
+      - id: whisper_tiny_quantized
+        runtime: whisper_cpp
+        status: candidate
+  tts:
+    providers:
+      - id: android_tts
+        runtime: android
+        status: baseline
+      - id: piper
+        runtime: sherpa_onnx
+        status: candidate

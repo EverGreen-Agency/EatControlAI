@@ -1,0 +1,5 @@
+scenario_id,task,input_ref,expected,critical,notes
+OCR-001,ocr,datasets/labels/label_001.jpg,CONTAINS_MILK,true,Rótulo com declaração explícita
+BAR-001,barcode,datasets/barcodes/product_001.jpg,VALID_EAN,true,Código legível
+STT-001,stt,datasets/audio/can_i_eat.wav,posso comer isso,false,Comando curto pt-BR
+VIS-001,object_detection,datasets/plates/plate_001.jpg,FOOD_OBJECTS,false,Prato misto
