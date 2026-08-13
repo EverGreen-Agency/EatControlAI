@@ -1,8 +1,9 @@
 # ADR-0006 — Versão do Meta DAT
 
-Status: **Proposed** — coordenadas identificadas, integração bloqueada por credenciais
+Status: **Accepted** — Versão 0.9.0 fixada; isolamento arquitetural mantido via `GlassesGateway`
 
 ## Contexto
+
 
 O Meta Wearables Device Access Toolkit está em developer preview. O `README.md` deste repositório
 optou por não fixar versão até que houvesse decisão registrada. Esta ADR registra o levantamento
