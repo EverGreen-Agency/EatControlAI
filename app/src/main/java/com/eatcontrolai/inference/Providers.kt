@@ -30,8 +30,18 @@ interface BarcodeProvider {
     suspend fun decode(imageBytes: ByteArray): BarcodeResult
 }
 
+/**
+ * Reconhecimento de fala.
+ *
+ * O provider é dono da captura: o `SpeechRecognizer` do Android escuta o microfone direto, e uma
+ * implementação futura com Whisper também gravaria o próprio áudio. Passar PCM por fora obrigaria
+ * todo mundo a gravar do mesmo jeito.
+ */
 interface SttProvider {
-    suspend fun transcribe(audioPcm: ByteArray): SttResult
+    /** `false` quando o aparelho não tem reconhecimento disponível — a UI degrada em vez de quebrar. */
+    fun isAvailable(): Boolean
+
+    suspend fun transcribe(): SttResult
 }
 
 interface TtsProvider {
