@@ -1,6 +1,27 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+}
+
+/**
+ * Credenciais do Wearables Developer Center.
+ *
+ * Ficam em `local.properties` (ignorado pelo git) e entram no manifesto por placeholder. O
+ * `CLIENT_TOKEN` acaba dentro do APK de qualquer jeito — é assim que a atestação funciona — mas não
+ * há motivo para ele também morar no histórico do repositório.
+ *
+ *     mwdat_application_id=...
+ *     mwdat_client_token=AR|...|...
+ *
+ * Enquanto a integração roda em **Developer Mode**, a própria Meta orienta a **não** declarar esses
+ * meta-data no manifesto. O snippet correspondente está em `docs/adr/0006-dat-version.md` e só entra
+ * quando o app sair do modo de desenvolvimento.
+ */
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
 }
 
 android {
@@ -19,6 +40,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders["mwdat_application_id"] =
+            localProperties.getProperty("mwdat_application_id") ?: ""
+        manifestPlaceholders["mwdat_client_token"] =
+            localProperties.getProperty("mwdat_client_token") ?: ""
     }
 
     buildTypes {
@@ -89,6 +115,14 @@ dependencies {
 
     // Persistência local de perfil, privacidade e histórico (ADR-0002: sem nuvem no caminho crítico).
     implementation(libs.androidx.datastore.preferences)
+
+    // Meta Wearables Device Access Toolkit (ADR-0006). Exige token do GitHub com read:packages em
+    // local.properties — sem ele, o Gradle não resolve estes três artefatos.
+    implementation(libs.mwdat.core)
+    implementation(libs.mwdat.camera)
+    // Só em debug: o Mock Device Kit é ferramenta de desenvolvimento e não tem por que
+    // ser distribuído no APK de release.
+    debugImplementation(libs.mwdat.mockdevice)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

@@ -50,25 +50,3 @@ interface GlassesGateway {
     /** Reproduz a resposta. Nos óculos reais, sai pelos alto-falantes open-ear. */
     suspend fun playSpeech(text: String): InferenceMeta
 }
-
-/**
- * Implementação real sobre o Meta DAT.
- *
- * Intencionalmente não implementada: o `README.md` explica que nenhuma versão do DAT foi fixada
- * neste scaffold até que `docs/adr/0006` registre versão, coordenadas Gradle e known issues.
- * A palestra de DAT do Ideathon (15/08, 10h30) é o momento de resolver isso.
- */
-class DatGlassesGateway : GlassesGateway {
-    override val sourceId: String = "dat_glasses"
-    override val isConnected: Boolean = false
-    override val status = GlassesStatus(
-        sourceLabel = "Ray-Ban Meta (DAT 0.9.0)",
-        isMock = false,
-        connected = false
-    )
-    override suspend fun connect() = TODO("Integrar a versão do DAT registrada no ADR-0006")
-    override suspend fun disconnect() = TODO("Integrar DAT")
-    override suspend fun capturePhoto(): ByteArray = TODO("Integrar câmera via DAT")
-    override suspend fun startVoiceCapture(): ByteArray = TODO("Integrar microfone/HFP via DAT")
-    override suspend fun playSpeech(text: String): InferenceMeta = TODO("Rotear áudio para os óculos")
-}

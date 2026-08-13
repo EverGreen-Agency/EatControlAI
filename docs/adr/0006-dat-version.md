@@ -59,6 +59,52 @@ Adotar a **0.9.0** assim que os dois bloqueios abaixo forem resolvidos, e manter
 Ray-Ban Meta (Gen 1 e Gen 2), Ray-Ban Meta Optics e Meta Ray-Ban Display. Confirmar qual modelo o
 integrante da equipe possui — é o primeiro item de `checklists/REAL_GLASSES_TEST.md`.
 
+## Superfície da API (levantada por inspeção dos AARs em 13/08/2026)
+
+A documentação pública não descreve tudo, então o mapa abaixo veio de `javap` sobre os artefatos
+baixados. É o que `DatGlassesGateway` usa.
+
+```text
+Wearables.initialize(context)              → DatResult<Unit, WearablesError>
+Wearables.isDevMode                        → Boolean
+Wearables.registrationState                → StateFlow<RegistrationState>
+Wearables.devices                          → StateFlow<Set<DeviceIdentifier>>
+Wearables.startRegistration(activity)      → abre o fluxo de autorização no Meta AI
+Wearables.checkPermissionStatus(Permission)
+Wearables.createSession(DeviceSelector)    → DatResult<DeviceSession, DeviceSessionError>
+
+DeviceSession.start() / stop()
+DeviceSession.state                        → StateFlow<DeviceSessionState>
+DeviceSession.errors                       → SharedFlow<DeviceSessionError>
+session.addCamera(StreamConfiguration)     → DatResult<Camera, DeviceSessionError>   (extensão)
+session.removeCamera()
+
+Camera.state                               → StateFlow<CameraState>
+Camera.stream                              → Stream
+Stream.start() / stop()
+Stream.capturePhoto()                      → DatResult<PhotoData, CaptureError>   (suspend)
+Stream.videoStream                         → Flow<VideoFrame>
+VideoFrame(buffer: ByteBuffer, width, height, presentationTimeUs, isCompressed, isCodecConfig)
+
+DeviceSelector: AutoDeviceSelector | SpecificDeviceSelector
+VideoQuality: HIGH | MEDIUM | LOW
+StreamState: STARTING · STARTED · STREAMING · PAUSED · STOPPING · STOPPED · CLOSED
+```
+
+Duas descobertas que valem registro:
+
+- **`Permission` só tem `CAMERA`.** Não há permissão de microfone na 0.9.0, e não existe artefato de
+  áudio entre os publicados (`mwdat-core`, `mwdat-camera`, `mwdat-display`, `mwdat-mockdevice`). A
+  trilha de voz continua usando o microfone do telefone.
+- **`PhotoData` é uma interface vazia.** `capturePhoto()` existe e devolve `DatResult<PhotoData,
+  CaptureError>`, mas o tipo público não expõe membro nenhum — os bytes só existem na implementação
+  interna. Na prática, o disparo aciona o obturador e a imagem é lida do `videoStream`. Perguntar no
+  Ideathon se é limitação do preview ou se há caminho documentado.
+
+O Mock Device Kit oficial está disponível: `MockDeviceKit.enable(config)` e
+`pairGlasses(GlassesModel.RAYBAN_META | OAKLEY_META_HSTN | OAKLEY_META_VANGUARD |
+RAYBAN_META_OPTICS | META_GLASSES)`.
+
 ## Como o app é ativado
 
 O toolkit **não** dá stream contínuo por padrão. O fluxo é explícito:
@@ -80,7 +126,23 @@ gatilho exato na palestra de DAT do Ideathon (15/08, 10h30).
 
 Apps em developer mode aparecem para o usuário em **Meta AI → App connections → Developer mode apps**.
 
-## Bloqueios (nenhum é técnico — são de credencial)
+## Estado da integração
+
+- [x] Token do GitHub com `read:packages` em `local.properties`
+- [x] Repositório Maven configurado em `settings.gradle.kts`, restrito ao grupo `com.meta.wearable`
+- [x] Artefatos `mwdat-core`, `mwdat-camera` e `mwdat-mockdevice` resolvendo
+- [x] Projeto criado no Wearables Developer Center; `APPLICATION_ID` e `CLIENT_TOKEN` emitidos
+- [x] `DatGlassesGateway` escrito sobre a API real e compilando
+- [ ] Preencher **Package** (`com.eatcontrolai`) e **App signature** na Configuration
+- [ ] Ligar **Camera access** com justificativa
+- [ ] Validar captura em óculos reais — só então entra no `CaptureSourceRouter`
+- [ ] Confirmar o formato do frame (assumimos NV21 com `compressVideo = false`)
+
+Enquanto a captura não passar por hardware, o app usa `MockGlassesGateway` e `PhoneCameraGateway`.
+`DatGlassesGateway` fica construído e fora do seletor — botão que não funciona é pior que ausência
+de botão.
+
+## Bloqueios anteriores (resolvidos)
 
 1. **Token do GitHub com escopo `read:packages`.** Sem ele o Gradle não baixa nem o `mwdat-core` nem
    o `mwdat-mockdevice`. Vai em `local.properties` como `github_token=...` (o arquivo já está no
