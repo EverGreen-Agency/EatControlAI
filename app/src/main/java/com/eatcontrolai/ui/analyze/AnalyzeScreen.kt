@@ -127,6 +127,26 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                         color = EcColors.TextFaint
                     )
                 }
+                if (state.source == CaptureSource.DAT_GLASSES) {
+                    Spacer(Modifier.height(10.dp))
+                    OutlinedButton(
+                        onClick = {
+                            val activity = context.findActivity()
+                            if (activity == null) viewModel.showToast("Não consegui abrir o fluxo de pareamento.")
+                            else viewModel.registerDatGlasses(activity)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Parear e autorizar no Meta AI")
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Abre o app Meta AI para autorizar o Eat Control. Depois de aceitar, o " +
+                            "controle volta para cá e a sessão com os óculos é aberta sob demanda.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = EcColors.TextFaint
+                    )
+                }
             }
         }
 
@@ -420,4 +440,11 @@ private fun ModeCard(
             color = if (mode.ready) EcColors.Mint else EcColors.TextFaint
         )
     }
+}
+
+/** O fluxo de autorização do DAT precisa de uma Activity; o Compose só entrega um Context. */
+private tailrec fun android.content.Context.findActivity(): android.app.Activity? = when (this) {
+    is android.app.Activity -> this
+    is android.content.ContextWrapper -> baseContext.findActivity()
+    else -> null
 }

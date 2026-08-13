@@ -13,6 +13,7 @@ import com.eatcontrolai.data.PrivacyRepository
 import com.eatcontrolai.data.ProfileRepository
 import com.eatcontrolai.domain.decision.FoodDecisionEngine
 import com.eatcontrolai.glasses.CaptureSourceRouter
+import com.eatcontrolai.glasses.DatGlassesGateway
 import com.eatcontrolai.glasses.MockGlassesGateway
 import com.eatcontrolai.glasses.PhoneCameraGateway
 import com.eatcontrolai.inference.ModelRegistry
@@ -51,8 +52,10 @@ class AppContainer(application: Application) {
 
     val phoneCamera = PhoneCameraGateway(application, tts)
 
+    val datGlasses = DatGlassesGateway(application, tts)
+
     /** Fonte de captura ativa. Trocar de fonte não recria nada a jusante. */
-    val glasses = CaptureSourceRouter(mockGlasses, phoneCamera)
+    val glasses = CaptureSourceRouter(mockGlasses, phoneCamera, datGlasses)
 
     /**
      * **Ponto único de troca de modelos.**

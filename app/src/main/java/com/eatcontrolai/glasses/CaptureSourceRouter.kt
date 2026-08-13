@@ -4,8 +4,8 @@ import com.eatcontrolai.inference.InferenceMeta
 
 enum class CaptureSource(val label: String) {
     MOCK_GLASSES("Óculos simulados"),
-    PHONE_CAMERA("Câmera do celular")
-    // DAT_GLASSES entra aqui quando o ADR-0006 for destravado.
+    PHONE_CAMERA("Câmera do celular"),
+    DAT_GLASSES("Ray-Ban Meta")
 }
 
 /**
@@ -17,7 +17,8 @@ enum class CaptureSource(val label: String) {
  */
 class CaptureSourceRouter(
     private val mock: MockGlassesGateway,
-    private val phone: PhoneCameraGateway
+    private val phone: PhoneCameraGateway,
+    private val dat: DatGlassesGateway
 ) : GlassesGateway {
 
     var active: CaptureSource = CaptureSource.MOCK_GLASSES
@@ -27,11 +28,13 @@ class CaptureSourceRouter(
         active = source
     }
 
-    private val current: GlassesGateway
-        get() = when (active) {
-            CaptureSource.MOCK_GLASSES -> mock
-            CaptureSource.PHONE_CAMERA -> phone
-        }
+    fun gatewayFor(source: CaptureSource): GlassesGateway = when (source) {
+        CaptureSource.MOCK_GLASSES -> mock
+        CaptureSource.PHONE_CAMERA -> phone
+        CaptureSource.DAT_GLASSES -> dat
+    }
+
+    private val current: GlassesGateway get() = gatewayFor(active)
 
     override val sourceId: String get() = current.sourceId
     override val isConnected: Boolean get() = current.isConnected

@@ -1,5 +1,6 @@
 package com.eatcontrolai.ui
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -151,6 +152,35 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
         container.glasses.select(source)
         _analyze.update { it.copy(source = source, result = null, error = null) }
         refreshGlasses()
+
+        // Os óculos reais precisam abrir sessão antes de qualquer captura.
+        if (source == CaptureSource.DAT_GLASSES) connectDatGlasses()
+    }
+
+    /**
+     * Abre o fluxo de autorização do DAT no app Meta AI.
+     *
+     * O controle volta para cá pelo deep link declarado no manifesto. Precisa de uma Activity porque
+     * é o Meta AI que apresenta a tela de consentimento.
+     */
+    fun registerDatGlasses(activity: Activity) {
+        container.datGlasses.initialize()
+            .onSuccess { container.datGlasses.startRegistration(activity) }
+            .onFailure { showToast("Não consegui iniciar o DAT: ${it.message}") }
+    }
+
+    private fun connectDatGlasses() {
+        viewModelScope.launch {
+            runCatching { container.datGlasses.connect() }
+                .onSuccess {
+                    refreshGlasses()
+                    showToast("Sessão aberta com os óculos.")
+                }
+                .onFailure {
+                    refreshGlasses()
+                    _analyze.update { state -> state.copy(error = it.message) }
+                }
+        }
     }
 
     /** Chamado pela tela quando a câmera do celular liga ou desliga. */
