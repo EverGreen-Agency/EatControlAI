@@ -32,6 +32,23 @@ android {
         }
     }
 
+    /**
+     * As bibliotecas nativas do ML Kit em quatro ABIs respondem por ~90% do APK. Separar por ABI
+     * derruba o pacote instalado de ~68 MB para ~22 MB no aparelho-alvo, o que conta no checkpoint
+     * de eficiência do edital e em `docs/METRICS.md` (package size).
+     *
+     * Só liga em build de release: em debug, um APK universal mantém o ciclo editar-rodar rápido e
+     * funciona tanto no celular quanto no emulador x86.
+     */
+    splits {
+        abi {
+            isEnable = gradle.startParameter.taskNames.any { it.contains("Release") }
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64")
+            isUniversalApk = true
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -64,8 +81,20 @@ dependencies {
     implementation(libs.mlkit.text.recognition)
     implementation(libs.mlkit.barcode.scanning)
 
+    // Câmera do celular como fonte de frame alternativa aos óculos (FR-002).
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+
+    // Persistência local de perfil, privacidade e histórico (ADR-0002: sem nuvem no caminho crítico).
+    implementation(libs.androidx.datastore.preferences)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    // O `org.json` do android.jar é um stub sem implementação: em teste JVM devolve null em tudo.
+    // Esta dependência traz a implementação real para os testes de serialização.
+    testImplementation(libs.org.json)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
