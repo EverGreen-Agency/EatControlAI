@@ -20,6 +20,10 @@
     <!-- FR-006: consulta a base de produtos por código de barras. Fora do caminho crítico (ADR-0002). -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- FR-001: comunicação com os óculos pelo Meta DAT (ADR-0006). -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
     <application
         android:name=".EatControlApp"
         android:allowBackup="true"
@@ -40,6 +44,21 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!--
+                Retorno do app Meta AI após o fluxo de autorização do DAT.
+                É assim que o controle volta para cá quando o usuário conclui o pareamento:
+                Wearables.startRegistration(activity) abre o Meta AI, e o Meta AI devolve por
+                deep link neste esquema. Ver docs/adr/0006-dat-version.md.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="eatcontrolai" />
             </intent-filter>
         </activity>
     </application>
