@@ -23,3 +23,6 @@
 - NFR-005: telemetria não deve armazenar imagem bruta por padrão.
 - NFR-006: inferência deve ser benchmarkada em aparelho físico.
 - NFR-007: cada provider deve expor versão, runtime, hardware e métricas.
+- NFR-008: privacidade e proteção de dados — retenção zero de imagens e áudios brutos por padrão; telemetria restrita a dados agregados em memória (LGPD/privacy-first).
+- NFR-009: eficiência de bateria e recursos — captura ativada sob demanda (sem streaming contínuo ininterrupto de câmera/microfone), otimizando o consumo de energia no smartphone e nos óculos.
+
