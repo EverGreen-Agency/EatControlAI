@@ -13,21 +13,29 @@ import com.eatcontrolai.metrics.Stage
 import com.eatcontrolai.metrics.StageMetric
 import java.util.UUID
 
+/** Trilhas de análise implementadas ponta a ponta. */
+enum class AnalysisTrack { LABEL, BARCODE }
+
 data class InteractionResult(
     val interactionId: String,
+    val track: AnalysisTrack,
     val decision: Decision,
     val recognizedText: String,
+    val scannedEan: String?,
+    val productName: String?,
     val frameJpeg: ByteArray,
     val metrics: List<StageMetric>
 ) {
+    // frameJpeg é ByteArray: equals/hashCode gerados por data class comparariam referência.
     override fun equals(other: Any?) = this === other
     override fun hashCode() = interactionId.hashCode()
 }
 
 /**
- * Costura as verticais do produto (UF-01 Rótulo e UF-02 Barcode de `docs/USER_FLOWS.md`):
+ * Costura as verticais do produto (UF-01 rótulo e UF-02 barcode de `docs/USER_FLOWS.md`).
  *
- * `captura → OCR / Barcode → parser / lookup → evidência → regra determinística → resposta curta → áudio`
+ * A pipeline é a mesma independentemente de o frame vir dos óculos, da câmera do celular ou do mock
+ * (`contexto-gpt.md` §13) — é o [GlassesGateway] que muda, não isto.
  */
 class InteractionOrchestrator(
     private val glasses: GlassesGateway,
@@ -37,7 +45,11 @@ class InteractionOrchestrator(
     private val barcodeRepository: BarcodeRepository = BarcodeRepository()
 ) {
 
-    suspend fun analyzeLabel(profile: UserProfile, speakResult: Boolean = true): InteractionResult {
+    suspend fun analyze(
+        track: AnalysisTrack,
+        profile: UserProfile,
+        speakResult: Boolean = true
+    ): InteractionResult {
         val interactionId = UUID.randomUUID().toString()
         val startedAt = System.nanoTime()
 
@@ -45,27 +57,13 @@ class InteractionOrchestrator(
         val frame = glasses.capturePhoto()
         record(interactionId, Stage.CAPTURE, sinceMs(captureStart), glasses.sourceId)
 
-        val ocr = models.current().ocr.recognize(frame)
-        record(interactionId, Stage.OCR, ocr.meta.latencyMs, ocr.meta.providerId, ocr.meta.version)
-
-        val ruleStart = System.nanoTime()
-        val evidenceList = mutableListOf<Evidence>()
-        evidenceList.addAll(EvidenceBuilder.fromLabelOcr(ocr.text, ocr.meta.providerId, ocr.meta.version))
-
-        // Se houver leitor de barcode ativo, tenta extrair barcode do frame
-        val barcodeProvider = models.current().barcode
-        if (barcodeProvider != null) {
-            val barcodeResult = barcodeProvider.decode(frame)
-            record(interactionId, Stage.BARCODE, barcodeResult.meta.latencyMs, barcodeResult.meta.providerId, barcodeResult.meta.version)
-            if (!barcodeResult.rawValue.isNullOrBlank()) {
-                val product = barcodeRepository.findByEan(barcodeResult.rawValue)
-                if (product != null) {
-                    evidenceList.add(barcodeRepository.toEvidence(product))
-                }
-            }
+        val perception = when (track) {
+            AnalysisTrack.LABEL -> readLabel(interactionId, frame)
+            AnalysisTrack.BARCODE -> readBarcode(interactionId, frame)
         }
 
-        val decision = decisionEngine.decide(profile, evidenceList)
+        val ruleStart = System.nanoTime()
+        val decision = decisionEngine.decide(profile, perception.evidence)
         record(interactionId, Stage.RULE_ENGINE, sinceMs(ruleStart), "deterministic_rules_v1")
 
         if (speakResult) {
@@ -77,10 +75,71 @@ class InteractionOrchestrator(
 
         return InteractionResult(
             interactionId = interactionId,
+            track = track,
             decision = decision,
-            recognizedText = ocr.text,
+            recognizedText = perception.recognizedText,
+            scannedEan = perception.ean,
+            productName = perception.productName,
             frameJpeg = frame,
             metrics = metrics.snapshot(interactionId)
+        )
+    }
+
+    private data class Perception(
+        val evidence: List<Evidence>,
+        val recognizedText: String = "",
+        val ean: String? = null,
+        val productName: String? = null
+    )
+
+    private suspend fun readLabel(interactionId: String, frame: ByteArray): Perception {
+        val ocr = models.current().ocr.recognize(frame)
+        record(interactionId, Stage.OCR, ocr.meta.latencyMs, ocr.meta.providerId, ocr.meta.version)
+        return Perception(
+            evidence = EvidenceBuilder.fromLabelOcr(ocr.text, ocr.meta.providerId, ocr.meta.version),
+            recognizedText = ocr.text
+        )
+    }
+
+    /**
+     * Barcode primeiro, OCR como plano B.
+     *
+     * Quando o EAN resolve no catálogo, a composição vem de base estruturada — rank 3, acima de
+     * qualquer OCR. Nesse caso não vale gastar a latência de OCR. Quando o EAN não resolve, o que
+     * sobra é o que estiver escrito na embalagem, e aí o OCR entra.
+     */
+    private suspend fun readBarcode(interactionId: String, frame: ByteArray): Perception {
+        val provider = models.current().barcode
+            ?: return Perception(
+                evidence = emptyList(),
+                recognizedText = "Nenhum leitor de código de barras configurado."
+            )
+
+        val scan = provider.decode(frame)
+        record(interactionId, Stage.BARCODE, scan.meta.latencyMs, scan.meta.providerId, scan.meta.version)
+
+        val ean = scan.rawValue
+        if (ean.isNullOrBlank()) {
+            return Perception(evidence = emptyList(), recognizedText = "Nenhum código de barras legível.")
+        }
+
+        val product = barcodeRepository.findByEan(ean)
+        if (product != null) {
+            return Perception(
+                evidence = listOf(barcodeRepository.toEvidence(product)),
+                recognizedText = product.ingredientsText,
+                ean = ean,
+                productName = product.productName
+            )
+        }
+
+        // EAN lido, produto desconhecido: sabemos a identidade, não a composição.
+        val ocr = models.current().ocr.recognize(frame)
+        record(interactionId, Stage.OCR, ocr.meta.latencyMs, ocr.meta.providerId, ocr.meta.version)
+        return Perception(
+            evidence = EvidenceBuilder.fromLabelOcr(ocr.text, ocr.meta.providerId, ocr.meta.version),
+            recognizedText = ocr.text,
+            ean = ean
         )
     }
 

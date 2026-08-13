@@ -69,7 +69,8 @@ class ProviderBenchmark(
     suspend fun run(
         provider: OcrProvider,
         profile: UserProfile,
-        scenes: List<MockScene> = MockScenes.all,
+        /** Só cenas de rótulo: é OCR que está sendo medido, não leitura de barras. */
+        scenes: List<MockScene> = MockScenes.labels,
         repetitions: Int = 5,
         warmup: Int = 2
     ): Result {

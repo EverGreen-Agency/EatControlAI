@@ -23,6 +23,10 @@ class MockGlassesGateway(
     private val scenes: List<MockScene> = MockScenes.all
 ) : GlassesGateway {
 
+    init {
+        require(scenes.isNotEmpty()) { "MockGlassesGateway precisa de ao menos uma cena" }
+    }
+
     override val sourceId: String = "mock_glasses"
 
     override var isConnected: Boolean = false
@@ -61,11 +65,28 @@ class MockGlassesGateway(
     override suspend fun capturePhoto(): ByteArray {
         // Latência simulada da captura + transporte dos óculos para o telefone.
         delay(SIMULATED_CAPTURE_MS)
-        return MockLabelRenderer.render(currentScene.labelText)
+        val scene = currentScene
+        return when (scene.kind) {
+            SceneKind.LABEL -> MockLabelRenderer.render(scene.labelText)
+            SceneKind.BARCODE -> Ean13Renderer.render(
+                ean = requireNonNullEan(scene),
+                productName = scene.productName,
+                brand = scene.brand
+            )
+        }
     }
 
+    private fun requireNonNullEan(scene: MockScene) =
+        scene.ean ?: error("Cena de código de barras sem EAN: ${scene.id}")
+
+    /**
+     * O microfone dos óculos ainda não existe (DAT bloqueado no ADR-0006). A trilha de voz usa o
+     * microfone do telefone diretamente pelo `SttProvider`, que faz a própria captura.
+     */
     override suspend fun startVoiceCapture(): ByteArray {
-        throw UnsupportedOperationException("Trilha de STT ainda não implementada")
+        throw UnsupportedOperationException(
+            "A fonte simulada não tem microfone. A captura de voz é feita pelo SttProvider."
+        )
     }
 
     override suspend fun playSpeech(text: String): InferenceMeta = tts.speak(text)

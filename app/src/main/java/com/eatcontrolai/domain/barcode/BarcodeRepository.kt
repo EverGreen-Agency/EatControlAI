@@ -1,65 +1,74 @@
 package com.eatcontrolai.domain.barcode
 
-import com.eatcontrolai.core.model.Allergen
-import com.eatcontrolai.core.model.ClaimPolarity
 import com.eatcontrolai.core.model.Evidence
 import com.eatcontrolai.core.model.EvidenceType
 import com.eatcontrolai.core.model.LabelClaim
+import com.eatcontrolai.domain.label.LabelParser
 
 data class ProductBarcodeData(
     val ean: String,
     val productName: String,
     val brand: String,
-    val ingredientsText: String,
-    val declaredClaims: List<LabelClaim> = emptyList()
-)
+    val ingredientsText: String
+) {
+    /**
+     * As afirmações vêm do **mesmo** [LabelParser] que interpreta rótulo fotografado.
+     *
+     * Escrevê-las à mão ao lado do texto abriria espaço para divergência: o catálogo diria uma coisa
+     * e o parser outra, sobre exatamente o mesmo produto.
+     */
+    val claims: List<LabelClaim> get() = LabelParser.parse(ingredientsText)
+}
 
 /**
- * Repositório local de produtos por código de barras (`docs/DATA_SOURCES.md`).
+ * Catálogo local de produtos por código de barras.
  *
- * Cache offline contendo produtos representativos do mercado brasileiro (Open Food Facts / TBCA),
- * garantindo consulta rápida sem dependência de rede no momento da decisão (NFR-001).
+ * **Este é um catálogo de demonstração, não um espelho do Open Food Facts.** Os EANs e marcas são
+ * fictícios e existem para tornar o fluxo de barcode demonstrável sem rede (NFR-001). A integração
+ * real com Open Food Facts / TBCA está em `docs/DATA_SOURCES.md` e é trabalho seguinte — quando
+ * existir, entra atrás desta mesma interface, com `source` apontando para a base de verdade.
  */
 class BarcodeRepository {
 
-    private val catalog = mapOf(
-        "7891000100011" to ProductBarcodeData(
-            ean = "7891000100011",
+    private val catalog = listOf(
+        ProductBarcodeData(
+            ean = "7891000100103",
             productName = "Iogurte Natural Integral",
             brand = "Marca Demo",
-            ingredientsText = "Leite integral e fermento lácteo. CONTÉM LEITE. CONTÉM LACTOSE.",
-            declaredClaims = listOf(
-                LabelClaim(allergen = Allergen.MILK, polarity = ClaimPolarity.CONTAINS, sourceText = "CONTÉM LEITE")
-            )
+            ingredientsText = "INGREDIENTES: LEITE INTEGRAL E FERMENTO LÁCTEO. " +
+                "ALÉRGICOS: CONTÉM LEITE."
         ),
-        "7891000200022" to ProductBarcodeData(
-            ean = "7891000200022",
+        ProductBarcodeData(
+            ean = "7891000200100",
             productName = "Iogurte Zero Lactose",
             brand = "Marca Demo",
-            ingredientsText = "Leite desnatado, enzima lactase e fermento lácteo. CONTÉM LEITE. NÃO CONTÉM LACTOSE.",
-            declaredClaims = listOf(
-                LabelClaim(allergen = Allergen.MILK, polarity = ClaimPolarity.CONTAINS, sourceText = "CONTÉM LEITE")
-            )
+            ingredientsText = "IOGURTE ZERO LACTOSE. INGREDIENTES: LEITE DESNATADO, ENZIMA LACTASE " +
+                "E FERMENTO LÁCTEO. ALÉRGICOS: CONTÉM LEITE."
         ),
-        "7891000300033" to ProductBarcodeData(
-            ean = "7891000300033",
+        ProductBarcodeData(
+            ean = "7891000300107",
             productName = "Bebida de Amêndoa Sem Açúcar",
             brand = "Marca Veg",
-            ingredientsText = "Água, amêndoas, cálcio e sal marinho. NÃO CONTÉM LEITE. NÃO CONTÉM GLÚTEN.",
-            declaredClaims = listOf(
-                LabelClaim(allergen = Allergen.MILK, polarity = ClaimPolarity.FREE_OF, sourceText = "NÃO CONTÉM LEITE")
-            )
+            ingredientsText = "INGREDIENTES: ÁGUA, AMÊNDOAS, CÁLCIO E SAL MARINHO. " +
+                "ALÉRGICOS: CONTÉM AMÊNDOA. NÃO CONTÉM LEITE."
+        ),
+        ProductBarcodeData(
+            ean = "7891000400104",
+            productName = "Biscoito Integral",
+            brand = "Marca Demo",
+            ingredientsText = "INGREDIENTES: FARINHA DE TRIGO INTEGRAL, AÇÚCAR E GORDURA VEGETAL. " +
+                "ALÉRGICOS: CONTÉM TRIGO. PODE CONTER LEITE, SOJA E OVO."
         )
-    )
+    ).associateBy { it.ean }
 
     fun findByEan(ean: String): ProductBarcodeData? = catalog[ean.trim()]
 
-    fun toEvidence(data: ProductBarcodeData): Evidence {
-        return Evidence(
-            type = EvidenceType.BARCODE_DATABASE,
-            value = "${data.productName} (${data.brand}) - ${data.ingredientsText}",
-            source = "Open Food Facts Cache (${data.ean})",
-            claims = data.declaredClaims
-        )
-    }
+    fun all(): List<ProductBarcodeData> = catalog.values.toList()
+
+    fun toEvidence(data: ProductBarcodeData): Evidence = Evidence(
+        type = EvidenceType.BARCODE_DATABASE,
+        value = "${data.productName} — ${data.brand}",
+        source = "catálogo local de demonstração (EAN ${data.ean})",
+        claims = data.claims
+    )
 }
