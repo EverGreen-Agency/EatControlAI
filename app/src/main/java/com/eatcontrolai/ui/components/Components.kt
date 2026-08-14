@@ -58,8 +58,9 @@ fun EcCard(
                 verticalAlignment = Alignment.Top
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text(title, style = MaterialTheme.typography.titleSmall)
+                    Text(title, style = MaterialTheme.typography.titleSmall, color = EcColors.TextPrimary)
                     if (subtitle != null) {
+
                         Spacer(Modifier.height(4.dp))
                         Text(
                             subtitle,
@@ -197,7 +198,7 @@ fun StatCard(
             )
         }
         Spacer(Modifier.height(8.dp))
-        Text(value, style = MaterialTheme.typography.headlineMedium)
+        Text(value, style = MaterialTheme.typography.headlineMedium, color = EcColors.TextPrimary)
         Spacer(Modifier.height(4.dp))
         Text(detail, style = MaterialTheme.typography.bodySmall, color = EcColors.TextMuted)
         if (progress != null) {
@@ -236,7 +237,7 @@ fun EcRow(
             Text(glyph, style = MaterialTheme.typography.labelMedium, color = glyphTone)
         }
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleSmall)
+            Text(title, style = MaterialTheme.typography.titleSmall, color = EcColors.TextPrimary)
             Spacer(Modifier.height(3.dp))
             Text(detail, style = MaterialTheme.typography.bodySmall, color = EcColors.TextMuted)
         }
@@ -268,11 +269,12 @@ fun EcToggle(checked: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifi
 @Composable
 fun SectionHeader(title: String, subtitle: String, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth()) {
-        Text(title, style = MaterialTheme.typography.headlineMedium)
+        Text(title, style = MaterialTheme.typography.headlineMedium, color = EcColors.TextPrimary)
         Spacer(Modifier.height(6.dp))
         Text(subtitle, style = MaterialTheme.typography.bodySmall, color = EcColors.TextMuted)
     }
 }
+
 
 @Composable
 fun StatusDot(tone: Color, label: String, modifier: Modifier = Modifier) {

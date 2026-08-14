@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -73,42 +74,44 @@ fun EatControlRoot(viewModel: EatControlViewModel) {
         }
     }
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(EcColors.Background)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = EcColors.Background,
+        contentColor = EcColors.TextPrimary
     ) {
-        Box(Modifier.fillMaxSize().padding(bottom = 78.dp)) {
-            when {
-                showLab -> LabScreen(viewModel = viewModel, onClose = { showLab = false })
-                destination == Destination.HOME -> HomeScreen(
-                    viewModel = viewModel,
-                    onNavigate = { destination = it },
-                    onOpenLab = if (BuildConfig.DEBUG) ({ showLab = true }) else null
-                )
-                destination == Destination.ANALYZE -> AnalyzeScreen(viewModel)
-                destination == Destination.PLAN -> PlanScreen(viewModel)
-                destination == Destination.HISTORY -> HistoryScreen(viewModel, onNavigate = { destination = it })
-                destination == Destination.PROFILE -> ProfileScreen(viewModel, onNavigate = { destination = it })
+        Box(Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize().padding(bottom = 78.dp)) {
+                when {
+                    showLab -> LabScreen(viewModel = viewModel, onClose = { showLab = false })
+                    destination == Destination.HOME -> HomeScreen(
+                        viewModel = viewModel,
+                        onNavigate = { destination = it },
+                        onOpenLab = if (BuildConfig.DEBUG) ({ showLab = true }) else null
+                    )
+                    destination == Destination.ANALYZE -> AnalyzeScreen(viewModel)
+                    destination == Destination.PLAN -> PlanScreen(viewModel)
+                    destination == Destination.HISTORY -> HistoryScreen(viewModel, onNavigate = { destination = it })
+                    destination == Destination.PROFILE -> ProfileScreen(viewModel, onNavigate = { destination = it })
+                }
             }
-        }
 
-        BottomBar(
-            current = destination,
-            onSelect = { destination = it; showLab = false },
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+            BottomBar(
+                current = destination,
+                onSelect = { destination = it; showLab = false },
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
 
-        if (toast != null) {
-            Snackbar(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(horizontal = 14.dp)
-                    .padding(bottom = 92.dp),
-                containerColor = EcColors.SurfaceHigh,
-                contentColor = EcColors.TextPrimary
-            ) {
-                Text(toast.orEmpty(), style = MaterialTheme.typography.bodySmall)
+            if (toast != null) {
+                Snackbar(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(horizontal = 14.dp)
+                        .padding(bottom = 92.dp),
+                    containerColor = EcColors.SurfaceHigh,
+                    contentColor = EcColors.TextPrimary
+                ) {
+                    Text(toast.orEmpty(), style = MaterialTheme.typography.bodySmall)
+                }
             }
         }
     }

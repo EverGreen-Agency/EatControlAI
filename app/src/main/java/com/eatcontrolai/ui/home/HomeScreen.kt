@@ -65,8 +65,10 @@ fun HomeScreen(
                 Column {
                     Text(
                         "Olá, ${profile.displayName}",
-                        style = MaterialTheme.typography.headlineSmall
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = EcColors.TextPrimary
                     )
+
                     Text(
                         "Seu plano está ativo",
                         style = MaterialTheme.typography.bodySmall,
@@ -196,7 +198,8 @@ private fun HeroCard(onAnalyze: () -> Unit, onPlan: () -> Unit) {
                 color = EcColors.Mint
             )
             Spacer(Modifier.height(12.dp))
-            Text("Olhe. Pergunte.", style = MaterialTheme.typography.headlineLarge)
+            Text("Olhe. Pergunte.", style = MaterialTheme.typography.headlineLarge, color = EcColors.TextPrimary)
+
             Text(
                 "Decida com contexto.",
                 style = MaterialTheme.typography.headlineLarge,

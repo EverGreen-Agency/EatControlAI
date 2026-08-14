@@ -1,9 +1,11 @@
 package com.eatcontrolai.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 
 private val EatControlColorScheme = darkColorScheme(
     primary = EcColors.Mint,
@@ -32,7 +34,11 @@ private val EatControlColorScheme = darkColorScheme(
 fun EatControlAITheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = EatControlColorScheme,
-        typography = EatControlTypography,
-        content = content
-    )
+        typography = EatControlTypography
+    ) {
+        CompositionLocalProvider(
+            LocalContentColor provides EcColors.TextPrimary,
+            content = content
+        )
+    }
 }
