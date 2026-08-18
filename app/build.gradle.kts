@@ -33,7 +33,10 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.eatcontrolai"
+        // Três segmentos por exigência do Wearables Developer Center, que recusa "com.eatcontrolai"
+        // com a mensagem de reverse-domain (o exemplo dele é com.example.app).
+        // O `namespace` continua com.eatcontrolai: é o pacote do código, não precisa acompanhar.
+        applicationId = "com.eatcontrolai.app"
         minSdk = 33
         targetSdk = 36
         versionCode = 1

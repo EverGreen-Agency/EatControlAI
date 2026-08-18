@@ -71,7 +71,7 @@ fun ProfileScreen(viewModel: EatControlViewModel, onNavigate: (Destination) -> U
         item {
             EcCard(
                 title = "Privacidade",
-                subtitle = "Padrões conservadores por decisão de projeto (NFR-005)."
+                subtitle = "Padrões conservadores por decisão de projeto (NFR-008)."
             ) {
                 EcRow(
                     glyph = "IMG",
@@ -103,13 +103,13 @@ fun ProfileScreen(viewModel: EatControlViewModel, onNavigate: (Destination) -> U
                     color = EcColors.TextFaint
                 )
                 Spacer(Modifier.height(12.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    OutlinedButton(onClick = viewModel::clearHistory, modifier = Modifier.weight(1f)) {
-                        Text("Apagar histórico")
-                    }
-                    OutlinedButton(onClick = viewModel::resetProfile, modifier = Modifier.weight(1f)) {
-                        Text("Restaurar perfil")
-                    }
+                // Direito de exclusão dos próprios dados (contexto-gpt.md §49). Fica aqui porque é
+                // do usuário; conveniência de demonstração mora no Laboratório, em build de debug.
+                OutlinedButton(
+                    onClick = viewModel::clearHistory,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Apagar meu histórico deste aparelho")
                 }
             }
         }
@@ -118,8 +118,7 @@ fun ProfileScreen(viewModel: EatControlViewModel, onNavigate: (Destination) -> U
             EcCard(
                 title = glasses.sourceLabel,
                 subtitle = if (glasses.isMock)
-                    "Fonte simulada. O DAT 0.9.0 entra quando saírem o token do GitHub com " +
-                        "read:packages e o APPLICATION_ID/CLIENT_TOKEN do Wearables Developer Center."
+                    "Fonte simulada. Troque para os Ray-Ban Meta na aba Analisar."
                 else null,
                 trailing = {
                     StatusDot(

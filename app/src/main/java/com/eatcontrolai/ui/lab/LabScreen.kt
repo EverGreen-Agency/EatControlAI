@@ -117,6 +117,24 @@ fun LabScreen(viewModel: EatControlViewModel, onClose: () -> Unit) {
             }
         }
 
+        item {
+            EcCard(
+                title = "Preparar demonstração",
+                subtitle = "Conveniência de desenvolvimento — não aparece para o usuário final."
+            ) {
+                OutlinedButton(onClick = viewModel::resetProfile, modifier = Modifier.fillMaxWidth()) {
+                    Text("Restaurar perfil de demonstração")
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Volta o perfil ao \"João\" com restrição crítica a leite, que é o estado " +
+                        "esperado pelo roteiro de demonstração e pelo gabarito do benchmark.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = EcColors.TextFaint
+                )
+            }
+        }
+
         lab.error?.let { message ->
             item {
                 EcCard {
