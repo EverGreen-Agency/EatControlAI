@@ -82,7 +82,13 @@ class DatMockDeviceTest {
         val glasses = mockKit.pairGlasses(GlassesModel.RAYBAN_META).getOrNull()
             ?: error("Mock Device Kit não conseguiu parear os óculos simulados")
 
+        // Streaming só inicia com o dispositivo ligado e vestido — sem isto a sessão nunca chega
+        // a STREAMING e a captura falha por timeout.
+        glasses.powerOn()
+        glasses.don()
+
         // Injeta um rótulo conhecido como a foto que os óculos vão "tirar".
+        // Atenção: o Mock Device Kit devolve a imagem fixa rotacionada 90°.
         val scene = MockScenes.labels.first { it.id == "iogurte_zero_lactose" }
         glasses.services.camera.setCapturedImage(writeLabelToCache(scene))
 
@@ -107,6 +113,8 @@ class DatMockDeviceTest {
             assertEquals(DecisionState.INCOMPATIBLE, decision.state)
         } finally {
             gateway.disconnect()
+            glasses.doff()
+            glasses.powerOff()
         }
     }
 

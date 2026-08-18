@@ -2,6 +2,7 @@ package com.eatcontrolai.glasses
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.graphics.ImageFormat
 import android.graphics.Rect
 import android.graphics.YuvImage
@@ -10,6 +11,7 @@ import com.eatcontrolai.inference.TtsProvider
 import com.meta.wearable.dat.camera.Camera
 import com.meta.wearable.dat.camera.addCamera
 import com.meta.wearable.dat.camera.removeCamera
+import com.meta.wearable.dat.camera.types.PhotoData
 import com.meta.wearable.dat.camera.types.StreamConfiguration
 import com.meta.wearable.dat.camera.types.VideoFrame
 import com.meta.wearable.dat.camera.types.VideoQuality
@@ -45,16 +47,19 @@ import kotlinx.coroutines.withTimeoutOrNull
  * é anexada de propósito, e a captura é um disparo. É o que o `NFR-009` pede e o que o checkpoint de
  * bateria do edital cobra: [disconnect] fecha tudo assim que a análise termina.
  *
- * ## O que ainda precisa de hardware para validar
+ * ## Captura
  *
- * 1. **`PhotoData` é uma interface vazia na 0.9.0.** `capturePhoto()` devolve `DatResult<PhotoData,
- *    CaptureError>`, mas o tipo público não expõe nenhum membro — os bytes existem só na
- *    implementação interna. Então o disparo serve para acionar o obturador e o indicador dos óculos,
- *    e a imagem é lida do `videoStream`. Se uma versão seguinte abrir `PhotoData`, este é o primeiro
- *    trecho a simplificar.
- * 2. **O formato do frame não está documentado.** Pedimos `compressVideo = false` e tratamos como
- *    NV21, que é o mais comum em captura Android. Se vier outro layout, [toJpeg] falha de forma
- *    explícita em vez de devolver imagem corrompida — e o OCR não recebe lixo achando que é rótulo.
+ * `capturePhoto()` devolve `PhotoData`, que é sealed: `PhotoData.Bitmap` (já decodificado) ou
+ * `PhotoData.HEIC` (bytes codificados). Os dois viram JPEG para alimentar a mesma pipeline de OCR e
+ * barcode do resto do app.
+ *
+ * O `videoStream` fica como plano B, para o caso de a captura de foto falhar. Ali os pixels vêm em
+ * YUV cru (`compressVideo = false`) e o layout exato não está documentado, então [yuvToJpeg] falha
+ * alto se o tamanho não bater — entregar bytes errados ao OCR produziria leitura silenciosamente
+ * errada, o pior modo de falha possível neste produto.
+ *
+ * Só uma captura de foto por vez: uma segunda chamada com outra pendente devolve
+ * `CaptureError.CaptureInProgress`.
  *
  * ## Ativação e áudio
  *
@@ -171,15 +176,36 @@ class DatGlassesGateway(
             stream.state.first { it == StreamState.STREAMING }
         } ?: error("O stream não chegou a STREAMING. Sem isso, nenhum frame é entregue.")
 
-        // Dispara o obturador nos óculos. O retorno é ignorado de propósito: PhotoData não expõe
-        // bytes na 0.9.0 (ver KDoc da classe).
-        stream.capturePhoto()
+        val photo = withTimeoutOrNull(CAPTURE_TIMEOUT_MS) { stream.capturePhoto() }?.getOrNull()
+        if (photo != null) return photo.toJpeg()
 
+        // Plano B: a foto falhou, então pega um frame do stream que já está rodando.
         val frame = withTimeoutOrNull(CAPTURE_TIMEOUT_MS) {
             stream.videoStream.first { !it.isCodecConfig }
-        } ?: error("Os óculos não entregaram frame em ${CAPTURE_TIMEOUT_MS} ms.")
+        } ?: error("Os óculos não entregaram foto nem frame em ${CAPTURE_TIMEOUT_MS} ms.")
 
-        return frame.toJpeg()
+        return frame.yuvToJpeg()
+    }
+
+    private fun PhotoData.toJpeg(): ByteArray = when (this) {
+        is PhotoData.Bitmap -> ByteArrayOutputStream().use { stream ->
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, JPEG_QUALITY, stream)
+            stream.toByteArray()
+        }
+
+        is PhotoData.HEIC -> {
+            val bytes = ByteArray(data.remaining()).also { data.get(it) }
+            // O Android decodifica HEIC desde a API 28; o ML Kit espera JPEG.
+            val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                ?: error("Não consegui decodificar o HEIC devolvido pelos óculos.")
+            ByteArrayOutputStream().use { stream ->
+                decoded.compress(android.graphics.Bitmap.CompressFormat.JPEG, JPEG_QUALITY, stream)
+                decoded.recycle()
+                stream.toByteArray()
+            }
+        }
+
+        else -> error("Formato de foto desconhecido: ${this::class.java.simpleName}")
     }
 
     override suspend fun startVoiceCapture(): ByteArray =
@@ -196,7 +222,7 @@ class DatGlassesGateway(
      * e entregar bytes errados para o OCR produziria leitura silenciosamente errada — o pior modo de
      * falha possível neste produto.
      */
-    private fun VideoFrame.toJpeg(): ByteArray {
+    private fun VideoFrame.yuvToJpeg(): ByteArray {
         check(!isCompressed) {
             "Frame comprimido não é suportado neste caminho. Configure compressVideo = false."
         }

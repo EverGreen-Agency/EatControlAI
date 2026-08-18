@@ -96,14 +96,27 @@ Duas descobertas que valem registro:
 - **`Permission` só tem `CAMERA`.** Não há permissão de microfone na 0.9.0, e não existe artefato de
   áudio entre os publicados (`mwdat-core`, `mwdat-camera`, `mwdat-display`, `mwdat-mockdevice`). A
   trilha de voz continua usando o microfone do telefone.
-- **`PhotoData` é uma interface vazia.** `capturePhoto()` existe e devolve `DatResult<PhotoData,
-  CaptureError>`, mas o tipo público não expõe membro nenhum — os bytes só existem na implementação
-  interna. Na prática, o disparo aciona o obturador e a imagem é lida do `videoStream`. Perguntar no
-  Ideathon se é limitação do preview ou se há caminho documentado.
+- **`PhotoData` é sealed, não vazia.** Correção de uma leitura errada minha: `javap` sobre a
+  interface não mostra membros porque as variantes são tipos aninhados — `PhotoData.Bitmap(bitmap)` e
+  `PhotoData.HEIC(data: ByteBuffer)`. O material do curso (13.5.1) cita as duas explicitamente. Ou
+  seja, `capturePhoto()` entrega a imagem sim, e o `videoStream` fica só como plano B.
 
-O Mock Device Kit oficial está disponível: `MockDeviceKit.enable(config)` e
-`pairGlasses(GlassesModel.RAYBAN_META | OAKLEY_META_HSTN | OAKLEY_META_VANGUARD |
-RAYBAN_META_OPTICS | META_GLASSES)`.
+O Mock Device Kit oficial está disponível, e o fluxo mínimo tem duas etapas que não estão na API
+web e derrubam o teste se faltarem:
+
+```text
+MockDeviceKit.getInstance(context)
+  → enable(MockDeviceKitConfig(initiallyRegistered, initialPermissionsGranted))
+  → pairGlasses(GlassesModel.RAYBAN_META | OAKLEY_META_HSTN | OAKLEY_META_VANGUARD |
+                RAYBAN_META_OPTICS | META_GLASSES)
+  → powerOn()  ← obrigatório
+  → don()      ← obrigatório: streaming só inicia com o dispositivo ligado E vestido
+  → sessão normal do SDK
+  → disable() restaura a pilha real (não há reset())
+```
+
+Mídia simulada: vídeo em **H.265 obrigatório**, câmera do telefone, ou imagem fixa para captura —
+esta última **volta rotacionada 90°**. Até 3 mocks pareados ao mesmo tempo.
 
 ## Como o app é ativado (fonte: ebook Un13, seção 13.1.3.5)
 
@@ -123,9 +136,25 @@ terceiro falando com os óculos. O controle que ele tem pelos óculos é sobre a
 Consequência de projeto: a ativação por voz do Eat Control acontece pelo microfone do telefone
 (`AndroidSttProvider`), e isso não é limitação nossa — é o desenho do toolkit.
 
-**Microfone e alto-falantes não passam pelo DAT.** Usam os perfis Bluetooth padrão do Android (HFP
-para captura de voz). O toolkit cuida de câmera, registro, permissões e sessão. Isso confirma o que
-a inspeção do AAR já sugeria: `Permission` só tem `CAMERA` e não há artefato de áudio publicado.
+**Microfone e alto-falantes não passam pelo DAT** — mas isso não significa que sejam inacessíveis.
+Usam os perfis Bluetooth padrão do Android, e o material do curso (13.6) detalha o caminho:
+
+| Perfil | Direção | Uso |
+| :--- | :--- | :--- |
+| A2DP | só saída, alta qualidade | mídia |
+| **HFP/SCO** | bidirecional, 8 kHz mono | **é o perfil que abre o microfone dos óculos** |
+
+Roteamento: `audioManager.availableCommunicationDevices` → achar `TYPE_BLUETOOTH_SCO` →
+`setCommunicationDevice()` (API 31+; nosso minSdk é 33). Sempre `clearCommunicationDevice()` ao
+terminar, senão o áudio do telefone inteiro fica preso no perfil de voz. Permissões: `RECORD_AUDIO`
+e `BLUETOOTH_CONNECT`.
+
+O array de 5 microfones aplica beamforming e isola a voz do usuário do ruído ambiente — o que
+importa no cenário real do produto. **Ordem importa: configurar o HFP antes de abrir a sessão de
+streaming.**
+
+Implementado em `GlassesAudioRouter`. O TTS já sai direto pelos óculos quando eles são o dispositivo
+de áudio ativo.
 
 ### Ciclo de vida, com as armadilhas
 

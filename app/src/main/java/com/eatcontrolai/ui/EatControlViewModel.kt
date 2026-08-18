@@ -56,7 +56,9 @@ data class VoiceState(
     val transcript: String = "",
     val onDevice: Boolean = false,
     val available: Boolean = true,
-    val permissionDenied: Boolean = false
+    val permissionDenied: Boolean = false,
+    /** `true` quando a fala foi captada pelos microfones dos óculos, via HFP. */
+    val capturedOnGlasses: Boolean = false
 )
 
 data class LabState(
@@ -277,15 +279,20 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
 
         _voice.update { it.copy(listening = true, transcript = "") }
 
+        // HFP precisa estar configurado antes da captura; sem óculos, cai no microfone do telefone.
+        val onGlasses = container.audioRouter.routeToGlasses()
+
         viewModelScope.launch {
             runCatching { provider.transcribe() }
+                .also { container.audioRouter.release() }
                 .onSuccess { result ->
                     val intent = VoiceIntentParser.parse(result.text)
                     _voice.update {
                         it.copy(
                             listening = false,
                             transcript = result.text,
-                            onDevice = container.stt.usingOnDevice
+                            onDevice = container.stt.usingOnDevice,
+                            capturedOnGlasses = onGlasses
                         )
                     }
 

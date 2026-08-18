@@ -14,6 +14,7 @@ import com.eatcontrolai.data.ProfileRepository
 import com.eatcontrolai.domain.decision.FoodDecisionEngine
 import com.eatcontrolai.glasses.CaptureSourceRouter
 import com.eatcontrolai.glasses.DatGlassesGateway
+import com.eatcontrolai.glasses.GlassesAudioRouter
 import com.eatcontrolai.glasses.MockGlassesGateway
 import com.eatcontrolai.glasses.PhoneCameraGateway
 import com.eatcontrolai.inference.ModelRegistry
@@ -52,6 +53,9 @@ class AppContainer(application: Application) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val tts = AndroidTtsProvider(application)
+
+    /** Roteia voz para os óculos por HFP quando eles estiverem disponíveis (unidade 13.6). */
+    val audioRouter = GlassesAudioRouter(application)
 
     val stt = AndroidSttProvider(application)
 

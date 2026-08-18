@@ -352,8 +352,10 @@ private fun VoiceCard(
     EcCard(
         title = "Perguntar por voz",
         subtitle = if (voice.available) {
-            if (voice.onDevice) "Reconhecimento on-device, sem rede"
-            else "Reconhecimento do sistema"
+            buildString {
+                append(if (voice.onDevice) "Reconhecimento on-device, sem rede" else "Reconhecimento do sistema")
+                if (voice.capturedOnGlasses) append(" · microfone dos óculos (HFP)")
+            }
         } else {
             "Este aparelho não tem reconhecimento de fala disponível"
         }
@@ -390,7 +392,8 @@ private fun VoiceCard(
         Spacer(Modifier.height(8.dp))
         Text(
             "O comando é interpretado por regra determinística, não por LLM: \"código de barras\" " +
-                "leva para a trilha de produto, o resto vai para rótulo.",
+                "leva para a trilha de produto, o resto vai para rótulo. Com os óculos conectados, " +
+                "a captura usa o array de microfones deles por Bluetooth HFP — o DAT não tem API de áudio.",
             style = MaterialTheme.typography.bodySmall,
             color = EcColors.TextFaint
         )
