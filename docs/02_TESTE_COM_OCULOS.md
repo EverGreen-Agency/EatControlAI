@@ -183,11 +183,22 @@ teste do passo 6 e me mande o resultado.
 
 ---
 
+## Duas coisas que já sabemos, para não te confundir
+
+**Não dá para chamar o Eat Control falando com os óculos.** O "Hey Meta" pertence ao assistente da
+Meta e não faz parte do kit que os aplicativos de terceiro usam. Quem abre a conversa com os óculos
+é sempre o celular. O que você *consegue* fazer pelos óculos é controlar uma sessão já aberta:
+tocando neles, tirando-os do rosto ou fechando as hastes, a sessão pausa ou encerra. Se isso
+acontecer no meio de um teste, não é bug.
+
+**O som não passa pelos óculos por esse caminho.** Microfone e alto-falantes usam o Bluetooth comum,
+igual a um fone. Então a fala do aplicativo pode sair pelo celular em vez dos óculos, dependendo de
+como o Android estiver roteando o áudio. Se sair pelo celular, anote — é informação útil.
+
 ## Perguntas que a gente ainda não sabe responder
 
-Se durante o teste você descobrir alguma dessas, avise — são pontos em aberto:
+Se durante o teste você descobrir alguma dessas, avise:
 
-- Dá para disparar a análise **pelos óculos**, sem tocar no celular? Botão na haste, toque, comando
-  de voz?
-- Os óculos avisam de alguma forma quando um aplicativo de terceiro está usando a câmera?
+- Os óculos avisam de alguma forma quando o aplicativo está usando a câmera? Luz, som, algo?
 - Quanto tempo a sessão fica aberta antes de cair sozinha?
+- O áudio da resposta saiu pelos óculos ou pelo celular?

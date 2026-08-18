@@ -38,6 +38,13 @@ import kotlinx.coroutines.SupervisorJob
 class EatControlApp : Application() {
 
     val container: AppContainer by lazy { AppContainer(this) }
+
+    override fun onCreate() {
+        super.onCreate()
+        // O DAT exige inicialização uma única vez por processo, na Application. Chamar qualquer
+        // API antes disso devolve NOT_INITIALIZED.
+        container.datGlasses.initialize()
+    }
 }
 
 class AppContainer(application: Application) {

@@ -105,7 +105,53 @@ O Mock Device Kit oficial está disponível: `MockDeviceKit.enable(config)` e
 `pairGlasses(GlassesModel.RAYBAN_META | OAKLEY_META_HSTN | OAKLEY_META_VANGUARD |
 RAYBAN_META_OPTICS | META_GLASSES)`.
 
-## Como o app é ativado
+## Como o app é ativado (fonte: ebook Un13, seção 13.1.3.5)
+
+O material oficial do curso responde o que a documentação web não respondia:
+
+| O DAT permite | O DAT **não** permite |
+| :--- | :--- |
+| Streaming de vídeo da câmera, com resolução e frame rate selecionáveis | **"Hey Meta" e o assistente Meta AI** — o wake word não faz parte do toolkit |
+| Captura de foto durante o stream | Rodar código nos óculos: o app roda no telefone |
+| Registro e permissões via deeplink para o app Meta AI | Publicar para usuário final durante o preview |
+| Sessão que o usuário pausa, retoma ou encerra **tocando nos óculos, tirando-os ou fechando as hastes** | Mais de uma sessão simultânea no mesmo dispositivo |
+| Testes sem hardware pelo Mock Device Kit | — |
+
+Ou seja: **quem abre a sessão é o telefone.** Não existe caminho para o usuário chamar um app de
+terceiro falando com os óculos. O controle que ele tem pelos óculos é sobre a sessão já aberta.
+
+Consequência de projeto: a ativação por voz do Eat Control acontece pelo microfone do telefone
+(`AndroidSttProvider`), e isso não é limitação nossa — é o desenho do toolkit.
+
+**Microfone e alto-falantes não passam pelo DAT.** Usam os perfis Bluetooth padrão do Android (HFP
+para captura de voz). O toolkit cuida de câmera, registro, permissões e sessão. Isso confirma o que
+a inspeção do AAR já sugeria: `Permission` só tem `CAMERA` e não há artefato de áudio publicado.
+
+### Ciclo de vida, com as armadilhas
+
+```text
+Wearables.initialize(context)   uma vez por processo, na Application
+                                (antes disso: NOT_INITIALIZED)
+createSession(selector)         nasce IDLE
+session.start()                 fire-and-forget — confirmar por session.state
+  IDLE → STARTING → STARTED ⇄ PAUSED → STOPPING → STOPPED
+  STOPPED é terminal: retomar = criar nova sessão
+session.addCamera(config)       registra a capability
+camera.stream.start()           sem isso, nenhum frame chega
+  STOPPED → STARTING → STARTED → STREAMING → ...
+  frames só são entregues em STREAMING
+```
+
+`compressVideo = false` (padrão) entrega **YUV decodificado**; `true` entrega HEVC comprimido.
+`videoQuality`: HIGH 720×1280, MEDIUM 504×896 (padrão), LOW 360×640. `frameRate` ∈ {2, 7, 15, 24, 30},
+padrão 24. A banda do Bluetooth Classic limita tudo, e o ladder automático reduz primeiro a
+resolução, depois o FPS — nunca abaixo de 15.
+
+> O ebook tem como alvo a versão **0.8.0**, onde a capability de câmera era `session.addStream()`.
+> Na **0.9.0** que usamos, é `session.addCamera()` devolvendo um `Camera` com `camera.stream`.
+> O ciclo de vida e as constantes seguem valendo.
+
+## Fluxo de autorização
 
 O toolkit **não** dá stream contínuo por padrão. O fluxo é explícito:
 
