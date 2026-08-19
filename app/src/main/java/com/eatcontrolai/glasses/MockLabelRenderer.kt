@@ -15,42 +15,53 @@ import java.io.ByteArrayOutputStream
  */
 object MockLabelRenderer {
 
-    private const val WIDTH = 1080
-    private const val HEIGHT = 1440
-    private const val MARGIN = 56f
-    private const val TEXT_SIZE = 38f
-    private const val LINE_HEIGHT = 54f
+    const val WIDTH = 1080
+    const val HEIGHT = 1440
+    private const val MARGIN_RATIO = 56f / 1080f
+    private const val TEXT_SIZE_RATIO = 38f / 1080f
+    private const val LINE_HEIGHT_RATIO = 54f / 1080f
     private const val JPEG_QUALITY = 92
 
-    fun render(text: String): ByteArray {
-        val bitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888)
+    fun render(text: String): ByteArray = render(text, WIDTH, HEIGHT, JPEG_QUALITY)
+
+    /**
+     * Renderiza em resolução e qualidade arbitrárias.
+     *
+     * A escala é proporcional à largura, então o texto ocupa a mesma fração da imagem em qualquer
+     * resolução — é isso que torna a varredura de [com.eatcontrolai.benchmark.CaptureConfigBenchmark]
+     * uma comparação justa: muda o tamanho do pixel, não o enquadramento.
+     */
+    fun render(text: String, width: Int, height: Int, jpegQuality: Int): ByteArray {
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.WHITE)
 
+        val margin = width * MARGIN_RATIO
+        val lineHeight = width * LINE_HEIGHT_RATIO
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.rgb(20, 20, 20)
-            textSize = TEXT_SIZE
+            textSize = width * TEXT_SIZE_RATIO
             typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
         }
 
-        var y = MARGIN + TEXT_SIZE
+        var y = margin + paint.textSize
         for (line in text.lines()) {
-            for (wrapped in wrap(line, paint)) {
-                canvas.drawText(wrapped, MARGIN, y, paint)
-                y += LINE_HEIGHT
+            for (wrapped in wrap(line, paint, width, margin)) {
+                canvas.drawText(wrapped, margin, y, paint)
+                y += lineHeight
             }
         }
 
         return ByteArrayOutputStream().use { stream ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, stream)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, jpegQuality, stream)
             bitmap.recycle()
             stream.toByteArray()
         }
     }
 
-    private fun wrap(line: String, paint: Paint): List<String> {
+    private fun wrap(line: String, paint: Paint, width: Int, margin: Float): List<String> {
         if (line.isBlank()) return listOf("")
-        val maxWidth = WIDTH - 2 * MARGIN
+        val maxWidth = width - 2 * margin
         val out = mutableListOf<String>()
         var current = StringBuilder()
         for (word in line.split(" ")) {

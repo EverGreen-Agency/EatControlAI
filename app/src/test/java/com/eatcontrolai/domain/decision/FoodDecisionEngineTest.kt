@@ -210,13 +210,32 @@ class FoodDecisionEngineTest {
         )
     }
 
+    /**
+     * A palestra do Ideathon fixa o limite: **resposta falada de até 15 palavras**. Sem display, a
+     * fala é a interface inteira, e frase longa faz o usuário perder o fio em vez de informá-lo.
+     * Vale para todos os estados, não só o feliz.
+     */
     @Test
-    fun `resposta e curta o suficiente para TTS`() {
-        val decision = decideFromLabel("ALÉRGICOS: CONTÉM LEITE.")
-        // contexto-gpt.md §21: resposta curta, não um podcast.
-        assertTrue(
-            "Mensagem longa demais para áudio: ${decision.shortMessage.length} caracteres",
-            decision.shortMessage.length <= 160
+    fun `toda resposta cabe em 15 palavras`() {
+        val profile = UserProfile(
+            id = "t",
+            restrictions = setOf(Restriction(Allergen.MILK), Restriction(Allergen.PEANUT))
         )
+        val amostras = listOf(
+            decideFromLabel("ALÉRGICOS: CONTÉM LEITE."),
+            decideFromLabel("ALÉRGICOS: NÃO CONTÉM LEITE."),
+            decideFromLabel("ALÉRGICOS: PODE CONTER LEITE."),
+            decideFromLabel("ALÉRGICOS: PODE CONTER LEITE E AMENDOIM.", profile),
+            decideFromLabel("ALÉRGICOS: CONTÉM TRIGO E SOJA."),
+            decideFromLabel("NOVO! LEVE 3 PAGUE 2."),
+            engine.decide(milkProfile, emptyList())
+        )
+        amostras.forEach { decision ->
+            val palavras = decision.shortMessage.split(" ").count { it.isNotBlank() }
+            assertTrue(
+                "\"${decision.shortMessage}\" tem $palavras palavras (limite 15)",
+                palavras <= 15
+            )
+        }
     }
 }

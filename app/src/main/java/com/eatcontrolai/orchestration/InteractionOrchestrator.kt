@@ -6,6 +6,8 @@ import com.eatcontrolai.core.model.UserProfile
 import com.eatcontrolai.domain.barcode.BarcodeRepository
 import com.eatcontrolai.domain.decision.FoodDecisionEngine
 import com.eatcontrolai.domain.evidence.EvidenceBuilder
+import com.eatcontrolai.domain.routing.ContextRouter
+import com.eatcontrolai.glasses.Earcon
 import com.eatcontrolai.glasses.GlassesGateway
 import com.eatcontrolai.inference.ModelRegistry
 import com.eatcontrolai.metrics.MetricsRecorder
@@ -24,7 +26,9 @@ data class InteractionResult(
     val scannedEan: String?,
     val productName: String?,
     val frameJpeg: ByteArray,
-    val metrics: List<StageMetric>
+    val metrics: List<StageMetric>,
+    /** Por que a cascata escolheu esta trilha. Nulo quando a trilha foi escolhida à mão. */
+    val routingReason: String? = null
 ) {
     // frameJpeg é ByteArray: equals/hashCode gerados por data class comparariam referência.
     override fun equals(other: Any?) = this === other
@@ -42,8 +46,93 @@ class InteractionOrchestrator(
     private val models: ModelRegistry,
     private val decisionEngine: FoodDecisionEngine,
     private val metrics: MetricsRecorder,
-    private val barcodeRepository: BarcodeRepository = BarcodeRepository()
+    private val barcodeRepository: BarcodeRepository = BarcodeRepository(),
+    private val earcon: Earcon = Earcon()
 ) {
+
+    /**
+     * Deixa a cascata escolher a trilha, em vez de o usuário escolher o modo.
+     *
+     * Ordem por custo, como a palestra do Ideathon propõe: o leitor de barras é barato e roda
+     * primeiro; se resolver, para por aí e o OCR nem é chamado. Só quando não há código de barras é
+     * que se paga o OCR, e o [ContextRouter] então decide entre rótulo e "não sei".
+     */
+    suspend fun analyzeAuto(profile: UserProfile, speakResult: Boolean = true): InteractionResult {
+        val interactionId = UUID.randomUUID().toString()
+        val startedAt = System.nanoTime()
+
+        // Confirmação sonora antes de qualquer inferência: o usuário sabe na hora que foi ouvido.
+        record(interactionId, Stage.EARCON, earcon.confirm())
+
+        val captureStart = System.nanoTime()
+        val frame = glasses.capturePhoto()
+        record(interactionId, Stage.CAPTURE, sinceMs(captureStart), glasses.sourceId)
+
+        val routeStart = System.nanoTime()
+        val ean = models.current().barcode?.let { provider ->
+            val scan = provider.decode(frame)
+            record(interactionId, Stage.BARCODE, scan.meta.latencyMs, scan.meta.providerId, scan.meta.version)
+            scan.rawValue
+        }
+
+        var routing = ContextRouter.route(ean, null)
+        var perception: Perception? = null
+
+        if (routing is ContextRouter.Decision.Product) {
+            perception = resolveProduct(routing.ean)
+        }
+
+        // Sem produto resolvido, paga-se o OCR e decide-se de novo — agora com texto na mão.
+        if (perception == null) {
+            val ocr = models.current().ocr.recognize(frame)
+            record(interactionId, Stage.OCR, ocr.meta.latencyMs, ocr.meta.providerId, ocr.meta.version)
+            routing = ContextRouter.route(null, ocr.text)
+            perception = when (routing) {
+                is ContextRouter.Decision.Label -> Perception(
+                    evidence = EvidenceBuilder.fromLabelOcr(ocr.text, ocr.meta.providerId, ocr.meta.version),
+                    recognizedText = ocr.text
+                )
+                else -> Perception(evidence = emptyList(), recognizedText = ocr.text)
+            }
+        }
+        record(interactionId, Stage.ROUTING, sinceMs(routeStart), "context_router_v1")
+
+        val ruleStart = System.nanoTime()
+        val decision = decisionEngine.decide(profile, perception.evidence)
+        record(interactionId, Stage.RULE_ENGINE, sinceMs(ruleStart), "deterministic_rules_v1")
+
+        if (speakResult) speakAndRecord(interactionId, startedAt, decision.shortMessage)
+        record(interactionId, Stage.END_TO_END, sinceMs(startedAt))
+
+        return InteractionResult(
+            interactionId = interactionId,
+            track = routing.track ?: AnalysisTrack.LABEL,
+            decision = decision,
+            recognizedText = perception.recognizedText,
+            scannedEan = perception.ean ?: ean,
+            productName = perception.productName,
+            frameJpeg = frame,
+            metrics = metrics.snapshot(interactionId),
+            routingReason = routing.reason
+        )
+    }
+
+    private fun resolveProduct(ean: String): Perception? {
+        val product = barcodeRepository.findByEan(ean) ?: return null
+        return Perception(
+            evidence = listOf(barcodeRepository.toEvidence(product)),
+            recognizedText = product.ingredientsText,
+            ean = ean,
+            productName = product.productName
+        )
+    }
+
+    private suspend fun speakAndRecord(interactionId: String, startedAt: Long, message: String) {
+        val ttsMeta = glasses.playSpeech(message)
+        record(interactionId, Stage.TTS_START, ttsMeta.latencyMs, ttsMeta.providerId, ttsMeta.version)
+        // O que o usuário sente é isto, não a soma das etapas.
+        record(interactionId, Stage.FIRST_AUDIO, sinceMs(startedAt))
+    }
 
     suspend fun analyze(
         track: AnalysisTrack,
@@ -66,10 +155,7 @@ class InteractionOrchestrator(
         val decision = decisionEngine.decide(profile, perception.evidence)
         record(interactionId, Stage.RULE_ENGINE, sinceMs(ruleStart), "deterministic_rules_v1")
 
-        if (speakResult) {
-            val ttsMeta = glasses.playSpeech(decision.shortMessage)
-            record(interactionId, Stage.TTS_START, ttsMeta.latencyMs, ttsMeta.providerId, ttsMeta.version)
-        }
+        if (speakResult) speakAndRecord(interactionId, startedAt, decision.shortMessage)
 
         record(interactionId, Stage.END_TO_END, sinceMs(startedAt))
 

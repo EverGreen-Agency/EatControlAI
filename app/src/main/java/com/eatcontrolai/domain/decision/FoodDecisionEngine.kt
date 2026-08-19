@@ -160,11 +160,14 @@ class FoodDecisionEngine {
         return Check(restriction, Verdict.UNRESOLVED, null, null)
     }
 
+    /**
+     * Até 15 palavras, como a palestra do Ideathon estabelece para resposta falada sem display.
+     * Frase longa em áudio não é informação a mais — é o usuário perdendo o fio.
+     */
     private fun mayContainMessage(checks: List<Check>): String {
         val critical = checks.any { it.restriction.severity == RestrictionSeverity.CRITICAL }
-        val prefix = if (critical) "Atenção. Para uma restrição de alta prioridade, "
-        else "Atenção: "
-        return "$prefix o rótulo diz que pode conter ${names(checks)}. Confirme antes de consumir."
+        val prefix = if (critical) "Cuidado" else "Atenção"
+        return "$prefix: o rótulo diz que pode conter ${names(checks)}. Confirme antes."
     }
 
     private fun compatibleMessage(checks: List<Check>): String {

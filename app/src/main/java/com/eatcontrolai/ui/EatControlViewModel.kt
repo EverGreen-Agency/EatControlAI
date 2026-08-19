@@ -41,8 +41,15 @@ enum class AnalyzeMode(
     val glyph: String,
     val prompt: String,
     val track: AnalysisTrack?,
-    val sceneKind: SceneKind?
+    val sceneKind: SceneKind?,
+    /** `true` no modo em que a cascata decide a trilha sozinha. */
+    val auto: Boolean = false
 ) {
+    /**
+     * A cascata decide: barcode primeiro (barato), OCR só se preciso, e o roteador escolhe.
+     * É o modo que a palestra do Ideathon defende — um gatilho, ferramentas roteadas por custo.
+     */
+    AUTO("Automático", "✦", "\"Posso comer isso?\"", AnalysisTrack.LABEL, null, auto = true),
     LABEL("Rótulo", "Aa", "\"Tem algo aqui que conflita com meu plano?\"", AnalysisTrack.LABEL, SceneKind.LABEL),
     BARCODE("Código de barras", "▦", "\"Posso incluir esse produto?\"", AnalysisTrack.BARCODE, SceneKind.BARCODE),
     PLATE("Prato", "◉", "\"Como está esse prato para mim?\"", null, null),
@@ -78,7 +85,11 @@ data class AnalyzeState(
     val error: String? = null
 ) {
     val scenes: List<MockScene>
-        get() = mode.sceneKind?.let { MockScenes.forKind(it) } ?: emptyList()
+        get() = when {
+            mode.auto -> MockScenes.all
+            mode.sceneKind != null -> MockScenes.forKind(mode.sceneKind)
+            else -> emptyList()
+        }
 
     val selectedScene: MockScene?
         get() = scenes.firstOrNull { it.id == selectedSceneId } ?: scenes.firstOrNull()
@@ -131,7 +142,11 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
 
     fun selectMode(mode: AnalyzeMode) {
         _analyze.update {
-            val scenes = mode.sceneKind?.let { kind -> MockScenes.forKind(kind) }.orEmpty()
+            val scenes = when {
+                mode.auto -> MockScenes.all
+                mode.sceneKind != null -> MockScenes.forKind(mode.sceneKind)
+                else -> emptyList()
+            }
             it.copy(
                 mode = mode,
                 selectedSceneId = scenes.firstOrNull()?.id ?: it.selectedSceneId,
@@ -196,7 +211,10 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
         _analyze.update { it.copy(isAnalyzing = true, error = null) }
 
         viewModelScope.launch {
-            runCatching { container.orchestrator.analyze(track, profile.value) }
+            runCatching {
+                if (state.mode.auto) container.orchestrator.analyzeAuto(profile.value)
+                else container.orchestrator.analyze(track, profile.value)
+            }
                 .onSuccess { result ->
                     val record = result.toRecord()
                     container.history.add(record)

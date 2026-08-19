@@ -15,6 +15,23 @@ enum class Stage(val key: String) {
     VISION_INFERENCE("vision_inference_ms"),
     RULE_ENGINE("rule_engine_ms"),
     TTS_START("tts_start_ms"),
+
+    /**
+     * Confirmação sonora imediata. A palestra do Ideathon é explícita: sem display, o usuário
+     * interpreta silêncio como falha, e depois de 3 s ele repete o comando — gerando duas
+     * requisições concorrentes. O "tic" no início compra tempo.
+     */
+    EARCON("earcon_ms"),
+
+    /**
+     * **Interação → primeira sílaba.** É a métrica que o usuário sente, e não a soma das etapas.
+     * Alvo da palestra: abaixo de 1 s parece instantâneo; acima de 3 s o usuário repete.
+     */
+    FIRST_AUDIO("first_audio_ms"),
+
+    /** Roteamento de contexto: qual trilha a cascata escolheu. */
+    ROUTING("routing_ms"),
+
     END_TO_END("end_to_end_ms")
 }
 

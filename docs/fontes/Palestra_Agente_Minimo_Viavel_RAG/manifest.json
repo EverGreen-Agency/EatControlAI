@@ -1,0 +1,64 @@
+{
+  "corpus_name": "Palestra_Agente_Minimo_Viavel_RAG",
+  "source_file": "Palestra-Agentes-IA-AI-Glasses.pptx.pdf",
+  "source_sha256": "1b525e3ee59318b14ab96a6bad1f1f6fd558cd2b67f8990756b0c371caaf07cc",
+  "pages": 19,
+  "rag_records": 25,
+  "generated_files": [
+    {
+      "path": "INDEX.md",
+      "bytes": 849,
+      "sha256": "f4a05a1650b2207612546366504965cd3a1f374a8fae579c7676d131e3af5809"
+    },
+    {
+      "path": "Palestra_Agente_Minimo_Viavel_FULL.md",
+      "bytes": 10367,
+      "sha256": "34fd942fde2c689caf7b628e7a875c5b8d44d4d13b9920476b3c2afb3570107a"
+    },
+    {
+      "path": "RAG_USAGE.md",
+      "bytes": 1158,
+      "sha256": "d9c0c2857213c1f82c902577d3b51f622752e6702893303151ce6fa974386c49"
+    },
+    {
+      "path": "SUMMARY.md",
+      "bytes": 3670,
+      "sha256": "192d9e8760f65065b347151a50f30b7f47f11e9c29ca60f31609fa955bad5110"
+    },
+    {
+      "path": "chunks/palestra_chunks.jsonl",
+      "bytes": 23606,
+      "sha256": "daf0d9d442dab4cd92e72c3a5855b945626553b9e99d2de1a1e5ebd295f3fdf8"
+    },
+    {
+      "path": "sections/01_tese_e_exemplo.md",
+      "bytes": 1840,
+      "sha256": "db30a485d112ebb5ddf230471dff67d605c97d7f84cd7bae6ef52af6cd599007"
+    },
+    {
+      "path": "sections/02_anatomia_do_agente.md",
+      "bytes": 3214,
+      "sha256": "360222dc3433a7226fa94db42e658a07fb39932d3b734bbcde4e8087000bd4a8"
+    },
+    {
+      "path": "sections/03_orcamento_latencia.md",
+      "bytes": 1340,
+      "sha256": "c89e2e2c139589b1e70066d2d2675bddb6fb24042bce6529f3e3e1b1b4f85d8c"
+    },
+    {
+      "path": "sections/04_local_nuvem.md",
+      "bytes": 1128,
+      "sha256": "6889056aeff5a8fb179c5c44911a7544d9010453de7bbb88b6ddb2ebe920baf2"
+    },
+    {
+      "path": "sections/05_bateria_memoria.md",
+      "bytes": 1700,
+      "sha256": "d7bf3bd2424155f29db245a41dc1cab70e5ace52d31f52ffc7543d2bca9edbd8"
+    },
+    {
+      "path": "sections/06_escopo_mvp.md",
+      "bytes": 1732,
+      "sha256": "efba0e468720a8a81f4161347fb6d9a8380f6abaad571a2552486855543f5671"
+    }
+  ]
+}
