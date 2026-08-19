@@ -23,8 +23,10 @@ fi
 echo "→ limpando logcat"
 adb logcat -c
 
-echo "→ instalando e rodando o benchmark (pode levar alguns minutos na primeira vez)"
-./gradlew :app:connectedDebugAndroidTest --console=plain
+echo "→ instalando e rodando os benchmarks (pode levar alguns minutos na primeira vez)"
+echo "  · OcrBenchmarkTest          — compara providers de OCR"
+echo "  · CaptureConfigBenchmarkTest — varre resolução x compressão"
+./gradlew :app:connectedDebugAndroidTest --console=plain   -Pandroid.testInstrumentationRunnerArguments.package=com.eatcontrolai.benchmark
 
 echo
 echo "→ resultado:"
