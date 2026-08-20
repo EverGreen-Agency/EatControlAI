@@ -67,12 +67,13 @@ class MockGlassesGateway(
         delay(SIMULATED_CAPTURE_MS)
         val scene = currentScene
         return when (scene.kind) {
-            SceneKind.LABEL -> MockLabelRenderer.render(scene.labelText)
+            SceneKind.LABEL, SceneKind.MENU -> MockLabelRenderer.render(scene.labelText)
             SceneKind.BARCODE -> Ean13Renderer.render(
                 ean = requireNonNullEan(scene),
                 productName = scene.productName,
                 brand = scene.brand
             )
+            SceneKind.PLATE -> MockPlateRenderer.render()
         }
     }
 

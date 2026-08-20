@@ -18,32 +18,59 @@ import kotlinx.coroutines.launch
  * O padrão é o mesmo nos três: hidrata do [LocalStore] na criação e grava a cada mudança. A escrita
  * é assíncrona de propósito — a UI reage ao `StateFlow` na hora, sem esperar disco.
  */
+sealed interface ProfileState {
+    data object Loading : ProfileState
+    data object NeedsOnboarding : ProfileState
+    data class Ready(val profile: UserProfile) : ProfileState
+}
+
+internal object ProfilePolicy {
+    private const val LEGACY_DEMO_PROFILE_ID = "demo-joao"
+
+    fun normalizeStored(profile: UserProfile): UserProfile? =
+        profile.takeUnless { it.id == LEGACY_DEMO_PROFILE_ID }
+
+    fun stateFor(profile: UserProfile): ProfileState =
+        if (profile.displayName.isBlank()) ProfileState.NeedsOnboarding else ProfileState.Ready(profile)
+}
+
 class ProfileRepository(
     private val store: LocalStore,
-    private val scope: CoroutineScope,
-    private val default: UserProfile
+    private val scope: CoroutineScope
 ) {
-    private val _profile = MutableStateFlow(default)
+    private val emptyProfile = UserProfile(id = "")
+    private val _profile = MutableStateFlow(emptyProfile)
     val profile: StateFlow<UserProfile> = _profile.asStateFlow()
+
+    private val _state = MutableStateFlow<ProfileState>(ProfileState.Loading)
+    val state: StateFlow<ProfileState> = _state.asStateFlow()
 
     init {
         scope.launch {
-            store.read(LocalStore.Key.PROFILE)?.let { json ->
-                _profile.value = Serialization.decodeProfile(json, default)
-            }
-            _profile.drop(1)
-                .onEach { store.write(LocalStore.Key.PROFILE, Serialization.encode(it)) }
-                .launchIn(scope)
+            val decoded = store.read(LocalStore.Key.PROFILE)?.let { json ->
+                Serialization.decodeProfile(json, emptyProfile)
+            } ?: emptyProfile
+            // Builds anteriores sem onboarding persistiam uma persona sintética. Ela não pode
+            // sobreviver a uma atualização como se fosse dado real do usuário.
+            val loaded = ProfilePolicy.normalizeStored(decoded) ?: emptyProfile
+            if (loaded !== decoded) store.clear(LocalStore.Key.PROFILE)
+            _profile.value = loaded
+            _state.value = ProfilePolicy.stateFor(loaded)
         }
     }
 
     fun update(transform: (UserProfile) -> UserProfile) {
-        _profile.value = transform(_profile.value)
+        val updated = transform(_profile.value)
+        _profile.value = updated
+        _state.value = ProfilePolicy.stateFor(updated)
+        scope.launch { store.write(LocalStore.Key.PROFILE, Serialization.encode(updated)) }
     }
 
-    /** Volta ao perfil de demonstração. Útil antes de gravar o vídeo do pitch. */
+    /** Remove o perfil local e volta ao onboarding, sem injetar dados demonstrativos. */
     fun reset() {
-        _profile.value = default
+        _profile.value = emptyProfile
+        _state.value = ProfileState.NeedsOnboarding
+        scope.launch { store.clear(LocalStore.Key.PROFILE) }
     }
 }
 

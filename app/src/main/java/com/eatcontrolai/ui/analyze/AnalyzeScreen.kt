@@ -55,6 +55,10 @@ import com.eatcontrolai.EatControlApp
 import com.eatcontrolai.glasses.CaptureSource
 import com.eatcontrolai.ui.AnalyzeMode
 import com.eatcontrolai.ui.EatControlViewModel
+import com.meta.wearable.dat.core.Wearables
+import com.meta.wearable.dat.core.types.Permission
+import com.meta.wearable.dat.core.types.PermissionStatus
+import com.meta.wearable.dat.core.types.RegistrationState
 import com.eatcontrolai.ui.components.EcCard
 import com.eatcontrolai.ui.components.EcChip
 import com.eatcontrolai.ui.components.SectionHeader
@@ -67,12 +71,21 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
     val profile by viewModel.profile.collectAsState()
     val glasses by viewModel.glasses.collectAsState()
     val voice by viewModel.voice.collectAsState()
+    val datRegistrationState by viewModel.datRegistrationState.collectAsState()
+    val datUi by viewModel.datUi.collectAsState()
+    val dailyProgress by viewModel.dailyProgress.collectAsState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val context = LocalContext.current
     var cameraGranted by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
+                PackageManager.PERMISSION_GRANTED
+        )
+    }
+    var bluetoothGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) ==
                 PackageManager.PERMISSION_GRANTED
         )
     }
@@ -86,6 +99,29 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
     val audioPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted -> viewModel.onAudioPermissionResult(granted) }
+    val bluetoothPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        bluetoothGranted = granted
+        if (granted) {
+            viewModel.selectSource(CaptureSource.DAT_GLASSES)
+        } else {
+            viewModel.showToast("Bluetooth não autorizado. Os óculos DAT não podem ser usados.")
+        }
+    }
+    val datCameraPermission = rememberLauncherForActivityResult(
+        Wearables.RequestPermissionContract()
+    ) { status ->
+        viewModel.onDatCameraPermissionResult(status == PermissionStatus.Granted)
+    }
+
+    LaunchedEffect(state.source, datRegistrationState) {
+        if (state.source == CaptureSource.DAT_GLASSES &&
+            datRegistrationState == RegistrationState.REGISTERED
+        ) {
+            datCameraPermission.launch(Permission.CAMERA)
+        }
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxWidth().statusBarsPadding(),
@@ -109,10 +145,14 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                             tone = EcColors.BlueSoft,
                             selected = source == state.source,
                             onClick = {
-                                if (source == CaptureSource.PHONE_CAMERA && !cameraGranted) {
-                                    cameraPermission.launch(Manifest.permission.CAMERA)
-                                } else {
-                                    viewModel.selectSource(source)
+                                when {
+                                    source == CaptureSource.PHONE_CAMERA && !cameraGranted ->
+                                        cameraPermission.launch(Manifest.permission.CAMERA)
+
+                                    source == CaptureSource.DAT_GLASSES && !bluetoothGranted ->
+                                        bluetoothPermission.launch(Manifest.permission.BLUETOOTH_CONNECT)
+
+                                    else -> viewModel.selectSource(source)
                                 }
                             },
                             modifier = Modifier.weight(1f)
@@ -129,31 +169,81 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                 }
                 if (state.source == CaptureSource.DAT_GLASSES) {
                     Spacer(Modifier.height(10.dp))
-                    OutlinedButton(
-                        onClick = {
-                            val activity = context.findActivity()
-                            if (activity == null) viewModel.showToast("Não consegui abrir o fluxo de pareamento.")
-                            else viewModel.registerDatGlasses(activity)
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Parear e autorizar no Meta AI")
+                    val datStatus = when {
+                        datUi.connecting -> "Conectando sessão temporária…"
+                        glasses.connected -> "Sessão temporária ativa"
+                        datRegistrationState == RegistrationState.REGISTERED ->
+                            "Autorizado · conecta ao analisar"
+                        datUi.launchingRegistration -> "Abrindo Meta AI…"
+                        else -> "Não autorizado no Meta AI"
                     }
-                    Spacer(Modifier.height(8.dp))
                     Text(
-                        "Abre o app Meta AI para autorizar o Eat Control. Depois de aceitar, o " +
-                            "controle volta para cá e a sessão com os óculos é aberta sob demanda.",
+                        datStatus,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (datRegistrationState == RegistrationState.REGISTERED) {
+                            EcColors.Mint
+                        } else {
+                            EcColors.TextMuted
+                        }
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    if (datRegistrationState != RegistrationState.REGISTERED) {
+                        OutlinedButton(
+                            onClick = {
+                                val activity = context.findActivity()
+                                if (activity == null) {
+                                    viewModel.showToast("Não consegui abrir o fluxo de pareamento.")
+                                } else {
+                                    viewModel.registerDatGlasses(activity)
+                                }
+                            },
+                            enabled = !datUi.launchingRegistration &&
+                                datRegistrationState != RegistrationState.REGISTERING &&
+                                datRegistrationState != RegistrationState.UNREGISTERING,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                when {
+                                    datUi.launchingRegistration -> "Abrindo Meta AI…"
+                                    datRegistrationState == RegistrationState.REGISTERING ->
+                                        "Aguardando autorização…"
+                                    else -> "Parear e autorizar no Meta AI"
+                                }
+                            )
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    Text(
+                        if (datRegistrationState == RegistrationState.REGISTERED) {
+                            "A autorização está pronta. A câmera e o stream técnico abrem somente durante cada captura e fecham em seguida."
+                        } else {
+                            "O botão deve abrir o Meta AI. Conclua o vínculo lá e volte ao Eat Control."
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = EcColors.TextFaint
                     )
+                    listOfNotNull(datUi.registrationError, datUi.connectionError)
+                        .distinct()
+                        .forEach { error ->
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                error,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = EcColors.RedSoft
+                            )
+                        }
                 }
             }
         }
 
         item {
-            EcCard(title = "Modo de entrada") {
+            val visibleModes = AnalyzeMode.entries.filter(AnalyzeMode::ready)
+            EcCard(
+                title = "O que você quer analisar?",
+                subtitle = "Automático continua como entrada principal. Cardápio estrutura o texto; prato usa identificação assistida e exige confirmação."
+            ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    AnalyzeMode.entries.chunked(2).forEach { row ->
+                    visibleModes.chunked(2).forEach { row ->
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             row.forEach { mode ->
                                 ModeCard(
@@ -308,7 +398,18 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
             ResultSheet(
                 result = result,
                 onConfirm = viewModel::confirmIngredient,
-                onDismiss = viewModel::dismissResult
+                onDismiss = viewModel::dismissResult,
+                portions = state.portions,
+                consumed = state.consumedNutrients,
+                dailyProgress = dailyProgress,
+                goalsConfigured = profile.macroGoals.isConfigured,
+                consumptionLogged = state.consumptionLogged,
+                onPortionsChange = viewModel::setPortions,
+                onRegisterConsumption = viewModel::registerConsumption,
+                onSelectMenuOption = viewModel::selectMenuOption,
+                onRegisterMenuOption = viewModel::registerMenuSelection,
+                onTogglePlateComponent = viewModel::togglePlateComponent,
+                onRegisterPlate = viewModel::registerPlateSelection
             )
         }
     }
@@ -353,11 +454,11 @@ private fun VoiceCard(
         title = "Perguntar por voz",
         subtitle = if (voice.available) {
             buildString {
-                append(if (voice.onDevice) "Reconhecimento on-device, sem rede" else "Reconhecimento do sistema")
+                append("Reconhecimento offline no aparelho")
                 if (voice.capturedOnGlasses) append(" · microfone dos óculos (HFP)")
             }
         } else {
-            "Este aparelho não tem reconhecimento de fala disponível"
+            "Reconhecimento offline pt-BR indisponível; análise por toque continua ativa"
         }
     ) {
         OutlinedButton(

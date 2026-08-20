@@ -20,10 +20,14 @@ import com.meta.wearable.dat.core.selectors.AutoDeviceSelector
 import com.meta.wearable.dat.camera.types.StreamState
 import com.meta.wearable.dat.core.session.DeviceSession
 import com.meta.wearable.dat.core.session.DeviceSessionState
+import com.meta.wearable.dat.core.types.Permission
+import com.meta.wearable.dat.core.types.PermissionStatus
 import com.meta.wearable.dat.core.types.RegistrationState
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
@@ -85,6 +89,7 @@ class DatGlassesGateway(
     private var session: DeviceSession? = null
     private var camera: Camera? = null
     private var initialized = false
+    private val lifecycleMutex = Mutex()
 
     override val sourceId: String = "dat_glasses"
 
@@ -107,6 +112,7 @@ class DatGlassesGateway(
     /** `true` quando o app roda em Developer Mode — nesse caso não se declara APPLICATION_ID. */
     fun isDevMode(): Boolean = Wearables.isDevMode
 
+    @Synchronized
     fun initialize(): Result<Unit> {
         if (initialized) return Result.success(Unit)
         val result = Wearables.initialize(appContext)
@@ -119,57 +125,68 @@ class DatGlassesGateway(
     }
 
     /** Abre o fluxo de pareamento/autorização dentro do app Meta AI. */
-    fun startRegistration(activity: Activity) = Wearables.startRegistration(activity)
+    fun startRegistration(activity: Activity): Result<Unit> = runCatching {
+        // No DAT 0.9.0 esta API é fire-and-forget (não devolve DatResult como initialize()).
+        // Ainda assim, exceções síncronas precisam chegar à UI em vez de desaparecerem.
+        Wearables.startRegistration(activity)
+        Unit
+    }
 
-    override suspend fun connect() {
+    override suspend fun connect() = lifecycleMutex.withLock {
+        if (isConnected && session != null && camera != null) return@withLock
+
         initialize().getOrThrow()
+        check(Wearables.registrationState.value == RegistrationState.REGISTERED) {
+            "O Eat Control ainda não foi autorizado no app Meta AI."
+        }
+        check(Wearables.checkPermissionStatus(Permission.CAMERA) == PermissionStatus.Granted) {
+            "A câmera dos óculos ainda não foi autorizada no app Meta AI."
+        }
+
+        // Remove resíduos de uma tentativa anterior antes de criar uma sessão nova.
+        disconnectLocked()
 
         val newSession = Wearables.createSession(AutoDeviceSelector()).getOrNull()
             ?: error("Nenhum par de óculos disponível. Confira o pareamento no app Meta AI.")
 
-        // start() é fire-and-forget: quem confirma é o state. Anexar a câmera antes de STARTED
-        // falha de forma silenciosa e difícil de diagnosticar.
-        newSession.start()
-        val started = withTimeoutOrNull(SESSION_TIMEOUT_MS) {
-            newSession.state.first { it == DeviceSessionState.STARTED }
-        }
-        if (started == null) {
-            newSession.stop()
-            error("A sessão não chegou a STARTED em $SESSION_TIMEOUT_MS ms.")
-        }
-        session = newSession
+        try {
+            // start() é fire-and-forget: quem confirma é o state. Anexar a câmera antes de STARTED
+            // falha de forma silenciosa e difícil de diagnosticar.
+            newSession.start()
+            val started = withTimeoutOrNull(SESSION_TIMEOUT_MS) {
+                newSession.state.first { it == DeviceSessionState.STARTED }
+            }
+            if (started == null) {
+                newSession.stop()
+                error("A sessão não chegou a STARTED em $SESSION_TIMEOUT_MS ms.")
+            }
+            session = newSession
 
-        val newCamera = newSession.addCamera(
-            StreamConfiguration(
-                videoQuality = VideoQuality.HIGH,
-                frameRate = FRAME_RATE,
-                compressVideo = false
+            val newCamera = newSession.addCamera(
+                StreamConfiguration(
+                    videoQuality = VideoQuality.HIGH,
+                    frameRate = FRAME_RATE,
+                    compressVideo = false
+                )
+            ).getOrNull() ?: error(
+                "Os óculos negaram a capability de câmera. Verifique a permissão no Meta AI."
             )
-        ).getOrNull() ?: run {
-            newSession.stop()
-            session = null
-            error("Os óculos negaram a capability de câmera. Verifique a permissão no Meta AI.")
-        }
 
-        // Sem start() nenhum frame chega, e frames só são entregues em STREAMING.
-        newCamera.stream.start()
-        camera = newCamera
-        isConnected = true
+            // Sem start() nenhum frame chega, e frames só são entregues em STREAMING.
+            newCamera.stream.start()
+            camera = newCamera
+            isConnected = true
+        } catch (throwable: Throwable) {
+            disconnectLocked()
+            throw throwable
+        }
     }
 
-    override suspend fun disconnect() {
-        camera?.stream?.stop()
-        camera?.stop()
-        session?.let {
-            it.removeCamera()
-            it.stop()
-        }
-        camera = null
-        session = null
-        isConnected = false
+    override suspend fun disconnect() = lifecycleMutex.withLock {
+        disconnectLocked()
     }
 
-    override suspend fun capturePhoto(): ByteArray {
+    override suspend fun capturePhoto(): ByteArray = lifecycleMutex.withLock {
         val stream = camera?.stream ?: error("Sessão de câmera não está aberta.")
 
         withTimeoutOrNull(SESSION_TIMEOUT_MS) {
@@ -177,14 +194,30 @@ class DatGlassesGateway(
         } ?: error("O stream não chegou a STREAMING. Sem isso, nenhum frame é entregue.")
 
         val photo = withTimeoutOrNull(CAPTURE_TIMEOUT_MS) { stream.capturePhoto() }?.getOrNull()
-        if (photo != null) return photo.toJpeg()
+        if (photo != null) return@withLock photo.toJpeg()
 
         // Plano B: a foto falhou, então pega um frame do stream que já está rodando.
         val frame = withTimeoutOrNull(CAPTURE_TIMEOUT_MS) {
             stream.videoStream.first { !it.isCodecConfig }
         } ?: error("Os óculos não entregaram foto nem frame em ${CAPTURE_TIMEOUT_MS} ms.")
 
-        return frame.yuvToJpeg()
+        frame.yuvToJpeg()
+    }
+
+    /** Fecha cada recurso mesmo se uma etapa de cleanup falhar. Chamado sempre sob [lifecycleMutex]. */
+    private fun disconnectLocked() {
+        val currentCamera = camera
+        val currentSession = session
+        camera = null
+        session = null
+        isConnected = false
+
+        runCatching { currentCamera?.stream?.stop() }
+        runCatching { currentCamera?.stop() }
+        if (currentSession != null) {
+            runCatching { currentSession.removeCamera() }
+            runCatching { currentSession.stop() }
+        }
     }
 
     private fun PhotoData.toJpeg(): ByteArray = when (this) {
@@ -244,7 +277,7 @@ class DatGlassesGateway(
     }
 
     private companion object {
-        const val FRAME_RATE = 30
+        const val FRAME_RATE = 15
         const val JPEG_QUALITY = 92
         const val CAPTURE_TIMEOUT_MS = 5_000L
         const val SESSION_TIMEOUT_MS = 10_000L

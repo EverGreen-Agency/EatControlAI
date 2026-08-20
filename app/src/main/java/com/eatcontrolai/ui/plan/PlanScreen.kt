@@ -43,6 +43,7 @@ import com.eatcontrolai.ui.theme.EcColors
 @Composable
 fun PlanScreen(viewModel: EatControlViewModel) {
     val profile by viewModel.profile.collectAsState()
+    val dailyProgress by viewModel.dailyProgress.collectAsState()
 
     LazyColumn(
         modifier = Modifier.fillMaxWidth().statusBarsPadding(),
@@ -122,16 +123,24 @@ fun PlanScreen(viewModel: EatControlViewModel) {
                     subtitle = "Contexto declarado por você para personalização educativa.",
                     trailing = { EcChip("ATIVA", tone = EcColors.Mint, selected = true) }
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        profile.guidelines.forEach { guideline ->
-                            Column {
-                                Text(guideline.title, style = MaterialTheme.typography.titleSmall)
-                                Spacer(Modifier.height(3.dp))
-                                Text(
-                                    guideline.detail,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = EcColors.TextMuted
-                                )
+                    if (profile.guidelines.isEmpty()) {
+                        Text(
+                            "Nenhuma regra clínica automática está ativa. Metas e orientações só entram quando você ou um profissional as configuram.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = EcColors.TextMuted
+                        )
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            profile.guidelines.forEach { guideline ->
+                                Column {
+                                    Text(guideline.title, style = MaterialTheme.typography.titleSmall)
+                                    Spacer(Modifier.height(3.dp))
+                                    Text(
+                                        guideline.detail,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = EcColors.TextMuted
+                                    )
+                                }
                             }
                         }
                     }
@@ -140,32 +149,52 @@ fun PlanScreen(viewModel: EatControlViewModel) {
         }
 
         item {
-            EcCard(title = "Prioridades do dia") {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    listOf(
-                        "Proteína" to 0.75f,
-                        "Hidratação" to 0.78f,
-                        "Vegetais" to 0.66f,
-                        "Regularidade" to 0.84f
-                    ).forEach { (label, value) ->
-                        Column {
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text(label, style = MaterialTheme.typography.titleSmall)
-                                Text(
-                                    "${(value * 100).toInt()}%",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = EcColors.TextMuted
-                                )
+            EcCard(
+                title = "Acompanhamento de hoje",
+                subtitle = if (profile.macroGoals.isConfigured) {
+                    "Consumo confirmado versus metas ${profile.macroGoals.definedBy.label}."
+                } else {
+                    "Somente consumo confirmado; nenhuma meta foi configurada."
+                }
+            ) {
+                if (dailyProgress.isEmpty()) {
+                    Text(
+                        "Ainda não há metas nem nutrientes consumidos para mostrar.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = EcColors.TextMuted
+                    )
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        dailyProgress.forEach { progress ->
+                            val formatter = java.text.DecimalFormat("0.#")
+                            val goal = progress.goal
+                            val unit = progress.unit.symbol
+                            Column {
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        progress.nutrient.displayName.replaceFirstChar { it.uppercase() },
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                    Text(
+                                        if (goal != null) {
+                                            "${formatter.format(progress.consumed)} / ${formatter.format(goal)} $unit"
+                                        } else {
+                                            "${formatter.format(progress.consumed)} $unit · sem meta"
+                                        },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = EcColors.TextMuted
+                                    )
+                                }
+                                if (goal != null && goal > 0.0) {
+                                    Spacer(Modifier.height(6.dp))
+                                    EcProgress((progress.consumed / goal).coerceIn(0.0, 1.0).toFloat())
+                                }
                             }
-                            Spacer(Modifier.height(6.dp))
-                            EcProgress(value)
                         }
                     }
-                    Spacer(Modifier.height(2.dp))
-                    DemoNote(
-                        "Precisa de registro de refeição com porção, que é a trilha seguinte. " +
-                            "Os números aqui são ilustrativos."
-                    )
                 }
             }
         }

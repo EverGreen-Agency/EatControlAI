@@ -129,7 +129,14 @@ data class UserProfile(
     val goals: Set<String> = emptySet(),
     /** Orientações declaradas por profissional de saúde, exibidas na tela Meu plano. */
     val guidelines: List<Guideline> = emptyList(),
-    val usesGlp1: Boolean = false
+    val usesGlp1: Boolean = false,
+    /**
+     * Metas diárias de macronutrientes.
+     *
+     * Vazio por padrão: o aplicativo não define meta por conta própria. Sem meta, a camada
+     * nutricional apenas informa o consumo, sem dizer se está alto ou baixo.
+     */
+    val macroGoals: MacroGoals = MacroGoals()
 ) {
     fun restrictionFor(allergen: Allergen): Restriction? =
         restrictions.firstOrNull { it.allergen == allergen }
@@ -175,5 +182,16 @@ data class MealRecord(
     val recognizedText: String,
     val evidenceLabels: List<String>,
     val endToEndMs: Long,
-    val userConfirmed: Boolean = false
+    val userConfirmed: Boolean = false,
+    /**
+     * Nutrientes efetivamente consumidos nesta refeição, já multiplicados pelas porções confirmadas.
+     *
+     * Só é preenchido quando o usuário confirma a quantidade: sem confirmação não existe consumo, e
+     * inventar porção corromperia o total do dia.
+     */
+    val consumedNutrients: List<NutrientAmount> = emptyList(),
+    /** Itens escolhidos/confirmados em MENU ou PLATE; nunca derivados silenciosamente. */
+    val confirmedItems: List<String> = emptyList(),
+    /** Verdadeiro quando a interação incluiu candidato de visão probabilístico. */
+    val containsVisualEstimate: Boolean = false
 )

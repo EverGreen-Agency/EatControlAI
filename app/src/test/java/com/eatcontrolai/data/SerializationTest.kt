@@ -2,7 +2,9 @@ package com.eatcontrolai.data
 
 import com.eatcontrolai.core.model.Allergen
 import com.eatcontrolai.core.model.DecisionState
+import com.eatcontrolai.core.model.GoalSource
 import com.eatcontrolai.core.model.Guideline
+import com.eatcontrolai.core.model.MacroGoals
 import com.eatcontrolai.core.model.MealRecord
 import com.eatcontrolai.core.model.PrivacySettings
 import com.eatcontrolai.core.model.Restriction
@@ -29,7 +31,12 @@ class SerializationTest {
         ),
         freeTextRestrictions = setOf("evitar frituras"),
         goals = setOf("Priorizar proteína"),
-        guidelines = listOf(Guideline("Título", "Detalhe"))
+        guidelines = listOf(Guideline("Título", "Detalhe")),
+        macroGoals = MacroGoals(
+            energyKcal = 1800.0,
+            proteinG = 90.0,
+            definedBy = GoalSource.HEALTH_PROFESSIONAL
+        )
     )
 
     @Test
@@ -56,7 +63,9 @@ class SerializationTest {
                 recognizedText = "ALÉRGICOS: CONTÉM LEITE.",
                 evidenceLabels = listOf("Declarado no rótulo", "Texto reconhecido"),
                 endToEndMs = 812,
-                userConfirmed = true
+                userConfirmed = true,
+                confirmedItems = listOf("frango", "arroz"),
+                containsVisualEstimate = true
             )
         )
         assertEquals(records, Serialization.decodeHistory(Serialization.encode(records)))
@@ -68,6 +77,21 @@ class SerializationTest {
         assertEquals(fallback, Serialization.decodeProfile("{{{ não é json", fallback))
         assertEquals(PrivacySettings(), Serialization.decodePrivacy("nada disso"))
         assertTrue(Serialization.decodeHistory("[[[").isEmpty())
+    }
+
+    @Test
+    fun `historico antigo sem campos assistidos permanece compativel`() {
+        val json = """
+            [{
+              "id":"old","timestampMillis":1,"title":"Antigo",
+              "decisionState":"INSUFFICIENT_INFORMATION","shortMessage":"Sem dados",
+              "recognizedText":"","evidenceLabels":[],"endToEndMs":2
+            }]
+        """.trimIndent()
+
+        val record = Serialization.decodeHistory(json).single()
+        assertTrue(record.confirmedItems.isEmpty())
+        assertEquals(false, record.containsVisualEstimate)
     }
 
     @Test

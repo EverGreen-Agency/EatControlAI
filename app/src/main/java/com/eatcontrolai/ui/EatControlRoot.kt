@@ -62,10 +62,7 @@ fun EatControlRoot(viewModel: EatControlViewModel) {
     var destination by rememberSaveable { mutableStateOf(Destination.HOME) }
     var showLab by remember { mutableStateOf(false) }
     val toast by viewModel.toast.collectAsState()
-
-    BackHandler(enabled = showLab || destination != Destination.HOME) {
-        if (showLab) showLab = false else destination = Destination.HOME
-    }
+    val profileState by viewModel.profileState.collectAsState()
 
     LaunchedEffect(toast) {
         if (toast != null) {
@@ -79,38 +76,66 @@ fun EatControlRoot(viewModel: EatControlViewModel) {
         color = EcColors.Background,
         contentColor = EcColors.TextPrimary
     ) {
-        Box(Modifier.fillMaxSize()) {
-            Box(Modifier.fillMaxSize().padding(bottom = 78.dp)) {
-                when {
-                    showLab -> LabScreen(viewModel = viewModel, onClose = { showLab = false })
-                    destination == Destination.HOME -> HomeScreen(
-                        viewModel = viewModel,
-                        onNavigate = { destination = it },
-                        onOpenLab = if (BuildConfig.DEBUG) ({ showLab = true }) else null
-                    )
-                    destination == Destination.ANALYZE -> AnalyzeScreen(viewModel)
-                    destination == Destination.PLAN -> PlanScreen(viewModel)
-                    destination == Destination.HISTORY -> HistoryScreen(viewModel, onNavigate = { destination = it })
-                    destination == Destination.PROFILE -> ProfileScreen(viewModel, onNavigate = { destination = it })
+        when (profileState) {
+            com.eatcontrolai.data.ProfileState.Loading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        androidx.compose.material3.CircularProgressIndicator(color = EcColors.Mint)
+                        Spacer(Modifier.height(12.dp))
+                        Text("Carregando perfil local…", color = EcColors.TextMuted)
+                    }
                 }
             }
 
-            BottomBar(
-                current = destination,
-                onSelect = { destination = it; showLab = false },
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
+            com.eatcontrolai.data.ProfileState.NeedsOnboarding -> {
+                com.eatcontrolai.ui.profile.OnboardingScreen(onSave = viewModel::saveProfile)
+            }
 
-            if (toast != null) {
-                Snackbar(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(horizontal = 14.dp)
-                        .padding(bottom = 92.dp),
-                    containerColor = EcColors.SurfaceHigh,
-                    contentColor = EcColors.TextPrimary
-                ) {
-                    Text(toast.orEmpty(), style = MaterialTheme.typography.bodySmall)
+            is com.eatcontrolai.data.ProfileState.Ready -> {
+                BackHandler(enabled = showLab || destination != Destination.HOME) {
+                    if (showLab) showLab = false else destination = Destination.HOME
+                }
+
+                Box(Modifier.fillMaxSize()) {
+                    Box(Modifier.fillMaxSize().padding(bottom = 78.dp)) {
+                        when {
+                            showLab -> LabScreen(viewModel = viewModel, onClose = { showLab = false })
+                            destination == Destination.HOME -> HomeScreen(
+                                viewModel = viewModel,
+                                onNavigate = { destination = it },
+                                onOpenLab = if (BuildConfig.DEBUG) ({ showLab = true }) else null
+                            )
+                            destination == Destination.ANALYZE -> AnalyzeScreen(viewModel)
+                            destination == Destination.PLAN -> PlanScreen(viewModel)
+                            destination == Destination.HISTORY -> HistoryScreen(
+                                viewModel,
+                                onNavigate = { destination = it }
+                            )
+                            destination == Destination.PROFILE -> ProfileScreen(
+                                viewModel,
+                                onNavigate = { destination = it }
+                            )
+                        }
+                    }
+
+                    BottomBar(
+                        current = destination,
+                        onSelect = { destination = it; showLab = false },
+                        modifier = Modifier.align(Alignment.BottomCenter)
+                    )
+
+                    if (toast != null) {
+                        Snackbar(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(horizontal = 14.dp)
+                                .padding(bottom = 92.dp),
+                            containerColor = EcColors.SurfaceHigh,
+                            contentColor = EcColors.TextPrimary
+                        ) {
+                            Text(toast.orEmpty(), style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
                 }
             }
         }

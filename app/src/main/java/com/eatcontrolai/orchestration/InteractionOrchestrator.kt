@@ -1,8 +1,17 @@
 package com.eatcontrolai.orchestration
 
 import com.eatcontrolai.core.model.Decision
+import com.eatcontrolai.core.model.DecisionReason
+import com.eatcontrolai.core.model.DecisionState
 import com.eatcontrolai.core.model.Evidence
+import com.eatcontrolai.core.model.EvidenceType
+import com.eatcontrolai.core.model.NutritionFacts
 import com.eatcontrolai.core.model.UserProfile
+import com.eatcontrolai.domain.menu.MenuAnalysis
+import com.eatcontrolai.domain.menu.MenuParser
+import com.eatcontrolai.domain.nutrition.NutritionParser
+import com.eatcontrolai.domain.plate.PlateAnalysis
+import com.eatcontrolai.domain.plate.PlateLabelMapper
 import com.eatcontrolai.domain.barcode.BarcodeRepository
 import com.eatcontrolai.domain.decision.FoodDecisionEngine
 import com.eatcontrolai.domain.evidence.EvidenceBuilder
@@ -16,7 +25,7 @@ import com.eatcontrolai.metrics.StageMetric
 import java.util.UUID
 
 /** Trilhas de análise implementadas ponta a ponta. */
-enum class AnalysisTrack { LABEL, BARCODE }
+enum class AnalysisTrack { LABEL, BARCODE, MENU, PLATE }
 
 data class InteractionResult(
     val interactionId: String,
@@ -28,7 +37,16 @@ data class InteractionResult(
     val frameJpeg: ByteArray,
     val metrics: List<StageMetric>,
     /** Por que a cascata escolheu esta trilha. Nulo quando a trilha foi escolhida à mão. */
-    val routingReason: String? = null
+    val routingReason: String? = null,
+    /**
+     * Tabela nutricional lida, quando existir.
+     *
+     * Deliberadamente **fora** de [decision]: número de macronutriente não decide compatibilidade
+     * nem entra na hierarquia de evidência de alérgeno. É informação, não veredito.
+     */
+    val nutrition: NutritionFacts = NutritionFacts(),
+    val menuAnalysis: MenuAnalysis? = null,
+    val plateAnalysis: PlateAnalysis? = null
 ) {
     // frameJpeg é ByteArray: equals/hashCode gerados por data class comparariam referência.
     override fun equals(other: Any?) = this === other
@@ -87,12 +105,20 @@ class InteractionOrchestrator(
             val ocr = models.current().ocr.recognize(frame)
             record(interactionId, Stage.OCR, ocr.meta.latencyMs, ocr.meta.providerId, ocr.meta.version)
             routing = ContextRouter.route(null, ocr.text)
+            // A tabela nutricional é lida mesmo quando o roteador não classifica como rótulo: ela é
+            // informação independente do veredito de compatibilidade.
+            val nutrition = NutritionParser.parse(ocr.text)
             perception = when (routing) {
                 is ContextRouter.Decision.Label -> Perception(
                     evidence = EvidenceBuilder.fromLabelOcr(ocr.text, ocr.meta.providerId, ocr.meta.version),
-                    recognizedText = ocr.text
+                    recognizedText = ocr.text,
+                    nutrition = nutrition
                 )
-                else -> Perception(evidence = emptyList(), recognizedText = ocr.text)
+                else -> Perception(
+                    evidence = emptyList(),
+                    recognizedText = ocr.text,
+                    nutrition = nutrition
+                )
             }
         }
         record(interactionId, Stage.ROUTING, sinceMs(routeStart), "context_router_v1")
@@ -113,7 +139,8 @@ class InteractionOrchestrator(
             productName = perception.productName,
             frameJpeg = frame,
             metrics = metrics.snapshot(interactionId),
-            routingReason = routing.reason
+            routingReason = routing.reason,
+            nutrition = perception.nutrition
         )
     }
 
@@ -149,11 +176,23 @@ class InteractionOrchestrator(
         val perception = when (track) {
             AnalysisTrack.LABEL -> readLabel(interactionId, frame)
             AnalysisTrack.BARCODE -> readBarcode(interactionId, frame)
+            AnalysisTrack.MENU -> readMenu(interactionId, frame)
+            AnalysisTrack.PLATE -> readPlate(interactionId, frame)
         }
 
         val ruleStart = System.nanoTime()
-        val decision = decisionEngine.decide(profile, perception.evidence)
-        record(interactionId, Stage.RULE_ENGINE, sinceMs(ruleStart), "deterministic_rules_v1")
+        val decision = when (track) {
+            AnalysisTrack.LABEL, AnalysisTrack.BARCODE ->
+                decisionEngine.decide(profile, perception.evidence)
+            AnalysisTrack.MENU -> menuDecision(requireNotNull(perception.menuAnalysis), perception.evidence)
+            AnalysisTrack.PLATE -> plateDecision(requireNotNull(perception.plateAnalysis), perception.evidence)
+        }
+        val ruleProvider = if (track == AnalysisTrack.LABEL || track == AnalysisTrack.BARCODE) {
+            "deterministic_rules_v1"
+        } else {
+            "assistive_guardrails_v1"
+        }
+        record(interactionId, Stage.RULE_ENGINE, sinceMs(ruleStart), ruleProvider)
 
         if (speakResult) speakAndRecord(interactionId, startedAt, decision.shortMessage)
 
@@ -167,7 +206,10 @@ class InteractionOrchestrator(
             scannedEan = perception.ean,
             productName = perception.productName,
             frameJpeg = frame,
-            metrics = metrics.snapshot(interactionId)
+            metrics = metrics.snapshot(interactionId),
+            nutrition = perception.nutrition,
+            menuAnalysis = perception.menuAnalysis,
+            plateAnalysis = perception.plateAnalysis
         )
     }
 
@@ -175,7 +217,10 @@ class InteractionOrchestrator(
         val evidence: List<Evidence>,
         val recognizedText: String = "",
         val ean: String? = null,
-        val productName: String? = null
+        val productName: String? = null,
+        val nutrition: NutritionFacts = NutritionFacts(),
+        val menuAnalysis: MenuAnalysis? = null,
+        val plateAnalysis: PlateAnalysis? = null
     )
 
     private suspend fun readLabel(interactionId: String, frame: ByteArray): Perception {
@@ -183,7 +228,8 @@ class InteractionOrchestrator(
         record(interactionId, Stage.OCR, ocr.meta.latencyMs, ocr.meta.providerId, ocr.meta.version)
         return Perception(
             evidence = EvidenceBuilder.fromLabelOcr(ocr.text, ocr.meta.providerId, ocr.meta.version),
-            recognizedText = ocr.text
+            recognizedText = ocr.text,
+            nutrition = NutritionParser.parse(ocr.text)
         )
     }
 
@@ -225,7 +271,120 @@ class InteractionOrchestrator(
         return Perception(
             evidence = EvidenceBuilder.fromLabelOcr(ocr.text, ocr.meta.providerId, ocr.meta.version),
             recognizedText = ocr.text,
-            ean = ean
+            ean = ean,
+            nutrition = NutritionParser.parse(ocr.text)
+        )
+    }
+
+    /** Cardápio tem parser próprio: texto de preço/descrição nunca passa como tabela nutricional. */
+    private suspend fun readMenu(interactionId: String, frame: ByteArray): Perception {
+        val ocr = models.current().ocr.recognize(frame)
+        record(interactionId, Stage.OCR, ocr.meta.latencyMs, ocr.meta.providerId, ocr.meta.version)
+        val analysis = MenuParser.parse(ocr.text)
+        val evidence = if (ocr.text.isBlank()) {
+            emptyList()
+        } else {
+            listOf(
+                Evidence(
+                    type = EvidenceType.OCR_TEXT,
+                    value = ocr.text,
+                    source = "OCR de cardápio · ${ocr.meta.providerId}",
+                    modelVersion = ocr.meta.version
+                )
+            )
+        }
+        return Perception(
+            evidence = evidence,
+            recognizedText = ocr.text,
+            menuAnalysis = analysis
+        )
+    }
+
+    /** Visão fornece candidatos; a seleção do usuário é feita depois, na camada de interação. */
+    private suspend fun readPlate(interactionId: String, frame: ByteArray): Perception {
+        val detection = models.current().detector?.detect(frame)
+        val analysis = if (detection == null) {
+            PlateLabelMapper.unavailable()
+        } else {
+            record(
+                interactionId,
+                Stage.VISION_INFERENCE,
+                detection.meta.latencyMs,
+                detection.meta.providerId,
+                detection.meta.version
+            )
+            PlateLabelMapper.map(detection)
+        }
+        val evidence = detection
+            ?.takeIf { it.detections.isNotEmpty() }
+            ?.let { result ->
+                listOf(
+                    Evidence(
+                        type = EvidenceType.VISUAL_INFERENCE,
+                        value = result.detections.joinToString { it.label },
+                        source = result.meta.providerId,
+                        confidence = result.detections.maxOfOrNull { it.confidence },
+                        modelVersion = result.meta.version
+                    )
+                )
+            }
+            .orEmpty()
+        return Perception(
+            evidence = evidence,
+            recognizedText = detection?.detections
+                ?.joinToString(separator = "\n") { "${it.label}: ${(it.confidence * 100).toInt()}%" }
+                .orEmpty(),
+            plateAnalysis = analysis
+        )
+    }
+
+    private fun menuDecision(analysis: MenuAnalysis, evidence: List<Evidence>): Decision =
+        if (analysis.options.isEmpty()) {
+            Decision(
+                state = DecisionState.INSUFFICIENT_INFORMATION,
+                shortMessage = "Não consegui estruturar opções deste cardápio.",
+                evidence = evidence,
+                reasons = listOf(
+                    DecisionReason(
+                        "O OCR não sustentou nome e descrição de uma opção revisável.",
+                        EvidenceType.OCR_TEXT
+                    )
+                )
+            )
+        } else {
+            Decision(
+                state = DecisionState.NEEDS_CONFIRMATION,
+                shortMessage = "Encontrei ${analysis.options.size} opções. Revise antes de registrar.",
+                evidence = evidence,
+                reasons = listOf(
+                    DecisionReason(
+                        "O cardápio informa texto, não receita completa, porção ou macros.",
+                        EvidenceType.OCR_TEXT
+                    )
+                )
+            )
+        }
+
+    private fun plateDecision(analysis: PlateAnalysis, evidence: List<Evidence>): Decision {
+        val hasMappedCandidate = analysis.selectedComponents.isNotEmpty()
+        return Decision(
+            state = if (hasMappedCandidate) {
+                DecisionState.NEEDS_CONFIRMATION
+            } else {
+                DecisionState.INSUFFICIENT_INFORMATION
+            },
+            shortMessage = if (hasMappedCandidate) {
+                "Isto é só um palpite visual. Confirme os componentes."
+            } else {
+                "Não reconheci o prato. Selecione os componentes manualmente."
+            },
+            evidence = evidence,
+            reasons = listOf(
+                DecisionReason(
+                    "Uma foto não determina receita, ingrediente oculto, quantidade ou macros.",
+                    EvidenceType.VISUAL_INFERENCE
+                )
+            )
         )
     }
 

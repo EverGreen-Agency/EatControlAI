@@ -2,8 +2,13 @@ package com.eatcontrolai.data
 
 import com.eatcontrolai.core.model.Allergen
 import com.eatcontrolai.core.model.DecisionState
+import com.eatcontrolai.core.model.GoalSource
 import com.eatcontrolai.core.model.Guideline
+import com.eatcontrolai.core.model.MacroGoals
 import com.eatcontrolai.core.model.MealRecord
+import com.eatcontrolai.core.model.Nutrient
+import com.eatcontrolai.core.model.NutrientAmount
+import com.eatcontrolai.core.model.NutritionBasis
 import com.eatcontrolai.core.model.PrivacySettings
 import com.eatcontrolai.core.model.Restriction
 import com.eatcontrolai.core.model.RestrictionSeverity
@@ -48,6 +53,15 @@ object Serialization {
                 })
             }
         })
+        put("macroGoals", JSONObject().apply {
+            profile.macroGoals.energyKcal?.let { put("energyKcal", it) }
+            profile.macroGoals.proteinG?.let { put("proteinG", it) }
+            profile.macroGoals.carbohydrateG?.let { put("carbohydrateG", it) }
+            profile.macroGoals.fatG?.let { put("fatG", it) }
+            profile.macroGoals.fiberG?.let { put("fiberG", it) }
+            profile.macroGoals.sodiumMg?.let { put("sodiumMg", it) }
+            put("definedBy", profile.macroGoals.definedBy.name)
+        })
     }.toString()
 
     fun decodeProfile(json: String, fallback: UserProfile): UserProfile = runCatching {
@@ -70,9 +84,27 @@ object Serialization {
             goals = root.optJSONArray("goals").strings().toSet(),
             guidelines = root.optJSONArray("guidelines").objects().map {
                 Guideline(it.optString("title"), it.optString("detail"))
-            }
+            },
+            macroGoals = root.optJSONObject("macroGoals").toMacroGoals(fallback.macroGoals)
         )
     }.getOrDefault(fallback)
+
+    /** Meta ausente permanece nula: zero significaria "meta de zero", que é outra coisa. */
+    private fun JSONObject?.toMacroGoals(fallback: MacroGoals): MacroGoals {
+        if (this == null) return fallback
+        return MacroGoals(
+            energyKcal = optionalDouble("energyKcal"),
+            proteinG = optionalDouble("proteinG"),
+            carbohydrateG = optionalDouble("carbohydrateG"),
+            fatG = optionalDouble("fatG"),
+            fiberG = optionalDouble("fiberG"),
+            sodiumMg = optionalDouble("sodiumMg"),
+            definedBy = enumOrNull<GoalSource>(optString("definedBy")) ?: GoalSource.NOT_CONFIGURED
+        )
+    }
+
+    private fun JSONObject.optionalDouble(key: String): Double? =
+        if (has(key) && !isNull(key)) optDouble(key).takeIf { !it.isNaN() } else null
 
     // ------------------------------------------------------------- privacidade
 
@@ -106,6 +138,17 @@ object Serialization {
                     put("evidenceLabels", JSONArray(record.evidenceLabels))
                     put("endToEndMs", record.endToEndMs)
                     put("userConfirmed", record.userConfirmed)
+                    put("consumedNutrients", JSONArray().apply {
+                        record.consumedNutrients.forEach { amount ->
+                            put(JSONObject().apply {
+                                put("nutrient", amount.nutrient.name)
+                                put("value", amount.value)
+                                put("basis", amount.basis.name)
+                            })
+                        }
+                    })
+                    put("confirmedItems", JSONArray(record.confirmedItems))
+                    put("containsVisualEstimate", record.containsVisualEstimate)
                 }
             )
         }
@@ -123,7 +166,21 @@ object Serialization {
                 recognizedText = item.optString("recognizedText"),
                 evidenceLabels = item.optJSONArray("evidenceLabels").strings(),
                 endToEndMs = item.optLong("endToEndMs"),
-                userConfirmed = item.optBoolean("userConfirmed", false)
+                userConfirmed = item.optBoolean("userConfirmed", false),
+                consumedNutrients = item.optJSONArray("consumedNutrients").objects()
+                    .mapNotNull { entry ->
+                        val nutrient = enumOrNull<Nutrient>(entry.optString("nutrient"))
+                            ?: return@mapNotNull null
+                        NutrientAmount(
+                            nutrient = nutrient,
+                            value = entry.optDouble("value").takeIf { !it.isNaN() }
+                                ?: return@mapNotNull null,
+                            basis = enumOrNull<NutritionBasis>(entry.optString("basis"))
+                                ?: NutritionBasis.PER_PORTION
+                        )
+                    },
+                confirmedItems = item.optJSONArray("confirmedItems").strings(),
+                containsVisualEstimate = item.optBoolean("containsVisualEstimate", false)
             )
         }
     }.getOrDefault(emptyList())

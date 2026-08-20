@@ -15,38 +15,31 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 
 /**
- * STT on-device do Android (`docs/adr/0005`, Fase A).
+ * STT estritamente on-device do Android (`docs/adr/0005`, Fase A).
  *
- * `minSdk` 33 permite [SpeechRecognizer.createOnDeviceSpeechRecognizer], que roda **sem rede** e
- * portanto sustenta o ADR-0002: o caminho crítico da interação não depende de nuvem. Quando o
- * aparelho não tem o reconhecedor local, cai para o reconhecedor padrão do sistema e a UI mostra
- * isso — a diferença importa para a conversa de Edge AI com a banca.
- *
- * Requer `RECORD_AUDIO`, pedida na tela antes do primeiro uso.
+ * `EXTRA_PREFER_OFFLINE` não é garantia: o reconhecedor padrão pode usar rede. Por isso este provider
+ * só fica disponível quando [SpeechRecognizer.isOnDeviceRecognitionAvailable] é verdadeiro e nunca
+ * cai para `createSpeechRecognizer`. Sem pacote local pt-BR, a UI mantém o fluxo por toque.
  */
 class AndroidSttProvider(context: Context) : SttProvider {
 
     private val appContext = context.applicationContext
 
-    /** `true` quando o reconhecimento roda no próprio aparelho, sem rede. */
-    var usingOnDevice: Boolean = false
+    /** Sempre verdadeiro durante uma transcrição; mantido para diagnóstico da UI. */
+    var usingOnDevice: Boolean = isAvailable()
         private set
 
     override fun isAvailable(): Boolean =
-        SpeechRecognizer.isRecognitionAvailable(appContext) ||
-            SpeechRecognizer.isOnDeviceRecognitionAvailable(appContext)
+        SpeechRecognizer.isOnDeviceRecognitionAvailable(appContext)
 
     override suspend fun transcribe(): SttResult = withContext(Dispatchers.Main) {
-        val startedAt = System.nanoTime()
-
-        val onDevice = SpeechRecognizer.isOnDeviceRecognitionAvailable(appContext)
-        usingOnDevice = onDevice
-
-        val recognizer = if (onDevice) {
-            SpeechRecognizer.createOnDeviceSpeechRecognizer(appContext)
-        } else {
-            SpeechRecognizer.createSpeechRecognizer(appContext)
+        check(isAvailable()) {
+            "Reconhecimento offline pt-BR indisponível. Baixe o pacote de idioma ou use o botão Analisar."
         }
+
+        val startedAt = System.nanoTime()
+        usingOnDevice = true
+        val recognizer = SpeechRecognizer.createOnDeviceSpeechRecognizer(appContext)
 
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
@@ -91,17 +84,16 @@ class AndroidSttProvider(context: Context) : SttProvider {
         SttResult(
             text = text,
             meta = InferenceMeta(
-                providerId = if (onDevice) PROVIDER_ID_ON_DEVICE else PROVIDER_ID_SYSTEM,
+                providerId = PROVIDER_ID,
                 version = "platform",
-                runtime = if (onDevice) "android-on-device" else "android-system",
+                runtime = "android-on-device",
                 latencyMs = (System.nanoTime() - startedAt) / 1_000_000
             )
         )
     }
 
     companion object {
-        const val PROVIDER_ID_ON_DEVICE = "android_stt_on_device"
-        const val PROVIDER_ID_SYSTEM = "android_stt_system"
+        const val PROVIDER_ID = "android_stt_on_device"
         private const val LANGUAGE = "pt-BR"
     }
 }

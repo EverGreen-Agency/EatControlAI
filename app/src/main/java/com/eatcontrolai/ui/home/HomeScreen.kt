@@ -50,6 +50,7 @@ fun HomeScreen(
     val profile by viewModel.profile.collectAsState()
     val glasses by viewModel.glasses.collectAsState()
     val history by viewModel.history.collectAsState()
+    val dailyProgress by viewModel.dailyProgress.collectAsState()
 
     LazyColumn(
         modifier = Modifier.fillMaxWidth().statusBarsPadding(),
@@ -70,7 +71,11 @@ fun HomeScreen(
                     )
 
                     Text(
-                        "Seu plano está ativo",
+                        if (profile.macroGoals.isConfigured) {
+                            "Metas ${profile.macroGoals.definedBy.label}"
+                        } else {
+                            "Perfil local ativo · sem metas configuradas"
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = EcColors.TextMuted
                     )
@@ -85,24 +90,50 @@ fun HomeScreen(
         item { HeroCard(onAnalyze = { onNavigate(Destination.ANALYZE) }, onPlan = { onNavigate(Destination.PLAN) }) }
 
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                StatCard(
-                    caption = "Proteína",
-                    value = "82 g",
-                    detail = "de 110 g no plano",
-                    progress = 0.75f,
-                    modifier = Modifier.weight(1f),
-                    isDemo = true
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    "Acompanhamento de hoje",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = EcColors.TextPrimary
                 )
-                StatCard(
-                    caption = "Hidratação",
-                    value = "1,8 L",
-                    detail = "de 2,3 L na meta",
-                    progress = 0.78f,
-                    tone = EcColors.Mint,
-                    modifier = Modifier.weight(1f),
-                    isDemo = true
-                )
+                if (dailyProgress.isEmpty()) {
+                    EcCard {
+                        Text(
+                            "Nenhuma meta ou consumo confirmado ainda.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = EcColors.TextMuted
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "Configure metas no Perfil ou registre uma porção lida de um rótulo.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = EcColors.TextFaint
+                        )
+                    }
+                } else {
+                    dailyProgress.chunked(2).forEach { row ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            row.forEach { progress ->
+                                val formatter = java.text.DecimalFormat("0.#")
+                                val unit = progress.unit.symbol
+                                val goal = progress.goal
+                                StatCard(
+                                    caption = progress.nutrient.displayName.replaceFirstChar { it.uppercase() },
+                                    value = "${formatter.format(progress.consumed)} $unit",
+                                    detail = if (goal != null) {
+                                        "de ${formatter.format(goal)} $unit · ${profile.macroGoals.definedBy.label}"
+                                    } else {
+                                        "consumo confirmado · sem meta"
+                                    },
+                                    progress = goal?.takeIf { it > 0.0 }
+                                        ?.let { (progress.consumed / it).coerceIn(0.0, 1.0).toFloat() },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            if (row.size == 1) Spacer(Modifier.weight(1f))
+                        }
+                    }
+                }
             }
         }
 
@@ -111,7 +142,7 @@ fun HomeScreen(
                 caption = "Análises registradas",
                 value = "${history.size}",
                 detail = if (history.isEmpty()) "nenhuma análise ainda nesta sessão"
-                else "execuções reais da pipeline",
+                else "registros locais neste aparelho",
                 progress = null,
                 tone = EcColors.Purple
             )
@@ -252,7 +283,7 @@ private fun EmptyHistory(onAnalyze: () -> Unit) {
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            "O histórico só mostra execuções reais da pipeline.",
+            "O histórico só mostra registros locais neste aparelho.",
             style = MaterialTheme.typography.bodySmall,
             color = EcColors.TextFaint
         )
@@ -298,11 +329,22 @@ fun RecordRow(record: MealRecord, modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.bodySmall,
                 color = EcColors.TextMuted
             )
+            if (record.confirmedItems.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    record.confirmedItems.joinToString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = EcColors.TextSoft
+                )
+            }
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 StateBadge(record.decisionState)
                 if (record.userConfirmed) {
                     EcChip("confirmado", tone = EcColors.BlueSoft, selected = true)
+                }
+                if (record.containsVisualEstimate) {
+                    EcChip("visão assistida", tone = EcColors.Amber, selected = true)
                 }
             }
         }

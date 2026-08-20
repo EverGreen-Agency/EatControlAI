@@ -1,5 +1,6 @@
 package com.eatcontrolai
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -30,5 +31,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /** Mantém o deep link de retorno do Meta AI na Activity existente (`singleTop`). */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
     }
 }

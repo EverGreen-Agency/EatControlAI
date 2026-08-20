@@ -21,7 +21,6 @@ import com.eatcontrolai.ui.Destination
 import com.eatcontrolai.ui.EatControlViewModel
 import com.eatcontrolai.ui.components.EcCard
 import com.eatcontrolai.ui.components.EcRow
-import com.eatcontrolai.ui.components.EcToggle
 import com.eatcontrolai.ui.components.SectionHeader
 import com.eatcontrolai.ui.components.StatusDot
 import com.eatcontrolai.ui.theme.EcColors
@@ -29,7 +28,6 @@ import com.eatcontrolai.ui.theme.EcColors
 @Composable
 fun ProfileScreen(viewModel: EatControlViewModel, onNavigate: (Destination) -> Unit) {
     val profile by viewModel.profile.collectAsState()
-    val privacy by viewModel.privacy.collectAsState()
     val glasses by viewModel.glasses.collectAsState()
 
     LazyColumn(
@@ -49,13 +47,14 @@ fun ProfileScreen(viewModel: EatControlViewModel, onNavigate: (Destination) -> U
                 EcRow(
                     glyph = profile.displayName.take(1).ifBlank { "?" },
                     title = profile.displayName.ifBlank { "Sem nome" },
-                    detail = if (profile.usesGlp1) "Jornada GLP-1 ativa" else "Perfil principal",
+                    detail = if (profile.usesGlp1) "Uso de GLP-1 informado" else "Perfil local",
                     glyphTone = EcColors.Purple
                 )
                 EcRow(
                     glyph = "✓",
                     title = "Meu plano",
-                    detail = "${profile.restrictions.size} restrição(ões) · ${profile.goals.size} metas",
+                    detail = "${profile.restrictions.size} restrição(ões) · " +
+                        if (profile.macroGoals.isConfigured) "metas configuradas" else "sem metas",
                     onClick = { onNavigate(Destination.PLAN) },
                     trailing = { Text("›", style = MaterialTheme.typography.headlineSmall, color = EcColors.TextFaint) }
                 )
@@ -69,42 +68,40 @@ fun ProfileScreen(viewModel: EatControlViewModel, onNavigate: (Destination) -> U
         }
 
         item {
+            ProfileEditor(profile = profile, onSave = viewModel::saveProfile)
+        }
+
+        item {
             EcCard(
                 title = "Privacidade",
-                subtitle = "Padrões conservadores por decisão de projeto (NFR-008)."
+                subtitle = "Comportamentos reais do MVP — sem controles que ainda não têm efeito."
             ) {
                 EcRow(
+                    glyph = "EDGE",
+                    title = "Processamento no telefone",
+                    detail = "OCR, barcode e regras rodam localmente.",
+                    glyphTone = EcColors.Mint
+                )
+                EcRow(
                     glyph = "IMG",
-                    title = "Salvar fotos analisadas",
-                    detail = if (privacy.savePhotos) "Ligado" else "Desligado por padrão",
-                    trailing = { EcToggle(privacy.savePhotos, viewModel::toggleSavePhotos) }
+                    title = "Fotos não são salvas",
+                    detail = "O frame existe só durante a análise e a visualização do resultado.",
+                    glyphTone = EcColors.Mint
                 )
                 EcRow(
-                    glyph = "AI",
-                    title = "Usar dados para melhoria",
-                    detail = "Opt-in voluntário, desligado por padrão",
-                    trailing = {
-                        EcToggle(privacy.shareForImprovement, viewModel::toggleShareForImprovement)
-                    }
-                )
-                EcRow(
-                    glyph = "↕",
-                    title = "Sincronizar histórico",
-                    detail = "Backend ainda não existe; a chave já reflete a escolha",
-                    trailing = { EcToggle(privacy.syncHistory, viewModel::toggleSyncHistory) }
+                    glyph = "HIST",
+                    title = "Histórico local",
+                    detail = "Texto e decisões ficam no DataStore deste aparelho, fora do backup.",
+                    glyphTone = EcColors.Mint
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "O app não grava imagem em disco em nenhuma configuração. O que fica guardado " +
-                        "no aparelho é texto: perfil, preferências e o histórico de decisões. A " +
-                        "telemetria tem apenas latências, identificador de provider e versão de " +
-                        "modelo (NFR-008).",
+                    "Não há upload, compartilhamento para melhoria nem sincronização no MVP. " +
+                        "A telemetria em memória contém somente latências, provider e versão do modelo.",
                     style = MaterialTheme.typography.bodySmall,
                     color = EcColors.TextFaint
                 )
                 Spacer(Modifier.height(12.dp))
-                // Direito de exclusão dos próprios dados (contexto-gpt.md §49). Fica aqui porque é
-                // do usuário; conveniência de demonstração mora no Laboratório, em build de debug.
                 OutlinedButton(
                     onClick = viewModel::clearHistory,
                     modifier = Modifier.fillMaxWidth()
@@ -143,16 +140,16 @@ fun ProfileScreen(viewModel: EatControlViewModel, onNavigate: (Destination) -> U
                 EcRow(
                     glyph = "▣",
                     title = "Edge AI no aparelho",
-                    detail = "OCR e TTS rodam local. Nada do caminho crítico depende de internet.",
+                    detail = "OCR e barcode são locais; voz só é habilitada com recursos offline instalados.",
                     glyphTone = EcColors.Mint,
                     trailing = { StatusDot(EcColors.Mint, "ATIVO") }
                 )
                 EcRow(
                     glyph = "☁",
                     title = "Sincronização cloud",
-                    detail = "Fora do caminho crítico por decisão (ADR-0002). Ainda não implementada.",
+                    detail = "Fora do caminho crítico por decisão (ADR-0002). Não implementada.",
                     glyphTone = EcColors.TextMuted,
-                    trailing = { StatusDot(EcColors.TextFaint, "PENDENTE") }
+                    trailing = { StatusDot(EcColors.TextFaint, "FORA DO MVP") }
                 )
             }
         }

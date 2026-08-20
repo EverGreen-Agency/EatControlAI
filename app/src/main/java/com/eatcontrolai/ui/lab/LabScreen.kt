@@ -119,16 +119,15 @@ fun LabScreen(viewModel: EatControlViewModel, onClose: () -> Unit) {
 
         item {
             EcCard(
-                title = "Preparar demonstração",
+                title = "Testar primeira execução",
                 subtitle = "Conveniência de desenvolvimento — não aparece para o usuário final."
             ) {
                 OutlinedButton(onClick = viewModel::resetProfile, modifier = Modifier.fillMaxWidth()) {
-                    Text("Restaurar perfil de demonstração")
+                    Text("Remover perfil local e abrir onboarding")
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Volta o perfil ao \"João\" com restrição crítica a leite, que é o estado " +
-                        "esperado pelo roteiro de demonstração e pelo gabarito do benchmark.",
+                    "Apaga somente o perfil local. Nenhuma persona ou meta de demonstração é injetada.",
                     style = MaterialTheme.typography.bodySmall,
                     color = EcColors.TextFaint
                 )

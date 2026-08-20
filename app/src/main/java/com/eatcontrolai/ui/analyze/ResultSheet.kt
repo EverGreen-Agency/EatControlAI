@@ -26,6 +26,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.eatcontrolai.core.model.Allergen
+import com.eatcontrolai.core.model.NutrientAmount
+import com.eatcontrolai.core.model.NutrientProgress
+import com.eatcontrolai.domain.plate.PlateFoodClass
+import com.eatcontrolai.orchestration.AnalysisTrack
 import com.eatcontrolai.orchestration.InteractionResult
 import com.eatcontrolai.ui.components.StateBadge
 import com.eatcontrolai.ui.components.tone
@@ -43,7 +47,18 @@ import com.eatcontrolai.ui.theme.EcColors
 fun ResultSheet(
     result: InteractionResult,
     onConfirm: (Allergen, Boolean) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    portions: Double = 1.0,
+    consumed: List<NutrientAmount> = emptyList(),
+    dailyProgress: List<NutrientProgress> = emptyList(),
+    goalsConfigured: Boolean = false,
+    consumptionLogged: Boolean = false,
+    onPortionsChange: (Double) -> Unit = {},
+    onRegisterConsumption: () -> Unit = {},
+    onSelectMenuOption: (String) -> Unit = {},
+    onRegisterMenuOption: () -> Unit = {},
+    onTogglePlateComponent: (PlateFoodClass) -> Unit = {},
+    onRegisterPlate: () -> Unit = {}
 ) {
     val decision = result.decision
     val tone = decision.state.tone()
@@ -89,6 +104,38 @@ fun ResultSheet(
 
         if (decision.unresolved.isNotEmpty()) {
             ConfirmationBlock(unresolved = decision.unresolved, onConfirm = onConfirm)
+        }
+
+        result.menuAnalysis?.let { menu ->
+            MenuAnalysisPanel(
+                analysis = menu,
+                onSelect = onSelectMenuOption,
+                onRegister = onRegisterMenuOption
+            )
+        }
+
+        result.plateAnalysis?.let { plate ->
+            PlateAnalysisPanel(
+                analysis = plate,
+                onToggle = onTogglePlateComponent,
+                onRegister = onRegisterPlate
+            )
+        }
+
+        if (result.track == AnalysisTrack.LABEL ||
+            result.track == AnalysisTrack.BARCODE ||
+            !result.nutrition.isEmpty
+        ) {
+            NutritionPanel(
+                facts = result.nutrition,
+                portions = portions,
+                consumed = consumed,
+                dailyProgress = dailyProgress,
+                goalsConfigured = goalsConfigured,
+                consumptionLogged = consumptionLogged,
+                onPortionsChange = onPortionsChange,
+                onRegister = onRegisterConsumption
+            )
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

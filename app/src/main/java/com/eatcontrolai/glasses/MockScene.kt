@@ -2,7 +2,7 @@ package com.eatcontrolai.glasses
 
 import com.eatcontrolai.core.model.DecisionState
 
-enum class SceneKind { LABEL, BARCODE }
+enum class SceneKind { LABEL, BARCODE, MENU, PLATE }
 
 /**
  * Uma cena que o mock "enxerga".
@@ -146,7 +146,42 @@ object MockScenes {
         )
     )
 
-    val all: List<MockScene> = labels + barcodes
+    val menus: List<MockScene> = listOf(
+        MockScene(
+            id = "menu_bistro",
+            title = "Cardápio de bistrô",
+            subtitle = "OCR real, opções e preços revisáveis",
+            kind = SceneKind.MENU,
+            labelText = """
+                CARDÁPIO
+                PRATOS PRINCIPAIS
+                FRANGO GRELHADO ........ R$ 42,00
+                Arroz, feijão e salada da casa
+                MASSA AO MOLHO CREMOSO .. R$ 38,00
+                Penne, molho cremoso e queijo
+                PEIXE ASSADO ............ R$ 49,00
+                Legumes e arroz
+                SOBREMESAS
+                BOLO DE CHOCOLATE ....... R$ 18,00
+            """.trimIndent(),
+            expectedForMilkProfile = DecisionState.INSUFFICIENT_INFORMATION
+        )
+    )
+
+    val plates: List<MockScene> = listOf(
+        MockScene(
+            id = "prato_brasileiro",
+            title = "Prato brasileiro sintético",
+            subtitle = "candidatos visuais; componentes exigem confirmação",
+            kind = SceneKind.PLATE,
+            expectedForMilkProfile = DecisionState.INSUFFICIENT_INFORMATION
+        )
+    )
+
+    /** Cenas que o roteador automático atual sabe distinguir com honestidade. */
+    val automatic: List<MockScene> = labels + barcodes
+
+    val all: List<MockScene> = automatic + menus + plates
 
     val default: MockScene get() = labels.first()
 
