@@ -33,3 +33,13 @@ docs/fontes/Un*_Material_de_apoio_Meta.pdf
 
 # Assets da página salva do plano de estudo (~180 arquivos JS/CSS). O .html continua versionado.
 docs/fontes/*_files/
+
+# Páginas salvas do Developer Center. O HTML do Comet embute o payload das queries GraphQL,
+# incluindo o CLIENT_TOKEN do projeto — ou seja, é credencial, não documentação.
+view-source_*.html
+*_devcenter_*.html
+*.har
+
+# Cópias clínicas locais podem conter dados pessoais/de saúde e binários públicos redundantes.
+# O registro versionado usa DOI/PMID/PMCID; o acervo de trabalho permanece privado.
+docs/fontes/endocrino/
