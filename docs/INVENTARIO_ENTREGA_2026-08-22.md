@@ -75,7 +75,7 @@ Estes são os únicos bloqueios que o Kiro não consegue resolver sozinho.
 |---|---|---|---|
 | EQ-01 | `CONCLUÍDO`: assinatura informada foi comparada ao certificado do debug keystore desta máquina e corresponde exatamente | permite usar o build debug no beta/Ideathon imediato; não define identidade de produção | — |
 | EQ-02 | `CONCLUÍDO`: origem da assinatura cadastrada identificada como debug keystore local | elimina a incerteza anterior, mas não substitui um certificado release | — |
-| EQ-03 | Decidir/criar o keystore definitivo de release e guardar senhas fora do repositório e do chat | Gradle aceita configuração release local, mas o keystore final ainda não existe | APK final instalável e identidade estável |
+| EQ-03 | Executar o procedimento de [`GUIA_KEYSTORE_RELEASE.md`](GUIA_KEYSTORE_RELEASE.md): decidir custódia, criar o keystore, guardar senhas fora do repositório e testar o backup | o guia e a configuração Gradle estão prontos; a chave exige senhas e decisão humana | APK final instalável e identidade estável |
 | EQ-04 | `CONCLUÍDO`: Application ID e Client Token foram configurados localmente, validados por presença/comprimento e resolvidos no manifest debug sem revelar valores | permite o build debug DAT; os segredos continuam fora do Git e deste documento | — |
 | EQ-05 | Fazer os cliques autenticados no Developer Center: salvar configuração, criar versão e canal | o Kiro não acessa a sessão autenticada | beta DAT |
 | EQ-06 | Fornecer e-mails associados a Meta Accounts para o canal de testes | canais DAT são invite-only | testes com outras contas |
@@ -497,7 +497,8 @@ Para o **release definitivo**:
 - [ ] medir bateria/temperatura por sessão curta;
 - [ ] criar versão/canal DAT;
 - [ ] gravar demonstração real;
-- [ ] congelar texto A1–A7 e Mermaid.
+- [x] redigir texto A1–A7, diagramas Mermaid, benchmark competitivo e roteiro do vídeo;
+- [ ] revisar e congelar a versão final desses artefatos com a equipe.
 
 ### 22/08 — auditoria final
 
@@ -511,17 +512,21 @@ Para o **release definitivo**:
 
 ## 11. Entregáveis A1–A7
 
+Redação consolidada em [`ENTREGA_FINAL_A1_A7.md`](ENTREGA_FINAL_A1_A7.md). A1 a A7 são seções do
+documento de entrega, não formatos de papel.
+
 | Item | Conteúdo | Estado |
 |---|---|---|
-| A1 | problema específico no instante da decisão alimentar | `DECIDIDO`, falta redação final |
-| A2 | pessoa em GLP-1; restrições como expansão | `DECIDIDO`, falta redação final |
-| A3 | walkthrough rótulo/barcode com regra GLP-1 | `PENDENTE` de motor GLP-1 |
-| A4 | rótulo ilegível + produto desconhecido + perguntas | `PENDENTE` de implementação |
-| A5 | Android nativo, local-first, regras determinísticas, providers e fallback | `DECIDIDO` |
-| A6 | comparação com scanners/diários e substituto celular | `PENDENTE` de pesquisa competitiva dedicada |
-| A7 | IA, câmera, áudio, privacidade e bateria | `DECIDIDO`, falta evidência medida |
-| Mermaid | óculos / smartphone / nuvem futura, tecnologias e formatos | `PENDENTE` de atualização final |
-| Vídeo | demonstração real + breve contexto/walkthrough futuro | `DECIDIDO`, falta gravação |
+| A1 | problema específico no instante da decisão alimentar | `IMPLEMENTADO` na redação; falta revisão final da equipe |
+| A2 | pessoa em GLP-1; restrições como expansão | `IMPLEMENTADO` na redação; falta revisão final da equipe |
+| A3 | fluxo rótulo/barcode com hierarquia de evidência e quatro estados | `IMPLEMENTADO` na redação; regra GLP-1 permanece `BLOQUEADO` |
+| A4 | rótulo ilegível, produto desconhecido, cardápio e prato sem dados suficientes | `IMPLEMENTADO` na redação; entrevista nutricional completa continua `PENDENTE` |
+| A5 | Android nativo, local-first, regras determinísticas, providers e fallback | `IMPLEMENTADO` na redação, com números de teste e cobertura |
+| A6 | comparação com diários, scanners, apps de foto e substituto celular | `IMPLEMENTADO` em [`BENCHMARK_COMPETITIVO.md`](BENCHMARK_COMPETITIVO.md), com evidência citada |
+| A7 | IA, câmera, áudio, privacidade e bateria | `IMPLEMENTADO` na redação; medição física continua `BLOQUEADO` |
+| Mermaid | óculos / smartphone / nuvem futura, cascata, evidência, sessão e camadas | `IMPLEMENTADO` em [`DIAGRAMA_ARQUITETURA.md`](DIAGRAMA_ARQUITETURA.md); exportar imagem para o documento final |
+| Vídeo | demonstração real + contexto/walkthrough futuro | roteiro `IMPLEMENTADO` em [`ROTEIRO_VIDEO.md`](ROTEIRO_VIDEO.md); gravação `PENDENTE` |
+| Keystore release | identidade, custódia e backup testado | guia `IMPLEMENTADO` em [`GUIA_KEYSTORE_RELEASE.md`](GUIA_KEYSTORE_RELEASE.md); execução humana `PENDENTE` |
 
 ## 12. Métricas e evidências
 
