@@ -23,9 +23,21 @@ class AnalyzeModeTest {
         assertTrue(MockScenes.forKind(SceneKind.PLATE).isNotEmpty())
     }
 
+    /**
+     * O modo automático cobre as quatro trilhas.
+     *
+     * Antes, `automatic` era só rótulo e código de barras — restringir as cenas escondia o
+     * comportamento que o modo existe para demonstrar. Agora a cascata decide, e cada trilha tem a
+     * sua régua: rótulo e produto passam pelo motor determinístico; cardápio e prato passam por
+     * guardrails assistivos, que nunca afirmam compatibilidade.
+     */
     @Test
-    fun `automatico nao finge rotear menu ou prato`() {
-        assertFalse(MockScenes.automatic.any { it.kind == SceneKind.MENU })
-        assertFalse(MockScenes.automatic.any { it.kind == SceneKind.PLATE })
+    fun `automatico cobre as quatro trilhas`() {
+        SceneKind.entries.forEach { kind ->
+            assertTrue(
+                "Modo automático deveria enxergar cenas de $kind",
+                MockScenes.automatic.any { it.kind == kind }
+            )
+        }
     }
 }

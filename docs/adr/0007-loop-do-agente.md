@@ -34,24 +34,33 @@ Custo: **≈ 0 mA em repouso.**
 
 ## 2. Quais são as ferramentas, onde rodam e por quê?
 
-Três, todas locais.
+Quatro, todas locais.
 
 | Ferramenta | Pergunta que responde | Custo | Onde roda |
 | :--- | :--- | :--- | :--- |
 | **Leitor de barras** (ML Kit) | "Tem um produto identificável aqui?" | baixo | local |
 | **OCR** (ML Kit) | "Tem texto que eu preciso ler?" | médio, sob demanda | local |
 | **Catálogo de produtos** | "O que eu já sei sobre este item?" | ≈ zero | local |
+| **Rotulagem visual** (ML Kit) | "O que parece ter neste prato?" | alto, último degrau | local |
 
 Mais entrada e saída: **STT** on-device (`createOnDeviceSpeechRecognizer`) e **TTS** da plataforma.
+
+### Por que quatro, se a palestra diz "2 a 3, não mais"
+
+A recomendação existe para conter latência e complexidade de coordenação. A quarta ferramenta aqui
+não paga esse custo em toda interação: ela é o **último degrau da cascata**, alcançada só quando não
+houve código de barras nem texto analisável. Numa análise de rótulo ou de produto, a rotulagem visual
+nunca roda.
+
+O custo real dela não é latência, é **tamanho**: `libmlkitcommonpipeline.so` acrescenta cerca de
+11 MB por ABI. Isso está medido na §6 do `docs/01_ESTRUTURA_E_ESTADO_ATUAL.md` e é a razão para a
+trilha de prato continuar sob revisão de custo-benefício — doze classes visuais amplas por 11 MB de
+biblioteca nativa é uma troca que precisa ser justificada com número de campo, não com intenção.
 
 **Nenhum LLM.** Não é adiamento — é decisão. A política do Eat Control é um motor determinístico com
 hierarquia de evidência (`docs/SPEC.md`), e ela é o diferencial defensável do projeto, não um
 substituto temporário. Um LLM não decidiria melhor se um rótulo declara leite; decidiria de forma
 menos auditável, mais lenta e com dependência de rede no caminho crítico.
-
-Tudo local também mantém a pilha pequena. A palestra estima 100–130 MB para um conjunto típico
-(Porcupine, Whisper tiny, YOLO nano, ML Kit, Piper). O nosso usa STT e TTS da plataforma, sem
-detector e sem wake word: **os modelos embarcados somam 2,4 MB.**
 
 ## 3. Quanto tempo até a primeira sílaba, e o plano se passar de 3 s?
 
@@ -99,7 +108,11 @@ implementado em `ContextRouter` e a métrica `first_audio_ms` como indicador pri
 ## Consequências
 
 - O modo **Automático** vira o padrão da tela de análise: a cascata escolhe a trilha em vez de o
-  usuário escolher o modo.
+  usuário escolher o modo, e cobre as **quatro** trilhas — produto, rótulo, cardápio e prato.
+- Cada trilha tem a sua régua. Rótulo e produto passam pelo motor determinístico; cardápio e prato
+  passam por guardrails assistivos que nunca afirmam compatibilidade, no máximo pedem confirmação.
+- Precedência de rótulo sobre cardápio quando há ambos os sinais: perder a análise de alérgeno é o
+  erro perigoso, perder a estrutura de opções é o erro chato.
 - Respostas faladas ficam limitadas a **15 palavras**, com teste que falha se passar.
 - `docs/METRICS.md` ganha `first_audio_ms` e `earcon_ms`.
 - Estado de sessão e de mundo entram no backlog como trabalho identificado, não como omissão.

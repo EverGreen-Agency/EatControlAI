@@ -178,10 +178,13 @@ object MockScenes {
         )
     )
 
-    /** Cenas que o roteador automático atual sabe distinguir com honestidade. */
-    val automatic: List<MockScene> = labels + barcodes
+    /**
+     * O modo automático enxerga tudo: a cascata é que decide a trilha. Restringir as cenas aqui
+     * esconderia justamente o comportamento que o modo existe para demonstrar.
+     */
+    val automatic: List<MockScene> = labels + barcodes + menus + plates
 
-    val all: List<MockScene> = automatic + menus + plates
+    val all: List<MockScene> = automatic
 
     val default: MockScene get() = labels.first()
 

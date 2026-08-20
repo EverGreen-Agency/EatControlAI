@@ -207,10 +207,16 @@ caiu de 68 MB para 22 MB.
 
 | Build | Tamanho |
 | :--- | ---: |
-| Debug universal | 130 MB |
-| Release universal (R8) | 89,6 MB |
-| **Release arm64-v8a** | **30,2 MB** |
-| Modelos de IA embarcados | 2,4 MB |
+| Debug universal | 176,8 MB |
+| Release universal (R8) | 135,1 MB |
+| **Release arm64-v8a** | **44,1 MB** |
+| Release armeabi-v7a | 32,3 MB |
+| Modelos de IA embarcados | ~5 MB |
+| `libmlkitcommonpipeline.so` (rotulagem visual) | ~11 MB por ABI |
+
+Medido em 19/08/2026, com DAT 0.9.0 e a trilha de prato. O release arm64 saiu de 22,2 MB para
+44,1 MB em duas rodadas: o SDK do DAT somou ~8 MB e a rotulagem visual do prato somou ~14 MB. Os
+modelos de IA continuam sendo a menor parte — o peso é biblioteca nativa.
 
 O peso nunca foi a inteligência: são bibliotecas nativas em múltiplas ABIs.
 

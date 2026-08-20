@@ -114,6 +114,19 @@ class InteractionOrchestrator(
                     recognizedText = ocr.text,
                     nutrition = nutrition
                 )
+
+                is ContextRouter.Decision.Menu -> Perception(
+                    evidence = emptyList(),
+                    recognizedText = ocr.text,
+                    nutrition = nutrition,
+                    menuAnalysis = MenuParser.parse(ocr.text)
+                )
+
+                // Prato é o degrau mais caro da cascata: só chega aqui quem não tinha código de
+                // barras nem texto analisável.
+                is ContextRouter.Decision.Plate -> readPlate(interactionId, frame)
+                    .copy(recognizedText = ocr.text, nutrition = nutrition)
+
                 else -> Perception(
                     evidence = emptyList(),
                     recognizedText = ocr.text,
@@ -124,8 +137,20 @@ class InteractionOrchestrator(
         record(interactionId, Stage.ROUTING, sinceMs(routeStart), "context_router_v1")
 
         val ruleStart = System.nanoTime()
-        val decision = decisionEngine.decide(profile, perception.evidence)
-        record(interactionId, Stage.RULE_ENGINE, sinceMs(ruleStart), "deterministic_rules_v1")
+        // Cada trilha tem a sua régua: rótulo e produto passam pelo motor determinístico; cardápio e
+        // prato passam por guardrails assistivos, que nunca afirmam compatibilidade.
+        val decision = when (routing) {
+            is ContextRouter.Decision.Menu ->
+                menuDecision(requireNotNull(perception.menuAnalysis), perception.evidence)
+            is ContextRouter.Decision.Plate ->
+                plateDecision(requireNotNull(perception.plateAnalysis), perception.evidence)
+            else -> decisionEngine.decide(profile, perception.evidence)
+        }
+        val ruleProvider = when (routing) {
+            is ContextRouter.Decision.Menu, is ContextRouter.Decision.Plate -> "assistive_guardrails_v1"
+            else -> "deterministic_rules_v1"
+        }
+        record(interactionId, Stage.RULE_ENGINE, sinceMs(ruleStart), ruleProvider)
 
         if (speakResult) speakAndRecord(interactionId, startedAt, decision.shortMessage)
         record(interactionId, Stage.END_TO_END, sinceMs(startedAt))
@@ -140,6 +165,8 @@ class InteractionOrchestrator(
             frameJpeg = frame,
             metrics = metrics.snapshot(interactionId),
             routingReason = routing.reason,
+            menuAnalysis = perception.menuAnalysis,
+            plateAnalysis = perception.plateAnalysis,
             nutrition = perception.nutrition
         )
     }

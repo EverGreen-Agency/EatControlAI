@@ -61,6 +61,16 @@ object MenuParser {
         "LEGUME" to "legumes"
     )
 
+    /**
+     * Quantas linhas terminam em preço.
+     *
+     * Preço é o sinal estrutural mais forte de cardápio: rótulo de embalagem não tem. Exposto aqui
+     * para o [com.eatcontrolai.domain.routing.ContextRouter] reaproveitar a mesma regex em vez de
+     * manter uma cópia que pode divergir.
+     */
+    fun pricedLineCount(rawText: String): Int =
+        rawText.lines().count { priceAtEnd.containsMatchIn(it) }
+
     fun parse(rawText: String): MenuAnalysis {
         val lines = rawText.lineSequence()
             .map { spaces.replace(it.trim(), " ") }

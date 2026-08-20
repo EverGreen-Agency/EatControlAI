@@ -1,6 +1,7 @@
 package com.eatcontrolai.domain.routing
 
 import com.eatcontrolai.domain.label.TextNormalizer
+import com.eatcontrolai.domain.menu.MenuParser
 import com.eatcontrolai.orchestration.AnalysisTrack
 
 /**
@@ -11,27 +12,37 @@ import com.eatcontrolai.orchestration.AnalysisTrack
  *
  * ```text
  * frame
- *   ├─ há código de barras?   barcode scan, barato   → TRILHA PRODUTO (para aqui)
- *   ├─ há texto denso?        OCR, custo médio       → TRILHA RÓTULO  (para aqui)
- *   └─ nada disso                                    → PRATO (não implementado)
+ *   ├─ há código de barras?        leitor de barras, barato   → PRODUTO  (para aqui)
+ *   ├─ há marcador de rotulagem?   OCR, custo médio           → RÓTULO   (para aqui)
+ *   ├─ há linhas com preço?                                   → CARDÁPIO (para aqui)
+ *   ├─ há texto denso?                                        → RÓTULO
+ *   └─ pouco texto                 rotulagem visual, cara     → PRATO
  * ```
  *
  * Determinístico por escolha. A palestra chama o LLM de "especialista caro, não porteiro"; aqui o
- * porteiro não é nem um classificador — é contagem de caracteres. Um modelo de classificação de cena
- * custaria memória e latência para resolver algo que duas evidências baratas já resolvem.
+ * porteiro não é nem um classificador — é marcador de texto e contagem de caracteres. Um modelo de
+ * classificação de cena custaria memória e latência para resolver o que evidências baratas já
+ * resolvem.
  *
- * O roteador **não decide nada sobre alimento**. Ele só escolhe qual ferramenta chamar; quem decide
+ * **Precedência de rótulo sobre cardápio, de propósito.** Um cardápio brasileiro às vezes traz nota
+ * de alérgeno; um rótulo nunca traz preço. Se o texto tem `INGREDIENTES`, `CONTÉM` ou `ALÉRGICOS`,
+ * a trilha de rótulo vem primeiro mesmo havendo preços — perder a análise de alérgeno é o erro
+ * perigoso; perder a estrutura de opções é só o erro chato.
+ *
+ * O roteador **não decide nada sobre alimento**. Ele escolhe qual ferramenta chamar; quem decide
  * continua sendo o motor determinístico com a hierarquia de evidência de `docs/SPEC.md`.
  */
 object ContextRouter {
 
     /**
-     * Abaixo disto, o que o OCR devolveu é ruído de embalagem — nome de marca, slogan solto — e não
-     * uma lista de ingredientes. É heurística; `ContextRouterTest` a mantém honesta.
+     * Abaixo disto, o que o OCR devolveu é ruído de embalagem — marca, slogan solto — e não texto
+     * analisável. É heurística; `ContextRouterTest` a mantém honesta.
      */
     const val MIN_CHARS_FOR_LABEL = 40
 
-    /** Marcadores de rotulagem que valem mais que o tamanho do texto. */
+    /** Uma linha com preço pode ser coincidência; duas já desenham um cardápio. */
+    const val MIN_PRICED_LINES_FOR_MENU = 2
+
     private val labelMarkers = listOf("INGREDIENTES", "CONTEM", "ALERGICOS", "PODE CONTER", "NAO CONTEM")
 
     sealed interface Decision {
@@ -46,7 +57,15 @@ object ContextRouter {
             override val track = AnalysisTrack.LABEL
         }
 
-        /** Nenhuma trilha implementada dá conta. A UI informa em vez de arriscar. */
+        data class Menu(override val reason: String) : Decision {
+            override val track = AnalysisTrack.MENU
+        }
+
+        data class Plate(override val reason: String) : Decision {
+            override val track = AnalysisTrack.PLATE
+        }
+
+        /** Falta informação para escolher — normalmente porque o OCR ainda não rodou. */
         data class Unsupported(override val reason: String) : Decision {
             override val track: AnalysisTrack? = null
         }
@@ -67,9 +86,14 @@ object ContextRouter {
         }
 
         val normalized = TextNormalizer.normalize(recognizedText)
-        val marker = labelMarkers.firstOrNull { it in normalized }
-        if (marker != null) {
+
+        labelMarkers.firstOrNull { it in normalized }?.let { marker ->
             return Decision.Label("rótulo reconhecido pelo marcador \"$marker\"")
+        }
+
+        val pricedLines = MenuParser.pricedLineCount(recognizedText)
+        if (pricedLines >= MIN_PRICED_LINES_FOR_MENU) {
+            return Decision.Menu("$pricedLines linhas terminam em preço")
         }
 
         val density = normalized.count { it.isLetterOrDigit() }
@@ -77,9 +101,8 @@ object ContextRouter {
             return Decision.Label("texto denso o suficiente ($density caracteres)")
         }
 
-        return Decision.Unsupported(
-            "sem código de barras e sem texto de rótulo ($density caracteres). " +
-                "Provavelmente é um prato — trilha ainda não implementada."
+        return Decision.Plate(
+            "sem código de barras e com pouco texto ($density caracteres): trata como prato"
         )
     }
 }
