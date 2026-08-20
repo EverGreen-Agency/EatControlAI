@@ -6,20 +6,29 @@
 > Não substitui o `docs/contexto-gpt.md` (visão de produto) nem o `docs/PRD.md`. Descreve o
 > **repositório**, não o produto.
 >
-> Atualizado em **13 de agosto de 2026**.
+> Atualizado em **19 de agosto de 2026**.
+>
+> Para o estado operacional da entrega de 22/08 — pendências, responsáveis e bloqueios — a fonte
+> canônica é [`INVENTARIO_ENTREGA_2026-08-22.md`](INVENTARIO_ENTREGA_2026-08-22.md). Este documento
+> descreve o repositório; aquele acompanha a entrega.
 
 ---
 
 ## 1. Resumo
 
-1. **Duas verticais fecham ponta a ponta**: rótulo (OCR) e código de barras (EAN-13 lido de
-   verdade), ambas com resposta por áudio e latência medida por etapa.
-2. **Voz funciona**: reconhecimento on-device escolhe a trilha e dispara a análise.
-3. **Três fontes de captura** atrás da mesma interface: óculos simulados, câmera do celular
-   (CameraX) e o DAT — este último escrito sobre a API real, aguardando validação em hardware.
-4. **50 testes passam**, DSR em 100% (19/19). Release com R8 e split por ABI: **30,2 MB** no
-   aparelho-alvo, contra 130 MB do debug.
-5. **O SDK do DAT está integrado** e o `DatGlassesGateway` compila contra a API 0.9.0. Ver §5-A.
+1. **Quatro trilhas fecham ponta a ponta**: produto (EAN), rótulo (OCR), cardápio (OCR + parser) e
+   prato (rotulagem visual assistida). O modo **Automático** roteia entre elas por cascata de custo.
+2. **Duas réguas distintas.** Produto e rótulo passam pelo motor determinístico com hierarquia de
+   evidência. Cardápio e prato passam por guardrails assistivos que **nunca afirmam
+   compatibilidade** — no máximo pedem confirmação.
+3. **Voz on-device**, sem fallback para reconhecedor de rede, com roteamento HFP para os microfones
+   dos óculos quando disponíveis.
+4. **113 testes JVM**, zero falhas, DSR 100% (19/19). Cobertura do domínio determinístico em 99,5%
+   de linhas, com gate que quebra o build se cair.
+5. **DAT 0.9.0 integrado**: SDK resolvendo, `DatGlassesGateway` sobre a API real, teste pelo Mock
+   Device Kit oficial. Falta validação em hardware.
+6. **Nenhum LLM, nenhuma rede no caminho crítico.** Um macro só existe com item confirmado,
+   quantidade confirmada e fonte de composição — sem os três, o app diz que não sabe.
 
 ---
 
@@ -99,7 +108,7 @@ bloqueado por credencial.
 **Interface** — `ui/` com tema próprio, navegação de 5 destinos e as telas Hoje, Analisar,
 Meu plano, Histórico, Perfil, mais o Laboratório em build de debug.
 
-**Testes — 50 unitários + 2 instrumentados**
+**Testes — 113 unitários (17 suítes) + instrumentados**
 
 | Arquivo | Cobre |
 | :--- | :--- |
@@ -138,19 +147,18 @@ wearable. E não existe percentual de confiança visual, porque não existe mode
 ### ⚠️ A — DAT integrado, falta validar em hardware
 
 O SDK **0.9.0** resolve e compila: `mwdat-core`, `mwdat-camera` e `mwdat-mockdevice` (este só em
-debug). `DatGlassesGateway` usa o ciclo real de sessão. O mapa completo da API, levantado por
-inspeção dos AARs, está no `ADR-0006`.
+debug). `DatGlassesGateway` usa o ciclo real de sessão e já aparece como fonte de captura no app.
+O mapa completo da API, levantado por inspeção dos AARs, está no `ADR-0006`.
 
-O que falta é hardware:
+`capturePhoto()` devolve `PhotoData`, que é **sealed** com `Bitmap` e `HEIC` — uma leitura anterior
+minha concluiu erradamente que a interface era vazia, porque as variantes são tipos aninhados que o
+`javap` sobre a interface não lista. Os dois formatos viram JPEG para a pipeline.
 
-- confirmar o formato do frame (assumimos NV21 com `compressVideo = false`);
-- entender `PhotoData`, que é uma interface **vazia** na 0.9.0 — `capturePhoto()` existe mas não
-  expõe os bytes pela API pública;
-- preencher **Package** e **App signature** na Configuration do Developer Center e ligar **Camera
-  access**.
+O que ainda depende de hardware:
 
-Enquanto isso, o gateway fica fora do `CaptureSourceRouter`: botão que não funciona é pior que
-ausência de botão.
+- confirmar o layout do frame no plano B do `videoStream` (assumimos NV21);
+- validar enquadramento, rotação, latência, bateria e temperatura;
+- concluir os passos autenticados no Developer Center (ver inventário da entrega, EQ-05 a EQ-08).
 
 ### ⚠️ B — Base de produtos é catálogo de demonstração
 
