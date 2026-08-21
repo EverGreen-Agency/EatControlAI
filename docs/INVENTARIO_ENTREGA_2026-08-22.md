@@ -56,7 +56,8 @@ Responsáveis usados no checklist:
 | Dashboard factual | `IMPLEMENTADO` | Home/Plan usam `dailyProgress`; não exibem nome, hidratação, meta ou percentual demonstrativo |
 | Cardápio (`MENU`) | `IMPLEMENTADO`, não `VALIDADO` em hardware | OCR + `MenuParser` próprio; seção, nome, descrição, preço e termos observados; preço não vira nutriente; confirmação obrigatória antes do histórico |
 | Prato (`PLATE`) | `IMPLEMENTADO`, não `VALIDADO` em hardware | ML Kit bundled/offline + classes fechadas + gate experimental `0,65`; desconhecidos não são forçados; confirmação obrigatória; sem volume/macros automáticos |
-| Regras GLP-1 | `BLOQUEADO` | claims existem, mas nenhum rule pack pode executar sem validação profissional |
+| Regras GLP-1 | `ESPECIFICADO`, não implementado | conteúdo validado na rodada 1; `glp1-rules-v1` aguarda implementação e registro formal para ativar |
+| Regras pessoais e registro de desconforto | `ESPECIFICADO` | requisito novo trazido pela validação: regra criada pelo usuário a partir da própria experiência |
 | Composição/porção/preparo de prato | `BLOQUEADO` | falta fonte auditável de composição e medidas; a v1 registra componentes confirmados, não macros |
 | Perguntas sobre produto desconhecido | `PENDENTE` | confirmação atual cobre alérgenos e fluxos assistidos, não uma entrevista nutricional completa |
 | Registro/autorização DAT | `IMPLEMENTADO`, não `VALIDADO` em hardware | `startRegistration()` retorna `Result`; UI distingue abertura do registro, autorização, conexão temporária e erros |
@@ -81,10 +82,15 @@ Estes são os únicos bloqueios que o Kiro não consegue resolver sozinho.
 | EQ-06 | Fornecer e-mails associados a Meta Accounts para o canal de testes | canais DAT são invite-only | testes com outras contas |
 | EQ-07 | Aceitar convites e selecionar canal/permissões no app Meta AI | ação por conta e aparelho | registro do app |
 | EQ-08 | Disponibilizar o Ray-Ban pessoal e smartphone-alvo | Mock Device Kit não valida Bluetooth, lente, áudio ou frame físico | validação real |
-| EQ-09 | Obter do endocrinologista regras aprovadas para gordura, porção, preparo e linguagem de desconforto | limites universais não podem ser inventados | motor GLP-1 e narrativa clínica |
+| EQ-09 | `CONCLUÍDO EM CONTEÚDO`: rodada 1 respondida e registrada em [`VALIDACAO_CLINICA_2026-08-18.md`](VALIDACAO_CLINICA_2026-08-18.md), transformada em [`RULE_PACK_GLP1.md`](RULE_PACK_GLP1.md) | destrava a especificação do motor GLP-1 e a narrativa clínica | — |
+| EQ-11 | Obter o registro formal da validação: nome, CRM ou CRN, data, escopo, autorização de citação e aprovação da redação final transformada | sem isso o rule pack não pode ser ativado como conteúdo clínico validado | ativação de `glp1-rules-v1` em runtime |
 | EQ-10 | `CONCLUÍDO`: classes visuais fechadas, gate experimental, confirmação obrigatória e limites de MENU/PLATE foram definidos e implementados sem promessa de macros automáticos | fecha o recorte local; benchmark e validação física permanecem em EQ-08 | — |
 
-### 3.1 Dados esperados do endocrinologista
+### 3.1 Dados esperados do endocrinologista — respondidos na rodada 1
+
+> Os itens abaixo foram atendidos. As respostas estão em
+> [`VALIDACAO_CLINICA_2026-08-18.md`](VALIDACAO_CLINICA_2026-08-18.md) e a transformação em
+> [`RULE_PACK_GLP1.md`](RULE_PACK_GLP1.md). Permanece pendente apenas o registro formal (EQ-11).
 
 Não pedir uma “dieta universal”. Pedir um conjunto de regras demonstrativas, rastreáveis e configuráveis:
 
@@ -117,8 +123,11 @@ Não pedir uma “dieta universal”. Pedir um conjunto de regras demonstrativas
 
 ### 4.2 Lote P1 — pode avançar com schema, mas as regras finais dependem do médico
 
+- [x] `KIRO` Especificar o rule pack a partir da validação recebida: `glp1-rules-v1`.
 - [ ] `KIRO` Criar `NutritionEvidence`: gordura total/saturada, porção, preparo, fonte e confiança clínica estruturada.
 - [ ] `KIRO` Criar interface de rule pack GLP-1 local e versionado.
+- [ ] `KIRO` Implementar regras pessoais do usuário e registro de desconforto relatado.
+- [ ] `KIRO` Implementar encaminhamento em dois níveis e teste de léxico proibido.
 - [ ] `KIRO` Criar mensagens GLP-1 com linguagem aprovada, sem diagnóstico ou garantia.
 - [x] `KIRO` Implementar cardápio como OCR + `MenuParser` próprio + revisão e confirmação factual.
 - [ ] `KIRO` Implementar fallback completo de produto desconhecido: OCR → catálogo local → perguntas → insuficiente.
@@ -313,7 +322,7 @@ Quanto mais definido, melhor **quando a definição é verificável**. Uma basel
 | Tabela nutricional | OCR + parser estruturado + confirmação de porção | `IMPLEMENTADO`, suíte JVM aprovada |
 | Cardápio | OCR + `MenuParser` próprio + revisão/confirmação | `IMPLEMENTADO`, falta benchmark/hardware |
 | Prato | ML Kit bundled + classes fechadas + confirmação | `IMPLEMENTADO`, falta benchmark/hardware; sem composição/macros |
-| Regras GLP-1 | rule pack local validado por médico | `BLOQUEADO` por EQ-09 |
+| Regras GLP-1 | `glp1-rules-v1`: limites regulatórios para composição declarada, metas configuráveis e atenções qualitativas | `ESPECIFICADO`; ativação depende de EQ-11 |
 | RAG em runtime | não usar no caminho crítico do MVP | `DECIDIDO` |
 
 ### 8.4 Uso dos arquivos RAG
@@ -469,15 +478,18 @@ Para o **release definitivo**:
 
 ### 19/08 — P1: núcleo GLP-1 e exceções
 
-- [ ] obter primeira versão do rule pack médico;
+- [x] obter primeira versão do rule pack médico;
+- [x] especificar `glp1-rules-v1` a partir da validação recebida;
 - [ ] implementar `NutritionEvidence` clínico estruturado;
 - [ ] implementar regras e mensagens GLP-1;
+- [ ] implementar regras pessoais e registro de desconforto relatado;
 - [x] implementar cardápio OCR + `MenuParser` + confirmação;
 - [x] implementar `Nutrition Snapshot`: tabela, porção, macros e totais objetivos;
 - [x] implementar tela de configuração de metas de macro;
 - [x] implementar PLATE assistido conforme `docs/ESTRATEGIA_PRATO_VISAO.md`;
 - [ ] implementar fallback completo de produto desconhecido/perguntas;
-- [ ] revisar linguagem com o endocrinologista.
+- [x] revisar linguagem com o endocrinologista;
+- [ ] obter o registro formal da validação para ativar o rule pack.
 
 ### 20/08 — P2: hardware e prato
 
@@ -575,7 +587,10 @@ Avisos não bloqueantes observados: incompatibilidade de versão do XML do SDK (
 
 | Risco | Estado | Mitigação |
 |---|---|---|
-| público GLP-1 sem lógica GLP-1 | alto | implementar rule pack antes do vídeo |
+| público GLP-1 sem lógica GLP-1 | médio | conteúdo validado e `glp1-rules-v1` especificado; falta implementar e registrar formalmente |
+| regra clínica ativada sem registro formal | alto | interface indica “regra em revisão” até o registro do profissional |
+| limite de rotulagem aplicado a prato estimado | alto | achado regulatório só com composição declarada por 100 g/ml |
+| regra pessoal do usuário virar restrição danosa | médio | regra pessoal só evita ou observa item; múltiplas exclusões escalonam para profissional |
 | prato amplo demais para o prazo | alto | classes fechadas + confirmação ou marcar como futuro |
 | falsa segurança médica/alimentar | alto | evidência/proveniência + insuficiência explícita |
 | rationale da Meta divergir do stream real | alto | lifecycle curto + texto corrigido |
@@ -590,7 +605,9 @@ Avisos não bloqueantes observados: incompatibilidade de versão do XML do SDK (
 
 - [x] Qual certificado gerou a App signature cadastrada? **Debug keystore local, verificado por comparação exata.**
 - [ ] Há um keystore release definitivo? Onde será guardado?
-- [ ] Quais regras GLP-1 o endocrinologista aprova?
+- [x] Quais regras GLP-1 o endocrinologista aprova? **Rodada 1 respondida: limites de rotulagem da Anvisa para composição declarada, metas configuráveis para proteína e hidratação, atenções qualitativas para fritura, molho cremoso e volume, regras pessoais do usuário e encaminhamento em dois níveis.**
+- [ ] Quem assina o registro formal da validação, com CRM ou CRN, data e escopo?
+- [ ] O profissional autoriza citar o nome nos materiais do projeto?
 - [x] Quais classes fechadas e método de confirmação tornam prato funcional e demonstrável? **Doze classes amplas, gate experimental `0,65`, desconhecidos não forçados e confirmação/correção obrigatória; sem macro automático.**
 - [x] Quais campos/unidades e metas configuráveis entram no primeiro `Nutrition Snapshot`? **Valores declarados por porção/100 g ou ml quando disponíveis, consumo confirmado e `MacroGoals` locais editáveis; ausências não são inventadas.**
 - [ ] Qual catálogo offline de produtos fará parte da demo?

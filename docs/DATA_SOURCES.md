@@ -9,6 +9,7 @@ Este arquivo é o registro canônico de proveniência do Eat Control AI. Fontes 
 | `DECIDIDO` | guardrail ou decisão de produto/engenharia; não significa validação clínica |
 | `HIPÓTESE` | tradução candidata da evidência para uma funcionalidade ou mensagem, ainda sem validação profissional |
 | `PENDENTE DE VALIDAÇÃO` | não pode virar regra ou texto de runtime até revisão e aprovação por profissional habilitado |
+| `VALIDADO EM CONTEÚDO` | profissional aprovou a substância da regra; ativação em runtime depende do registro formal da validação |
 
 A qualidade e o escopo da fonte são registrados separadamente do estado da implementação.
 
@@ -37,28 +38,59 @@ Os resumos abaixo são paráfrases controladas. O estado classifica a **traduç�
 | Claim ID | Síntese da fonte | Seção e página do periódico | Implicação candidata no Eat Control | Estado |
 |---|---|---|---|---|
 | `AJCN-GLP1-01` | O cuidado deve ser individualizado e considerar condições médicas, preferências, contexto e metas da pessoa. | “Initiation of GLP-1 use with a patient-centered approach”, pp. 349–350 | O app usa perfil configurado e evidencia a origem das metas; não gera um plano universal. | `DECIDIDO` |
-| `AJCN-GLP1-02` | Avaliação e acompanhamento clínico/nutricional abrangem hábitos, sintomas gastrointestinais, riscos de deficiência, transtornos alimentares, força/função muscular e contexto social. | “Completion of baseline nutritional assessment and screening”, pp. 349–351, Tabela 5 | O app não substitui triagem clínica; condições e sintomas fora do escopo devem levar a orientação de procurar profissional. Os gatilhos e a redação ainda precisam ser definidos. | `PENDENTE DE VALIDAÇÃO` |
-| `AJCN-GLP1-03` | Durante início ou escalonamento, refeições menores e mais frequentes e ingestão adequada de líquidos podem ajudar em alguns sintomas; refeições grandes ou muito gordurosas podem piorar tolerabilidade em parte das pessoas. | “Management of GI side effects”, pp. 351–352 | Permitir registrar tolerância e apresentar perguntas factuais sobre tamanho/preparo é uma hipótese; o app não atribui sintoma a um alimento nem altera dose. | `HIPÓTESE` |
-| `AJCN-GLP1-04` | Redução importante do apetite e da ingestão pode elevar o risco de inadequação de nutrientes, tornando relevantes qualidade, variedade, monitoramento e ajustes individualizados. | “Nutritional deficiencies”, pp. 346–347; “Prevention and mitigation of nutrient deficiencies”, pp. 352–353 | Priorizar dados declarados de nutrientes e mostrar lacunas frente a metas configuradas, sem completar números ausentes ou prescrever. | `HIPÓTESE` |
-| `AJCN-GLP1-05` | A publicação favorece alimentos densos em nutrientes e minimamente processados e descreve refeições pequenas e regulares, líquidos adequados e flexibilidade como estratégias gerais. | “Prevention and mitigation of nutrient deficiencies”, pp. 352–353, Tabela 6 | Comparar opções de cardápio por evidências observáveis pode ajudar, mas os pesos, mensagens e exceções devem ser validados. | `HIPÓTESE` |
-| `AJCN-GLP1-06` | Proteína suficiente é uma prioridade potencial, porém o método para definir a meta varia; peso atual pode superestimar necessidades e não há consenso sobre a melhor base. | “Preservation of muscle and bone mass”, pp. 353–354 | Metas de proteína só podem vir do usuário/profissional. O app pode somar consumo confirmado, mas não calcular ou recomendar uma meta clínica por conta própria. | `PENDENTE DE VALIDAÇÃO` |
-| `AJCN-GLP1-07` | Aumentar proteína isoladamente pode não preservar massa muscular; treino estruturado de força é parte importante da estratégia, adaptado à capacidade individual. | “Preservation of muscle and bone mass”, pp. 353–354 | Não apresentar “atingiu proteína” como garantia de preservação muscular. Qualquer lembrete de exercício requer texto e condições aprovados. | `PENDENTE DE VALIDAÇÃO` |
+| `AJCN-GLP1-02` | Avaliação e acompanhamento clínico/nutricional abrangem hábitos, sintomas gastrointestinais, riscos de deficiência, transtornos alimentares, força/função muscular e contexto social. | “Completion of baseline nutritional assessment and screening”, pp. 349–351, Tabela 5 | Encaminhamento em dois níveis aprovado em `VAL-GLP1-R1`: orientar procura de profissional, ou interromper a orientação alimentar e recomendar avaliação médica. | `VALIDADO EM CONTEÚDO` |
+| `AJCN-GLP1-03` | Durante início ou escalonamento, refeições menores e mais frequentes e ingestão adequada de líquidos podem ajudar em alguns sintomas; refeições grandes ou muito gordurosas podem piorar tolerabilidade em parte das pessoas. | “Management of GI side effects”, pp. 351–352 | Alerta qualitativo de tolerância aprovado, sem limite numérico e sem atribuir sintoma a um alimento; registro de desconforto pelo usuário vira regra pessoal. | `VALIDADO EM CONTEÚDO` |
+| `AJCN-GLP1-04` | Redução importante do apetite e da ingestão pode elevar o risco de inadequação de nutrientes, tornando relevantes qualidade, variedade, monitoramento e ajustes individualizados. | “Nutritional deficiencies”, pp. 346–347; “Prevention and mitigation of nutrient deficiencies”, pp. 352–353 | Usar limites regulatórios de rotulagem para composição declarada e metas configuráveis para o resto; não completar número ausente. | `VALIDADO EM CONTEÚDO` |
+| `AJCN-GLP1-05` | A publicação favorece alimentos densos em nutrientes e minimamente processados e descreve refeições pequenas e regulares, líquidos adequados e flexibilidade como estratégias gerais. | “Prevention and mitigation of nutrient deficiencies”, pp. 352–353, Tabela 6 | Avaliar o prato como conjunto, com atenções qualitativas; densidade nutricional e grau de processamento ficam fora da v1. | `VALIDADO EM CONTEÚDO` |
+| `AJCN-GLP1-06` | Proteína suficiente é uma prioridade potencial, porém o método para definir a meta varia; peso atual pode superestimar necessidades e não há consenso sobre a melhor base. | “Preservation of muscle and bone mass”, pp. 353–354 | Meta configurável em gramas por dia, definida por profissional e usuário. Referências citadas na validação: 0,8 g/kg/dia geral, 1,2–1,6 g/kg/dia em perda ativa, 80–120 g/dia como alternativa prática. O app não calcula a meta. | `VALIDADO EM CONTEÚDO` |
+| `AJCN-GLP1-07` | Aumentar proteína isoladamente pode não preservar massa muscular; treino estruturado de força é parte importante da estratégia, adaptado à capacidade individual. | “Preservation of muscle and bone mass”, pp. 353–354 | Ressalva obrigatória de exercício de força sempre que a mensagem mencionar meta de proteína; proibido afirmar preservação muscular. | `VALIDADO EM CONTEÚDO` |
 | `AJCN-GLP1-08` | Acompanhamento deve reavaliar ingestão, hidratação, estado nutricional, tolerância e resposta ao tratamento; fotos e registros alimentares são citados como possíveis ferramentas. | “Prevention and mitigation of nutrient deficiencies”, p. 353 | Histórico local e fotos efêmeras podem apoiar autorregistro, sempre com correção manual e sem diagnóstico automático. | `DECIDIDO` |
 | `AJCN-GLP1-09` | Plataformas digitais podem apoiar rastreamento, educação e comunicação, mas enfrentam limitações de acesso, alfabetização, confiança e evidência; mais pesquisa é necessária. | “Telehealth and digital platforms”, pp. 356–357, Tabela 7 | Tratar alertas automáticos e recomendações por IA como assistivos e incertos, não como cuidado clínico comprovado. | `DECIDIDO` |
 | `AJCN-GLP1-10` | O advisory resume que efeitos gastrointestinais, inadequação nutricional e perda muscular/óssea exigem cuidado nutricional e comportamental antes, durante e depois do tratamento. | “Summary Takeaway Messages”, p. 360 | O núcleo do produto deve apoiar decisões alimentares rastreáveis e encaminhar o que exige cuidado profissional, sem comentar medicação. | `DECIDIDO` |
 
-### Regras que continuam bloqueadas
+### Validação recebida
 
-Até existir validação registrada no formato de `PEDIDO_VALIDACAO_CLINICA.md`, permanecem `PENDENTE DE VALIDAÇÃO`:
+A rodada 1 está registrada em [`VALIDACAO_CLINICA_2026-08-18.md`](VALIDACAO_CLINICA_2026-08-18.md)
+(`VAL-GLP1-R1`) e transformada em [`RULE_PACK_GLP1.md`](RULE_PACK_GLP1.md) (`glp1-rules-v1`).
 
-- limites de gordura total/saturada, açúcar, fibra, sódio, porção ou volume;
-- meta de proteína e sua base de cálculo;
-- classificação de um alimento como provável causador de desconforto;
-- gatilhos e textos de encaminhamento por sintomas ou condições clínicas;
-- pesos usados para comparar opções de cardápio;
-- qualquer rule pack GLP-1 executável.
+### O que continua bloqueado
 
-A aprovação deve registrar `claim_id`, profissional/registro, data, população e exceções, texto aprovado, regra transformada, exemplos testados e versão do rule pack. Uma transcrição clínica não deve ser convertida silenciosamente em regra: o profissional precisa revisar a transformação final.
+- ativação do rule pack em runtime, até o registro formal: nome, CRM ou CRN, data, escopo validado e
+  não validado, autorização de citação e aprovação da redação final transformada;
+- limite numérico para porção ou volume da refeição;
+- meta de hidratação com valor padrão;
+- densidade nutricional como índice e grau de processamento inferido por imagem;
+- qualquer cálculo de meta a partir de peso corporal;
+- atribuição de causa a um alimento específico para um sintoma relatado.
+
+Uma transcrição clínica não deve ser convertida silenciosamente em regra: o profissional precisa
+revisar a transformação final, e cada versão do pack exige nova aprovação registrada.
+
+## 2.1 Fonte regulatória
+
+### REG-ANVISA-001 — Rotulagem nutricional frontal
+
+- **Escopo:** critério "ALTO EM" para alimento **embalado**, avaliado por 100 g ou 100 ml de produto.
+- **Normas:** RDC 429/2020 e IN 75/2020, em vigor desde outubro de 2022.
+- **Limites usados:** açúcar adicionado ≥ 15 g/100 g ou ≥ 7,5 g/100 ml; gordura saturada ≥ 6 g/100 g
+  ou ≥ 3 g/100 ml; sódio ≥ 600 mg/100 g ou ≥ 300 mg/100 ml.
+- **Referências consultadas:** [Sociedade Brasileira de Diabetes](https://diabetes.org.br/rotulos-o-que-mudou/);
+  [reportagem citando a Anvisa](https://www.cnnbrasil.com.br/saude/como-a-anvisa-determina-se-um-alimento-e-considerado-alto-em-sodio/).
+- **O que não sustenta:** aplicação a prato estimado por foto, veredito individual, ou conclusão
+  clínica. É critério de rotulagem, não recomendação personalizada.
+- **Estado:** `DECIDIDO` para composição declarada; proibido fora desse escopo.
+
+## 2.2 Projeções de mercado
+
+Usadas apenas como contexto de oportunidade nos artefatos de entrega, sempre atribuídas e nunca como
+receita esperada do produto.
+
+| Projeção | Fonte | Ressalva |
+|---|---|---|
+| Vendas de GLP-1 na casa de US$ 100 bilhões até 2030 | [McKinsey](https://www.mckinsey.com/featured-insights/themes/glp1s-are-changing-obesity-care-what-comes-next) | estimativas anteriores de US$ 150–200 bilhões foram revisadas para baixo ([análise Reuters](https://www.investing.com/news/stock-market-news/analysisobesity-market-sales-potential-tightens-as-novo-and-lilly-enter-new-era-4478211)) |
+| Saúde digital para obesidade em torno de US$ 247 bilhões em 2030 | [The Business Research Company](https://www.thebusinessresearchcompany.com/report/digital-health-for-obesity-global-market-report) | outras casas projetam valores e horizontes divergentes |
+
+Conteúdo das fontes externas foi parafraseado para conformidade com restrições de licenciamento.
 
 ## 3. Produto e código de barras
 

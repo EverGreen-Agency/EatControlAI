@@ -4,6 +4,13 @@ Versão do pedido: 1.1
 Data: 18/08/2026
 Destinatário: médico endocrinologista e/ou nutricionista responsável pela validação
 Remetente: equipe Eat Control AI
+Situação: **respondido na rodada 1**; respostas registradas em
+[`VALIDACAO_CLINICA_2026-08-18.md`](VALIDACAO_CLINICA_2026-08-18.md) e transformadas em
+[`RULE_PACK_GLP1.md`](RULE_PACK_GLP1.md)
+
+> Falta apenas o item 5.7: identificação do profissional, registro, data, escopo, autorização de
+> citação e aprovação da redação final transformada. Sem isso, as regras ficam especificadas e não
+> entram em runtime como conteúdo clínico validado.
 
 > Use este documento como está para enviar ao profissional. Não é necessário conhecimento técnico para respondê-lo.
 
@@ -38,9 +45,14 @@ Estamos construindo um aplicativo que usa óculos inteligentes e o celular para 
 - Não prescreve dieta.
 - Não sugere, ajusta ou comenta medicação.
 - Não usa a palavra "seguro".
-- Não afirma ausência de um ingrediente com base em foto do prato, apenas com base em declaração escrita.
+- Não garante presença nem ausência de ingrediente oculto, alergênico ou componente de preparo apenas
+  pela imagem. A identificação visual de alimentos e ingredientes visíveis é permitida e faz parte do
+  escopo central; quando houver dúvida, o app sinaliza a incerteza e pede confirmação.
 
 Queremos manter essas restrições. Se você discordar de alguma, por favor diga.
+
+> Ajustado na rodada 1 de validação, a pedido do profissional. Registro em
+> [`VALIDACAO_CLINICA_2026-08-18.md`](VALIDACAO_CLINICA_2026-08-18.md).
 
 ## 4. Contexto do público
 

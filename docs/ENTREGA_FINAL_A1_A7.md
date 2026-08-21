@@ -54,6 +54,18 @@ Motivadores desse recorte, relatados nas entrevistas:
 - dificuldade de decidir no momento da compra ou do pedido;
 - preocupação com perda de massa magra.
 
+Esse recorte foi confirmado na validação clínica da rodada 1, com os mesmos motivadores.
+
+**Contexto de oportunidade.** Projeções de terceiros indicam vendas de GLP-1 na casa de US$ 100
+bilhões até 2030 ([McKinsey](https://www.mckinsey.com/featured-insights/themes/glp1s-are-changing-obesity-care-what-comes-next)),
+com estimativas anteriores mais altas revisadas para baixo, e um mercado adjacente de saúde digital
+para obesidade projetado em torno de US$ 247 bilhões no mesmo horizonte
+([The Business Research Company](https://www.thebusinessresearchcompany.com/report/digital-health-for-obesity-global-market-report)).
+São projeções divergentes entre casas de análise, tratadas aqui como contexto, não como receita
+esperada. O Eat Control não compete com o medicamento: atua na jornada alimentar diária de uma
+população que tende a crescer. Conteúdo das fontes externas foi parafraseado para conformidade com
+restrições de licenciamento.
+
 **Expansão natural:** pessoas com restrições alimentares — alergia, intolerância, doença celíaca — e
 cuidadores. A arquitetura já suporta esse grupo, porque o motor de decisão opera sobre restrições
 configuradas, não sobre um diagnóstico específico.
@@ -62,7 +74,8 @@ configuradas, não sobre um diagnóstico específico.
 diagnostica, não prescreve, não comenta medicação e não usa a palavra "seguro". A literatura que
 fundamenta o recorte está registrada em `docs/DATA_SOURCES.md` como advisory populacional
 (`CLIN-AJCN-001`, claims `AJCN-GLP1-01` a `AJCN-GLP1-10`), e advisory populacional não é prescrição
-individual.
+individual. A rodada 1 de validação profissional está registrada em
+`docs/VALIDACAO_CLINICA_2026-08-18.md`.
 
 ---
 
@@ -106,9 +119,13 @@ A frase positiva é **"Não encontrei conflito nas evidências disponíveis."** 
 | Comando falado "posso comer isso?" | a análise dispara sozinha e responde por áudio |
 
 **Estado:** `IMPLEMENTADO` e coberto por testes.
-**Limite:** as regras específicas de GLP-1 — gordura, porção, preparo, desconforto — estão
-`BLOQUEADO` até validação profissional registrada. O que existe hoje é o motor de restrições, não um
-rule pack clínico.
+
+**Camada GLP-1.** O conteúdo clínico foi validado na rodada 1 e está especificado como
+`glp1-rules-v1` em `docs/RULE_PACK_GLP1.md`: limites regulatórios de rotulagem para composição
+declarada, metas configuráveis, atenções qualitativas de preparo e volume, regras pessoais criadas
+pelo usuário e encaminhamento em dois níveis. O que existe **hoje em execução** é o motor de
+restrições; o rule pack está `ESPECIFICADO` e ainda não ativado, porque falta o registro formal da
+validação e a implementação das etapas descritas no próprio documento.
 
 ---
 
@@ -144,6 +161,20 @@ do prato não são calculados**, porque isso exigiria três elementos auditávei
 > item confirmado + quantidade confirmada + fonte de composição versionada
 
 Sem os três, o valor permanece desconhecido. Essa é uma decisão de produto, detalhada em A6.
+
+### Política de imagem, após validação clínica
+
+A validação profissional ampliou o uso da imagem e delimitou onde ela para:
+
+| A imagem pode | A imagem não pode |
+|---|---|
+| identificar alimentos e ingredientes visíveis | garantir presença ou ausência de ingrediente oculto |
+| apontar preparo visível, como fritura e molho cremoso | afirmar que um molho não contém leite ou glúten |
+| gerar análise qualitativa do prato como conjunto | definir receita completa |
+| alertar quando um item identificado conflita com restrição, meta ou regra pessoal | liberar uma restrição crítica |
+| comparar a porção com o plano cadastrado, quando existir | converter tamanho aparente em gramas |
+
+Na dúvida, o app sinaliza a incerteza e pergunta, ou oferece ler o rótulo e a descrição do item.
 
 ---
 
@@ -324,26 +355,31 @@ apresenta esses valores porque eles ainda não foram medidos.
 | Prato assistido, sem macro automático | `IMPLEMENTADO`, `NÃO VALIDADO EM HARDWARE` |
 | Registro e autorização DAT | `IMPLEMENTADO`, `NÃO VALIDADO EM HARDWARE` |
 | Voz offline e roteamento Bluetooth | `IMPLEMENTADO`, `NÃO VALIDADO EM HARDWARE` |
-| Rule pack GLP-1 | `BLOQUEADO` por validação profissional |
+| Rule pack GLP-1 `glp1-rules-v1` | conteúdo `VALIDADO`, especificação pronta, `NÃO ATIVADO` em runtime |
+| Regras pessoais e registro de desconforto | `PENDENTE` de implementação, já especificado |
 | Composição e medidas para macro de prato | `BLOQUEADO` por fonte auditável |
 | Métricas físicas | `BLOQUEADO` por hardware |
 | Release de produção assinado | `BLOQUEADO` por identidade de assinatura |
 
 ## Roadmap imediato
 
-1. Validar autorização, captura, áudio e encerramento no Ray-Ban do parceiro.
-2. Medir latência, bateria, temperatura e qualidade de frame.
-3. Obter validação clínica e transformar apenas o que for aprovado em rule pack versionado.
-4. Fechar fonte de composição e fatores de medida para habilitar cálculo semiautomático do prato.
-5. Criar a identidade de assinatura de release e o canal de distribuição.
+1. Implementar `glp1-rules-v1`: limites regulatórios, metas configuradas, atenções qualitativas,
+   regras pessoais e encaminhamento em dois níveis.
+2. Obter o registro formal da validação para ativar o pack em runtime.
+3. Validar autorização, captura, áudio e encerramento no Ray-Ban do parceiro.
+4. Medir latência, bateria, temperatura e qualidade de frame.
+5. Fechar fonte de composição e fatores de medida para habilitar cálculo semiautomático do prato.
+6. Criar a identidade de assinatura de release e o canal de distribuição.
 
 ## Documentos de apoio
 
 | Documento | Conteúdo |
 |---|---|
 | `docs/PRD.md` | requisitos e escopo de produto |
-| `docs/DATA_SOURCES.md` | proveniência clínica e claims rastreáveis |
+| `docs/DATA_SOURCES.md` | proveniência clínica, fonte regulatória e claims rastreáveis |
 | `docs/PEDIDO_VALIDACAO_CLINICA.md` | protocolo de validação profissional |
+| `docs/VALIDACAO_CLINICA_2026-08-18.md` | registro da rodada 1 de validação e lacunas |
+| `docs/RULE_PACK_GLP1.md` | especificação de `glp1-rules-v1` |
 | `docs/ESTRATEGIA_PRATO_VISAO.md` | limites de cardápio, prato e visão |
 | `docs/ESTRATEGIA_TESTES.md` | estratégia de teste e cobertura medida |
 | `docs/DIAGRAMA_ARQUITETURA.md` | diagramas de arquitetura e fronteiras |

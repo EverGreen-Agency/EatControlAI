@@ -79,9 +79,21 @@ Em um prato não existe declaração do fabricante, somente pixels. Uma vista mo
 Assim:
 
 - imagem não comprova ausência de leite, glúten ou outro ingrediente;
-- classe visual não define receita nem método de preparo;
+- classe visual não define receita nem ingrediente oculto;
 - tamanho aparente não define gramas;
 - um número plausível e errado é pior que “não informado”.
+
+**Atualização após validação clínica (`VAL-GLP1-R1`, 18/08/2026).** A identificação visual passa a ser
+escopo central, e não apenas um candidato descartável. O que a imagem **pode** sustentar:
+
+- identificar alimentos e ingredientes visualmente identificáveis;
+- apontar preparo visível, como fritura e molho cremoso;
+- gerar análise qualitativa do prato como conjunto;
+- disparar atenção quando um item identificado corresponde a restrição, meta ou regra pessoal.
+
+O que continua proibido: garantir presença ou ausência de ingrediente oculto ou alergênico, afirmar
+receita completa e estimar quantidade em gramas. Nesses casos, o app sinaliza incerteza e pergunta, ou
+oferece ler o rótulo e a descrição do item.
 
 ### 5.2 Contrato do provider visual
 
@@ -116,10 +128,17 @@ A classe descreve aparência geral; não garante ingrediente, receita ou composi
 
 Enquanto a fonte de composição e os fatores de medidas caseiras não estiverem fechados, a primeira entrega registra os componentes confirmados e informa que macros do prato não foram calculados.
 
+A análise qualitativa aprovada em `VAL-GLP1-R1` não depende dessa fonte: proteína presente, vegetais
+presentes, fritura, molho cremoso e comparação da porção com o plano cadastrado são achados
+observacionais, especificados em [`RULE_PACK_GLP1.md`](RULE_PACK_GLP1.md). Volume só é tratado como
+atenção quando existe porção prevista no plano; sem plano, o app descreve e não julga.
+
 ### 5.5 Guardrails obrigatórios
 
-- inferência visual isolada nunca produz conclusão positiva para restrição crítica;
+- inferência visual pode **alertar** sobre item identificado que conflita com restrição, meta ou regra
+  pessoal, mas nunca **liberar** uma restrição crítica;
 - ausência de alérgeno nunca é afirmada pela imagem;
+- ingrediente oculto e composição de molho exigem rótulo, descrição ou confirmação do usuário;
 - baixa confiança ou classe fora do recorte leva a informação insuficiente;
 - confirmação é obrigatória antes do histórico;
 - macro estimado nunca se mistura silenciosamente com valor declarado de rótulo;
