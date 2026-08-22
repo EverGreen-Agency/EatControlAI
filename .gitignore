@@ -36,7 +36,7 @@ docs/fontes/*_files/
 
 # Páginas salvas do Developer Center. O HTML do Comet embute o payload das queries GraphQL,
 # incluindo o CLIENT_TOKEN do projeto — ou seja, é credencial, não documentação.
-view-source_*.html
+view-source_
 *_devcenter_*.html
 *.har
 

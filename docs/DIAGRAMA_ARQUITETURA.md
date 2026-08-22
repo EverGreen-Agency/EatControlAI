@@ -7,6 +7,62 @@ Formato: Mermaid
 > Google Docs não renderiza Mermaid. Para incluir no documento final, cole o código em
 > [mermaid.live](https://mermaid.live), exporte PNG ou SVG e insira a imagem.
 
+## 0. Diagrama da entrega — os cinco checkpoints
+
+**Este é o diagrama a enviar em B1 e B2.** O formulário exige: ao menos um nó por checkpoint do
+edital, tecnologias e APIs nomeadas nos nós, e direção de fluxo com setas. Os cinco checkpoints
+aparecem marcados como `CP1` a `CP5`.
+
+```mermaid
+flowchart TD
+    U["Usuario em GLP-1"] -->|"push-to-talk ou toque"| MIC
+
+    subgraph OCULOS["Ray-Ban Meta - Meta DAT 0.9.0"]
+        MIC["CP2 Microfone dos oculos<br/>Bluetooth HFP - SCO"]
+        CAM["CP2 Camera dos oculos<br/>mwdat-camera capturePhoto"]
+        SPK["CP3 Alto-falantes open-ear<br/>saida por audio"]
+    end
+
+    subgraph FONE["Smartphone Android - toda a inteligencia"]
+        EAR["CP3 Sinal sonoro imediato<br/>ToneGenerator"]
+        STT["CP1 STT on-device<br/>createOnDeviceSpeechRecognizer"]
+        SESS["CP5 Sessao curta sob demanda<br/>createSession - addCamera - finally"]
+        BAR["CP1 ML Kit Barcode Scanning<br/>EAN-13 no aparelho"]
+        OCR["CP1 ML Kit Text Recognition<br/>OCR no aparelho"]
+        VIS["CP1 ML Kit Image Labeling<br/>modelo embarcado offline"]
+        ROUTE["CP5 Roteador por custo<br/>ContextRouter deterministico"]
+        EVID["Hierarquia de evidencia<br/>rank 2 a 6 com proveniencia"]
+        RULES["CP1 Motor deterministico<br/>FoodDecisionEngine - 4 estados"]
+        TTS["CP3 TTS pt-BR local<br/>resposta ate 15 palavras"]
+        PRIV["CP4 Privacidade<br/>DataStore local - sem backup - sem upload"]
+    end
+
+    NUVEM["Nuvem - fora do caminho critico"]
+
+    MIC --> EAR
+    EAR --> STT
+    STT --> SESS
+    SESS --> CAM
+    CAM -->|"1 frame"| BAR
+    BAR -->|"sem EAN"| OCR
+    BAR -->|"EAN encontrado"| EVID
+    OCR --> ROUTE
+    ROUTE -->|"rotulo ou cardapio"| EVID
+    ROUTE -->|"pouco texto"| VIS
+    VIS -->|"nunca prova ausencia"| EVID
+    EVID --> RULES
+    RULES --> TTS
+    TTS --> SPK
+    SPK --> U
+    RULES --> PRIV
+    SESS -.->|"encerra apos a analise"| CAM
+    NUVEM -.->|"nao participa da decisao"| FONE
+```
+
+Como ler: os cinco checkpoints estão distribuídos pelo fluxo real, não agrupados numa legenda.
+`CP1` aparece quatro vezes porque há quatro modelos de IA distintos no aparelho. A nuvem aparece
+tracejada e desconectada de propósito.
+
 ## 1. Fronteiras: óculos, smartphone e nuvem
 
 ```mermaid
