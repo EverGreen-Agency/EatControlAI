@@ -26,27 +26,28 @@ Por isso a régua de 100% é aplicada **onde o erro machuca**: as camadas determ
 
 ## 3. Medição atual
 
-A execução consolidada de 18/08/2026 concluiu `109` testes em `17` suítes, sem falhas, erros ou skips.
+A execução consolidada de 18/08/2026 concluiu `156` testes em `20` suítes, sem falhas, erros ou skips. O rule pack GLP-1 entrou com `43` desses testes.
 
 | Pacote/recorte | Linhas | Ramos |
 |---|---|---|
 | `domain/voice` | 100% (12/12) | 100% (6/6) |
 | `domain/barcode` | 100% (37/37) | sem ramos |
-| `domain/routing` | 100% (20/20) | 91,7% (11/12) |
+| `domain/routing` | 100% (26/26) | 92,9% (13/14) |
 | `domain/label` | 100% (103/103) | 78,3% (36/46) |
 | `domain/nutrition` | 100% (137/137) | 79,2% (99/125) |
 | `domain/evidence` | 100% (16/16) | 75% (3/4) |
-| `domain/decision` | 98,4% (126/128) | 83% (83/100) |
-| `domain/menu` | 99,2% (124/125) | 77,8% (42/54) |
 | `domain/plate` | 100% (77/77) | 100% (12/12) |
-| **Domínio monitorado pelo gate** | **99,5% (652/655)** | **81,3% (292/359)** |
+| `domain/menu` | 99,2% (125/126) | 77,8% (42/54) |
+| `domain/glp1` | 98,8% (337/341) | 85,6% (131/153) |
+| `domain/decision` | 98,4% (126/128) | 83% (83/100) |
+| **Domínio monitorado pelo gate** | **99,3% (996/1003)** | **82,7% (425/514)** |
 | `core/model` | 97,8% (178/182) | 79,3% (23/29) |
-| `data` | 56,1% (124/221) | 40% (36/90) |
-| `orchestration` | 57,1% (140/245) | 45,6% (36/79) |
 | `metrics` | 93,5% (29/31) | 50% (2/4) |
-| **Total do módulo medido** | **81,2% (1123/1383)** | **67,7% (389/575)** |
+| `data` | 56,1% (124/221) | 40% (36/90) |
+| `orchestration` | 53,4% (140/262) | 37,9% (36/95) |
+| **Total do módulo medido** | **83,9% (1467/1748)** | **70% (522/746)** |
 
-Sete dos nove pacotes determinísticos estão em 100% de linhas. As lacunas relevantes agora estão principalmente em ramos de MENU, nutrição, rótulo/evidência e nos dois caminhos residuais de decisão. O total do módulo inclui costura Android e adaptadores que exigem validação própria; por isso ele não é usado como gate clínico.
+Sete dos dez pacotes determinísticos estão em 100% de linhas. O rule pack `domain/glp1` entrou com 98,8% de linhas e 85,6% de ramos, acima da média do domínio. As lacunas restantes concentram-se em ramos de MENU, nutrição, rótulo e nos caminhos residuais de decisão. O total do módulo inclui costura Android e adaptadores que exigem validação própria; por isso ele não é usado como gate clínico.
 
 ## 4. Régua no build
 
@@ -57,7 +58,7 @@ Sete dos nove pacotes determinísticos estão em 100% de linhas. As lacunas rele
 
 `check` depende de `coverageVerify`, então queda de cobertura quebra o build, não só teste vermelho.
 
-O piso atual é **linha 0,99 e ramo 0,80**, que é o valor medido, não um número escolhido por otimismo. O alvo declarado é 100/100. A regra de convivência é simples: **quem sobe cobertura sobe o piso no mesmo commit.** Isso transforma a meta em catraca em vez de intenção.
+O piso atual é **linha 0,99 e ramo 0,82**, sempre abaixo do valor medido, não um número escolhido por otimismo. O alvo declarado é 100/100. A regra de convivência é simples: **quem sobe cobertura sobe o piso no mesmo commit.** Foi o que aconteceu ao entrar o rule pack: ramo medido subiu de 81,3% para 82,7% e o piso acompanhou de 0,80 para 0,82.
 
 O gate foi verificado propositalmente: com o piso em 1,00 o build falha com `lines covered ratio is 0.99`. Ou seja, a régua mede de verdade — não é uma tarefa que passa vazia.
 
@@ -86,7 +87,7 @@ Regra de escopo: comportamento de negócio entra em `src/test`. Integração com
 
 ## 7. Próximos alvos de cobertura, em ordem
 
-1. `orchestration` — está em 57,1% de linhas e 45,6% de ramos; ampliar testes das combinações de provider, fallback e erro.
+1. `orchestration` — está em 53,4% de linhas e 37,9% de ramos; ampliar testes das combinações de provider, fallback e erro.
 2. `data` — está em 56,1% de linhas e 40% de ramos; cobrir hidratação/escrita assíncrona e JSON corrompido.
 3. Ramos de `domain/menu`, `domain/nutrition`, `domain/label` e `domain/evidence` — elevar o piso acima dos 80% atuais.
 4. `core/model` — fechar os ramos restantes de `MacroGoals` e `NutritionFacts`.

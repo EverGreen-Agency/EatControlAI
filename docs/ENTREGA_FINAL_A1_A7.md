@@ -225,9 +225,10 @@ Métricas por etapa + histórico local
 
 | Item | Resultado |
 |---|---|
-| Suíte JVM | 109 testes, 17 suítes, zero falhas, erros ou skips |
-| Cobertura do domínio determinístico | 99,5% de linhas (652/655), 81,3% de ramos (292/359) |
-| Cobertura total do módulo | 81,2% de linhas (1123/1383), 67,7% de ramos (389/575) |
+| Suíte JVM | 156 testes, 20 suítes, zero falhas, erros ou skips |
+| Cobertura do domínio determinístico | 99,3% de linhas (996/1003), 82,7% de ramos (425/514) |
+| Cobertura total do módulo | 83,9% de linhas (1467/1748), 70% de ramos (522/746) |
+| Rule pack GLP-1 | 43 testes; 98,8% de linhas e 85,6% de ramos em `domain/glp1` |
 | Gate no build | `check` reprova queda de cobertura, não apenas teste vermelho |
 | Compilação, lint e verificação | aprovados |
 | APK debug | `168,63 MiB`, assinatura v2 válida, certificado conferido |

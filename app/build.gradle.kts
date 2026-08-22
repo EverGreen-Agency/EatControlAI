@@ -179,7 +179,8 @@ val fullyCoveredPackages = listOf(
     "com/eatcontrolai/domain/barcode/**",
     "com/eatcontrolai/domain/evidence/**",
     "com/eatcontrolai/domain/menu/**",
-    "com/eatcontrolai/domain/plate/**"
+    "com/eatcontrolai/domain/plate/**",
+    "com/eatcontrolai/domain/glp1/**"
 )
 
 private val unitTestExecData = layout.buildDirectory
@@ -229,9 +230,9 @@ tasks.register<JacocoCoverageVerification>("coverageVerify") {
     /**
      * Piso medido, não aspiracional.
      *
-     * Medição de 18/08/2026 nas camadas de domínio: **linha 99,5%** (652/655) e **ramo
-     * 81,3%** (292/359). O gate atual preserva 99% de linhas e 80% de ramos como catraca de
-     * regressão. Ao subir cobertura, **suba o piso no mesmo commit**.
+     * Medição de 18/08/2026 nas camadas de domínio, já com o rule pack GLP-1: **linha 99,3%**
+     * (996/1003) e **ramo 82,7%** (425/514). O gate preserva 99% de linhas e 82% de ramos como
+     * catraca de regressão. Ao subir cobertura, **suba o piso no mesmo commit**.
      */
     violationRules {
         rule {
@@ -244,7 +245,7 @@ tasks.register<JacocoCoverageVerification>("coverageVerify") {
             limit {
                 counter = "BRANCH"
                 value = "COVEREDRATIO"
-                minimum = "0.80".toBigDecimal()
+                minimum = "0.82".toBigDecimal()
             }
         }
     }

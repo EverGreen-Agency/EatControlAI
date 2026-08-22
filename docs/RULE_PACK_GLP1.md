@@ -1,13 +1,31 @@
 # Rule pack GLP-1 — especificação v1
 
 Identificador: `glp1-rules-v1`
-Estado: `ESPECIFICADO`, `NÃO ATIVADO EM RUNTIME`
+Estado: `IMPLEMENTADO NO DOMÍNIO`, `NÃO LIGADO À INTERFACE`, `NÃO ATIVADO COMO CONTEÚDO VALIDADO`
 Base de validação: [`VALIDACAO_CLINICA_2026-08-18.md`](VALIDACAO_CLINICA_2026-08-18.md) (`VAL-GLP1-R1`)
 Data: 18/08/2026
 
-> Ativação depende do registro formal pendente no item 12 do registro de validação. Até lá, o pack
-> pode ser implementado, testado e demonstrado como **rule pack em revisão**, com a versão exibida na
-> resposta.
+> Ativação como conteúdo clínico validado depende do registro formal pendente no item 12 do registro
+> de validação. Até lá, o pack roda com `underReview = true` e toda resposta declara **regra em
+> revisão**.
+
+## 0. Estado da implementação
+
+| Camada | Arquivo | Estado |
+|---|---|---|
+| Modelo, contexto e contrato | `domain/glp1/Glp1Model.kt` | `IMPLEMENTADO` |
+| Léxico proibido | `domain/glp1/ForbiddenLexicon.kt` | `IMPLEMENTADO` |
+| Composição da resposta | `domain/glp1/Glp1MessageComposer.kt` | `IMPLEMENTADO` |
+| R1 a R6 | `domain/glp1/Glp1RulePackV1.kt` | `IMPLEMENTADO` |
+| Testes | `test/domain/glp1/*` | 43 testes aprovados; 98,8% de linhas e 85,6% de ramos |
+| Ligação com orquestrador e interface | — | `PENDENTE` |
+| Persistência de regra pessoal e sintoma | — | `PENDENTE` |
+| Alertas baseados em histórico | — | `PENDENTE` |
+
+Decisão de modelagem: em vez de criar um tipo paralelo `NutritionEvidence`, a proveniência ficou em
+`Finding.origin` (um `EvidenceType` já existente) e a base numérica continua em `NutrientAmount`, que
+já carrega nutriente, valor, base e trecho de origem. Um tipo novo duplicaria esses campos sem
+acrescentar informação.
 
 ## 1. Contrato
 
@@ -205,6 +223,8 @@ ter menor tolerância", "considere confirmar com seu profissional".
 
 ## 8. Matriz de teste exigida antes da ativação
 
+Coberta por `RegulatoryLabelRulesTest`, `Glp1RulePackTest` e `Glp1MessageComposerTest`.
+
 | Caso | Esperado |
 |---|---|
 | Rótulo com 700 mg de sódio por 100 g | `ALTO_EM_SODIO` citando critério de rotulagem |
@@ -229,17 +249,18 @@ ter menor tolerância", "considere confirmar com seu profissional".
 
 ## 10. Implementação sugerida
 
-| Etapa | Escopo |
-|---|---|
-| 1 | `NutritionEvidence` com propriedade, valor, base, origem e confiança |
-| 2 | `RulePack` como interface versionada, com `evaluate(contexto): Assessment` |
-| 3 | R1 e R2, que são determinísticos e verificáveis por teste puro |
-| 4 | R3 e R5, ligadas à identificação visual e ao cardápio |
-| 5 | `RegraPessoal` com persistência local e registro de desconforto |
-| 6 | R6 com registro explícito de sintoma |
-| 7 | Composição de mensagem e teste de léxico proibido |
-| 8 | Alertas de histórico, como proteína abaixo da meta em dias recentes |
+| Etapa | Escopo | Estado |
+|---|---|---|
+| 1 | Proveniência por achado, reaproveitando `EvidenceType` e `NutrientAmount` | `IMPLEMENTADO` |
+| 2 | `RulePack` como interface versionada, com `evaluate(contexto): Glp1Assessment` | `IMPLEMENTADO` |
+| 3 | R1 e R2, determinísticos e verificáveis por teste puro | `IMPLEMENTADO` |
+| 4 | R3 e R5, ligadas à identificação visual e ao cardápio | `IMPLEMENTADO` |
+| 5 | `PersonalRule` no domínio, com correspondência direta e possível | `IMPLEMENTADO` |
+| 6 | R6 a partir de sintoma relatado explicitamente | `IMPLEMENTADO` |
+| 7 | Composição de mensagem e teste de léxico proibido | `IMPLEMENTADO` |
+| 8 | Persistência local de regra pessoal e sintoma | `PENDENTE` |
+| 9 | Ligação com orquestrador, interface e voz | `PENDENTE` |
+| 10 | Alertas de histórico, como proteína abaixo da meta em dias recentes | `PENDENTE` |
 
-As etapas 1 a 4 e 7 não dependem de nenhuma pendência externa. As etapas 5, 6 e 8 introduzem dados
-novos de saúde no aparelho e devem manter a política atual: armazenamento local, sem backup em nuvem e
-com exclusão pelo usuário.
+As etapas 8 a 10 introduzem dados novos de saúde no aparelho e precisam manter a política atual:
+armazenamento local, sem backup em nuvem e com exclusão pelo usuário.

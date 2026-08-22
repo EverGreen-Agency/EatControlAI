@@ -56,8 +56,8 @@ Responsáveis usados no checklist:
 | Dashboard factual | `IMPLEMENTADO` | Home/Plan usam `dailyProgress`; não exibem nome, hidratação, meta ou percentual demonstrativo |
 | Cardápio (`MENU`) | `IMPLEMENTADO`, não `VALIDADO` em hardware | OCR + `MenuParser` próprio; seção, nome, descrição, preço e termos observados; preço não vira nutriente; confirmação obrigatória antes do histórico |
 | Prato (`PLATE`) | `IMPLEMENTADO`, não `VALIDADO` em hardware | ML Kit bundled/offline + classes fechadas + gate experimental `0,65`; desconhecidos não são forçados; confirmação obrigatória; sem volume/macros automáticos |
-| Regras GLP-1 | `ESPECIFICADO`, não implementado | conteúdo validado na rodada 1; `glp1-rules-v1` aguarda implementação e registro formal para ativar |
-| Regras pessoais e registro de desconforto | `ESPECIFICADO` | requisito novo trazido pela validação: regra criada pelo usuário a partir da própria experiência |
+| Regras GLP-1 | `IMPLEMENTADO` no domínio | `glp1-rules-v1` com R1 a R6, léxico proibido e composição aprovada; falta ligar à interface e obter o registro formal |
+| Regras pessoais e registro de desconforto | `IMPLEMENTADO` no domínio | correspondência direta gera atenção, correspondência possível gera pergunta; persistência e tela ainda `PENDENTE` |
 | Composição/porção/preparo de prato | `BLOQUEADO` | falta fonte auditável de composição e medidas; a v1 registra componentes confirmados, não macros |
 | Perguntas sobre produto desconhecido | `PENDENTE` | confirmação atual cobre alérgenos e fluxos assistidos, não uma entrevista nutricional completa |
 | Registro/autorização DAT | `IMPLEMENTADO`, não `VALIDADO` em hardware | `startRegistration()` retorna `Result`; UI distingue abertura do registro, autorização, conexão temporária e erros |
@@ -124,11 +124,14 @@ Não pedir uma “dieta universal”. Pedir um conjunto de regras demonstrativas
 ### 4.2 Lote P1 — pode avançar com schema, mas as regras finais dependem do médico
 
 - [x] `KIRO` Especificar o rule pack a partir da validação recebida: `glp1-rules-v1`.
-- [ ] `KIRO` Criar `NutritionEvidence`: gordura total/saturada, porção, preparo, fonte e confiança clínica estruturada.
-- [ ] `KIRO` Criar interface de rule pack GLP-1 local e versionado.
-- [ ] `KIRO` Implementar regras pessoais do usuário e registro de desconforto relatado.
-- [ ] `KIRO` Implementar encaminhamento em dois níveis e teste de léxico proibido.
-- [ ] `KIRO` Criar mensagens GLP-1 com linguagem aprovada, sem diagnóstico ou garantia.
+- [x] `KIRO` Registrar proveniência por achado, reaproveitando `EvidenceType` e `NutrientAmount`.
+- [x] `KIRO` Criar interface de rule pack GLP-1 local e versionado.
+- [x] `KIRO` Implementar regras pessoais do usuário no domínio, com correspondência direta e possível.
+- [x] `KIRO` Implementar encaminhamento em dois níveis e teste de léxico proibido.
+- [x] `KIRO` Criar mensagens GLP-1 com linguagem aprovada, sem diagnóstico ou garantia.
+- [ ] `KIRO` Persistir regra pessoal e sintoma relatado no armazenamento local.
+- [ ] `KIRO` Ligar o rule pack ao orquestrador, à interface e à voz.
+- [ ] `KIRO` Implementar alertas baseados em histórico.
 - [x] `KIRO` Implementar cardápio como OCR + `MenuParser` próprio + revisão e confirmação factual.
 - [ ] `KIRO` Implementar fallback completo de produto desconhecido: OCR → catálogo local → perguntas → insuficiente.
 - [ ] `KIRO` Fazer o foco falado (“tem glúten?”, “é gorduroso?”) influenciar a interação.
@@ -322,7 +325,7 @@ Quanto mais definido, melhor **quando a definição é verificável**. Uma basel
 | Tabela nutricional | OCR + parser estruturado + confirmação de porção | `IMPLEMENTADO`, suíte JVM aprovada |
 | Cardápio | OCR + `MenuParser` próprio + revisão/confirmação | `IMPLEMENTADO`, falta benchmark/hardware |
 | Prato | ML Kit bundled + classes fechadas + confirmação | `IMPLEMENTADO`, falta benchmark/hardware; sem composição/macros |
-| Regras GLP-1 | `glp1-rules-v1`: limites regulatórios para composição declarada, metas configuráveis e atenções qualitativas | `ESPECIFICADO`; ativação depende de EQ-11 |
+| Regras GLP-1 | `glp1-rules-v1`: limites regulatórios para composição declarada, metas configuráveis e atenções qualitativas | `IMPLEMENTADO` no domínio; ativação como conteúdo validado depende de EQ-11 |
 | RAG em runtime | não usar no caminho crítico do MVP | `DECIDIDO` |
 
 ### 8.4 Uso dos arquivos RAG
@@ -568,11 +571,12 @@ documento de entrega, não formatos de papel.
 
 ### 12.3 Validação local do loop inicial — 18/08/2026
 
-- [x] gate completo executado com `cmd /c "gradlew.bat :app:compileDebugKotlin :app:testDebugUnitTest :app:coverageReport :app:coverageVerify :app:check --no-daemon --console=plain"` — `BUILD SUCCESSFUL in 10m 40s`;
-- [x] `:app:testDebugUnitTest` — `109` testes em `17` suítes; zero falhas, erros ou skips;
-- [x] cobertura total — `81,2%` de linhas (`1123/1383`) e `67,7%` de ramos (`389/575`);
-- [x] cobertura do domínio determinístico — `99,5%` de linhas (`652/655`) e `81,3%` de ramos (`292/359`);
-- [x] `:app:coverageVerify` — gate de domínio mantido em `0,99` para linhas e `0,80` para ramos;
+- [x] gate completo executado com `cmd /c "gradlew.bat :app:testDebugUnitTest :app:coverageReport :app:coverageVerify :app:check --no-daemon --console=plain"` — `BUILD SUCCESSFUL`;
+- [x] `:app:testDebugUnitTest` — `156` testes em `20` suítes; zero falhas, erros ou skips, incluindo `43` do rule pack GLP-1;
+- [x] cobertura total — `83,9%` de linhas (`1467/1748`) e `70%` de ramos (`522/746`);
+- [x] cobertura do domínio determinístico — `99,3%` de linhas (`996/1003`) e `82,7%` de ramos (`425/514`);
+- [x] cobertura de `domain/glp1` — `98,8%` de linhas (`337/341`) e `85,6%` de ramos (`131/153`);
+- [x] `:app:coverageVerify` — piso de domínio elevado para `0,99` em linhas e `0,82` em ramos;
 - [x] relatório JaCoCo: `app/build/reports/jacoco/coverageReport/coverageReport.xml`;
 - [x] lint e `:app:check` — concluídos sem falha;
 - [x] `cmd /c "gradlew.bat :app:assembleDebug --no-daemon --console=plain"` — `BUILD SUCCESSFUL in 8m 50s`;
