@@ -3,9 +3,13 @@ package com.eatcontrolai
 import android.app.Application
 import com.eatcontrolai.data.LocalStore
 import com.eatcontrolai.data.MealHistoryRepository
+import com.eatcontrolai.data.PersonalRuleRepository
 import com.eatcontrolai.data.PrivacyRepository
 import com.eatcontrolai.data.ProfileRepository
+import com.eatcontrolai.data.SymptomRepository
 import com.eatcontrolai.domain.decision.FoodDecisionEngine
+import com.eatcontrolai.domain.glp1.Glp1RulePackV1
+import com.eatcontrolai.domain.glp1.RulePack
 import com.eatcontrolai.glasses.CaptureSourceRouter
 import com.eatcontrolai.glasses.DatGlassesGateway
 import com.eatcontrolai.glasses.GlassesAudioRouter
@@ -98,4 +102,17 @@ class AppContainer(application: Application) {
     val privacy = PrivacyRepository(store, scope)
 
     val history = MealHistoryRepository(store, scope)
+
+    /** Regras pessoais e sintomas relatados: entradas da camada GLP-1, ambas locais. */
+    val personalRules = PersonalRuleRepository(store, scope)
+
+    val symptoms = SymptomRepository(store, scope)
+
+    /**
+     * Rule pack GLP-1 (`glp1-rules-v1`).
+     *
+     * `underReview` permanece no padrão `true`: o conteúdo clínico foi validado, mas o registro
+     * formal da validação ainda não existe, e a interface precisa dizer isso.
+     */
+    val glp1Rules: RulePack = Glp1RulePackV1()
 }

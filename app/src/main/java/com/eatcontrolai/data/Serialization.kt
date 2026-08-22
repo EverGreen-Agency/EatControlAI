@@ -14,6 +14,12 @@ import com.eatcontrolai.core.model.Restriction
 import com.eatcontrolai.core.model.RestrictionSeverity
 import com.eatcontrolai.core.model.UncertaintyPolicy
 import com.eatcontrolai.core.model.UserProfile
+import com.eatcontrolai.domain.glp1.PersonalRule
+import com.eatcontrolai.domain.glp1.PersonalRuleAction
+import com.eatcontrolai.domain.glp1.PersonalRuleOrigin
+import com.eatcontrolai.domain.glp1.SymptomKind
+import com.eatcontrolai.domain.glp1.SymptomReport
+import com.eatcontrolai.domain.plate.PlateFoodClass
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -181,6 +187,75 @@ object Serialization {
                     },
                 confirmedItems = item.optJSONArray("confirmedItems").strings(),
                 containsVisualEstimate = item.optBoolean("containsVisualEstimate", false)
+            )
+        }
+    }.getOrDefault(emptyList())
+
+    // ------------------------------------------- regras pessoais e sintomas
+
+    fun encodePersonalRules(rules: List<PersonalRule>): String = JSONArray().apply {
+        rules.forEach { rule ->
+            put(
+                JSONObject().apply {
+                    put("id", rule.id)
+                    put("target", rule.target)
+                    put("action", rule.action.name)
+                    put("origin", rule.origin.name)
+                    put("note", rule.note)
+                    put("matchClasses", JSONArray(rule.matchClasses.map { it.name }))
+                    put("matchTerms", JSONArray(rule.matchTerms.toList()))
+                    put("possibleTerms", JSONArray(rule.possibleTerms.toList()))
+                }
+            )
+        }
+    }.toString()
+
+    /** Regra sem alvo, ação ou origem válidos é descartada: melhor perder a regra que aplicá-la errado. */
+    fun decodePersonalRules(json: String): List<PersonalRule> = runCatching {
+        JSONArray(json).objects().mapNotNull { item ->
+            val target = item.optString("target").takeIf { it.isNotBlank() }
+                ?: return@mapNotNull null
+            val action = enumOrNull<PersonalRuleAction>(item.optString("action"))
+                ?: return@mapNotNull null
+            val origin = enumOrNull<PersonalRuleOrigin>(item.optString("origin"))
+                ?: return@mapNotNull null
+
+            PersonalRule(
+                id = item.optString("id"),
+                target = target,
+                action = action,
+                origin = origin,
+                note = item.optString("note"),
+                matchClasses = item.optJSONArray("matchClasses").strings()
+                    .mapNotNull { enumOrNull<PlateFoodClass>(it) }
+                    .toSet(),
+                matchTerms = item.optJSONArray("matchTerms").strings().toSet(),
+                possibleTerms = item.optJSONArray("possibleTerms").strings().toSet()
+            )
+        }
+    }.getOrDefault(emptyList())
+
+    fun encodeSymptomReports(reports: List<SymptomReport>): String = JSONArray().apply {
+        reports.forEach { report ->
+            put(
+                JSONObject().apply {
+                    put("kind", report.kind.name)
+                    put("timestampMillis", report.timestampMillis)
+                    report.relatedRecordId?.let { put("relatedRecordId", it) }
+                    put("note", report.note)
+                }
+            )
+        }
+    }.toString()
+
+    fun decodeSymptomReports(json: String): List<SymptomReport> = runCatching {
+        JSONArray(json).objects().mapNotNull { item ->
+            val kind = enumOrNull<SymptomKind>(item.optString("kind")) ?: return@mapNotNull null
+            SymptomReport(
+                kind = kind,
+                timestampMillis = item.optLong("timestampMillis"),
+                relatedRecordId = item.optString("relatedRecordId").takeIf { it.isNotBlank() },
+                note = item.optString("note")
             )
         }
     }.getOrDefault(emptyList())

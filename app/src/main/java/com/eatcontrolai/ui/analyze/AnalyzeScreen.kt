@@ -77,6 +77,7 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val context = LocalContext.current
+    val mockGateway = remember { (context.applicationContext as EatControlApp).container.mockGlasses }
     var cameraGranted by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
@@ -317,6 +318,30 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                                 contentScale = ContentScale.Fit,
                                 modifier = Modifier.fillMaxWidth()
                             )
+                        }
+
+                        // Prévia da fonte simulada: mostra o que será analisado antes de analisar.
+                        // Sem isto, o operador da demo aponta para uma caixa preta e pede confiança.
+                        state.source == CaptureSource.MOCK_GLASSES && state.selectedScene != null -> {
+                            val scene = state.selectedScene!!
+                            val preview = remember(scene.id) {
+                                runCatching { mockGateway.render(scene) }.getOrNull()
+                                    ?.let { BitmapFactory.decodeByteArray(it, 0, it.size)?.asImageBitmap() }
+                            }
+                            if (preview == null) {
+                                Text(
+                                    "Prévia indisponível para esta cena",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = EcColors.TextFaint
+                                )
+                            } else {
+                                Image(
+                                    bitmap = preview,
+                                    contentDescription = "Prévia da cena simulada",
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
 
                         else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {

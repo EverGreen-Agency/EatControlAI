@@ -57,7 +57,8 @@ Responsáveis usados no checklist:
 | Cardápio (`MENU`) | `IMPLEMENTADO`, não `VALIDADO` em hardware | OCR + `MenuParser` próprio; seção, nome, descrição, preço e termos observados; preço não vira nutriente; confirmação obrigatória antes do histórico |
 | Prato (`PLATE`) | `IMPLEMENTADO`, não `VALIDADO` em hardware | ML Kit bundled/offline + classes fechadas + gate experimental `0,65`; desconhecidos não são forçados; confirmação obrigatória; sem volume/macros automáticos |
 | Regras GLP-1 | `IMPLEMENTADO` no domínio | `glp1-rules-v1` com R1 a R6, léxico proibido e composição aprovada; falta ligar à interface e obter o registro formal |
-| Regras pessoais e registro de desconforto | `IMPLEMENTADO` no domínio | correspondência direta gera atenção, correspondência possível gera pergunta; persistência e tela ainda `PENDENTE` |
+| Regras pessoais e registro de desconforto | `IMPLEMENTADO` no domínio e na persistência | correspondência direta gera atenção, correspondência possível gera pergunta; dados locais e apagáveis; tela e ligação com a análise ainda `PENDENTE` |
+| Alertas de histórico | `IMPLEMENTADO` no domínio | proteína abaixo da meta em dias completos e desconforto registrado em refeição com o mesmo componente |
 | Composição/porção/preparo de prato | `BLOQUEADO` | falta fonte auditável de composição e medidas; a v1 registra componentes confirmados, não macros |
 | Perguntas sobre produto desconhecido | `PENDENTE` | confirmação atual cobre alérgenos e fluxos assistidos, não uma entrevista nutricional completa |
 | Registro/autorização DAT | `IMPLEMENTADO`, não `VALIDADO` em hardware | `startRegistration()` retorna `Result`; UI distingue abertura do registro, autorização, conexão temporária e erros |
@@ -129,9 +130,10 @@ Não pedir uma “dieta universal”. Pedir um conjunto de regras demonstrativas
 - [x] `KIRO` Implementar regras pessoais do usuário no domínio, com correspondência direta e possível.
 - [x] `KIRO` Implementar encaminhamento em dois níveis e teste de léxico proibido.
 - [x] `KIRO` Criar mensagens GLP-1 com linguagem aprovada, sem diagnóstico ou garantia.
-- [ ] `KIRO` Persistir regra pessoal e sintoma relatado no armazenamento local.
+- [x] `KIRO` Persistir regra pessoal e sintoma relatado no armazenamento local.
+- [x] `KIRO` Implementar alertas baseados em histórico.
 - [ ] `KIRO` Ligar o rule pack ao orquestrador, à interface e à voz.
-- [ ] `KIRO` Implementar alertas baseados em histórico.
+- [ ] `KIRO` Criar tela para cadastrar regra pessoal e relatar sintoma.
 - [x] `KIRO` Implementar cardápio como OCR + `MenuParser` próprio + revisão e confirmação factual.
 - [ ] `KIRO` Implementar fallback completo de produto desconhecido: OCR → catálogo local → perguntas → insuficiente.
 - [ ] `KIRO` Fazer o foco falado (“tem glúten?”, “é gorduroso?”) influenciar a interação.

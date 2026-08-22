@@ -65,16 +65,24 @@ class MockGlassesGateway(
     override suspend fun capturePhoto(): ByteArray {
         // Latência simulada da captura + transporte dos óculos para o telefone.
         delay(SIMULATED_CAPTURE_MS)
-        val scene = currentScene
-        return when (scene.kind) {
-            SceneKind.LABEL, SceneKind.MENU -> MockLabelRenderer.render(scene.labelText)
-            SceneKind.BARCODE -> Ean13Renderer.render(
-                ean = requireNonNullEan(scene),
-                productName = scene.productName,
-                brand = scene.brand
-            )
-            SceneKind.PLATE -> MockPlateRenderer.render()
-        }
+        return render(currentScene)
+    }
+
+    /**
+     * Rende a cena sem latência simulada, para a tela mostrar o que está prestes a ser analisado.
+     *
+     * É a **mesma** função que [capturePhoto] usa, de propósito: uma prévia que renderizasse por
+     * outro caminho poderia mostrar uma imagem diferente da analisada, e a demo passaria a mentir
+     * exatamente sobre o ponto que o produto defende.
+     */
+    fun render(scene: MockScene): ByteArray = when (scene.kind) {
+        SceneKind.LABEL, SceneKind.MENU -> MockLabelRenderer.render(scene.labelText)
+        SceneKind.BARCODE -> Ean13Renderer.render(
+            ean = requireNonNullEan(scene),
+            productName = scene.productName,
+            brand = scene.brand
+        )
+        SceneKind.PLATE -> MockPlateRenderer.render()
     }
 
     private fun requireNonNullEan(scene: MockScene) =

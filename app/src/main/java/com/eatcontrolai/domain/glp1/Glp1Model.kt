@@ -82,6 +82,19 @@ enum class SymptomKind(val level: EscalationLevel) {
     ALLERGIC_REACTION(EscalationLevel.MEDICAL_EVALUATION)
 }
 
+/**
+ * Sintoma relatado pela pessoa, opcionalmente vinculado a uma refeição do histórico.
+ *
+ * O vínculo é o que permite lembrar "você registrou desconforto depois de uma refeição parecida" sem
+ * o aplicativo atribuir causa a um alimento.
+ */
+data class SymptomReport(
+    val kind: SymptomKind,
+    val timestampMillis: Long,
+    val relatedRecordId: String? = null,
+    val note: String = ""
+)
+
 enum class PersonalRuleAction { AVOID, OBSERVE }
 
 enum class PersonalRuleOrigin(val label: String) {

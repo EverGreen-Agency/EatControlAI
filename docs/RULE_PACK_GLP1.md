@@ -17,10 +17,11 @@ Data: 18/08/2026
 | Léxico proibido | `domain/glp1/ForbiddenLexicon.kt` | `IMPLEMENTADO` |
 | Composição da resposta | `domain/glp1/Glp1MessageComposer.kt` | `IMPLEMENTADO` |
 | R1 a R6 | `domain/glp1/Glp1RulePackV1.kt` | `IMPLEMENTADO` |
-| Testes | `test/domain/glp1/*` | 43 testes aprovados; 98,8% de linhas e 85,6% de ramos |
-| Ligação com orquestrador e interface | — | `PENDENTE` |
-| Persistência de regra pessoal e sintoma | — | `PENDENTE` |
-| Alertas baseados em histórico | — | `PENDENTE` |
+| Alertas de histórico | `domain/glp1/Glp1HistoryAlerts.kt` | `IMPLEMENTADO` |
+| Persistência de regra pessoal e sintoma | `data/Serialization.kt`, `data/Repositories.kt`, `data/LocalStore.kt` | `IMPLEMENTADO` |
+| Disponibilidade no grafo de dependências | `EatControlApp.kt` | `IMPLEMENTADO` |
+| Ligação com orquestrador, interface e voz | — | `PENDENTE` |
+| Tela para criar regra pessoal e relatar sintoma | — | `PENDENTE` |
 
 Decisão de modelagem: em vez de criar um tipo paralelo `NutritionEvidence`, a proveniência ficou em
 `Finding.origin` (um `EvidenceType` já existente) e a base numérica continua em `NutrientAmount`, que
@@ -258,9 +259,14 @@ Coberta por `RegulatoryLabelRulesTest`, `Glp1RulePackTest` e `Glp1MessageCompose
 | 5 | `PersonalRule` no domínio, com correspondência direta e possível | `IMPLEMENTADO` |
 | 6 | R6 a partir de sintoma relatado explicitamente | `IMPLEMENTADO` |
 | 7 | Composição de mensagem e teste de léxico proibido | `IMPLEMENTADO` |
-| 8 | Persistência local de regra pessoal e sintoma | `PENDENTE` |
-| 9 | Ligação com orquestrador, interface e voz | `PENDENTE` |
-| 10 | Alertas de histórico, como proteína abaixo da meta em dias recentes | `PENDENTE` |
+| 8 | Persistência local de regra pessoal e sintoma | `IMPLEMENTADO` |
+| 9 | Alertas de histórico, como proteína abaixo da meta em dias recentes | `IMPLEMENTADO` |
+| 10 | Ligação com orquestrador, interface e voz | `PENDENTE` |
 
-As etapas 8 a 10 introduzem dados novos de saúde no aparelho e precisam manter a política atual:
-armazenamento local, sem backup em nuvem e com exclusão pelo usuário.
+As etapas 8 e 9 introduzem dados novos de saúde no aparelho e mantêm a política atual: armazenamento
+local, exclusão pelo usuário e ausência de backup em nuvem, já garantida pela exclusão do DataStore
+nas regras de backup e transferência.
+
+Os alertas de histórico têm duas fronteiras no código: comparam sempre com a meta cadastrada, e só
+mencionam desconforto que a pessoa registrou e vinculou a uma refeição. O aplicativo não atribui causa
+a um alimento.

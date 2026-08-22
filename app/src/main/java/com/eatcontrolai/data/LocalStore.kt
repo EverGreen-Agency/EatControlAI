@@ -37,6 +37,12 @@ class LocalStore(context: Context) {
     enum class Key(val preference: Preferences.Key<String>) {
         PROFILE(stringPreferencesKey("profile")),
         PRIVACY(stringPreferencesKey("privacy")),
-        HISTORY(stringPreferencesKey("history"))
+        HISTORY(stringPreferencesKey("history")),
+
+        /** Regras que a pessoa criou a partir da própria experiência. */
+        PERSONAL_RULES(stringPreferencesKey("personal_rules")),
+
+        /** Sintomas que a pessoa relatou. É dado de saúde: local, sem backup, apagável. */
+        SYMPTOM_REPORTS(stringPreferencesKey("symptom_reports"))
     }
 }
