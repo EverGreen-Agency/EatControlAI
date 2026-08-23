@@ -38,7 +38,7 @@ Eat Control AI
 **Resumo em uma frase** (máx. 160)
 
 ```
-Copiloto alimentar em óculos que responde por áudio se um alimento cabe no seu plano, cruzando o que você olha com suas restrições.
+Óculos que respondem por áudio se um alimento cabe no seu tratamento com GLP-1, cruzando o que você olha ou pergunta com seu perfil clínico.
 ```
 
 ---
@@ -162,7 +162,7 @@ O gatilho custa zero em repouso. O "Hey Meta" pertence ao assistente da Meta e n
 **c** (máx. 160)
 
 ```
-Custa o hands-free puro: é preciso tocar ou apertar para falar. Mitigamos com resposta em até 15 palavras, para a interação caber em segundos.
+Custa toque para abrir a interação. Mitigamos com sessão curta pós-toque: perguntas seguintes ("e isso?") não pedem novo toque, na mesma janela.
 ```
 
 ### A5[5]
@@ -170,19 +170,19 @@ Custa o hands-free puro: é preciso tocar ou apertar para falar. Mitigamos com r
 **a** (máx. 80)
 
 ```
-Fizemos identificação visual sem macro por foto em vez de estimar calorias
+Fizemos motor de 4 estados em vez de resposta binária sim/não
 ```
 
 **b** (máx. 160)
 
 ```
-Estudos mostram erro relevante em estimativa nutricional por imagem. Um número plausível e errado desloca a decisão com aparência de precisão.
+Distingue "não pode" de "não sei", em vez de simplificar os dois numa negativa. É a mesma lógica que sustenta cada resposta com evidência, não só um veredito.
 ```
 
 **c** (máx. 160)
 
 ```
-Custa parecer menos completo que quem exibe calorias na hora. Mitigamos exigindo item, quantidade e fonte confirmados antes de qualquer número.
+Custa uma resposta mais longa que sim/não. Mitigamos com o limite de 15 palavras por fala, testado, para a interação caber em segundos.
 ```
 
 ---
