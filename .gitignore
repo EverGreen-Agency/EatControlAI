@@ -26,13 +26,25 @@ benchmark/results/
 .codex-history/
 .claude-code-history/
 
-# PDFs dos cursos da Meta: 150 MB de material que todo integrante já acessa pelo programa.
-# Ficam locais para não pesar o clone do time. Para versionar, remova estas duas linhas.
-docs/fontes/Un*_curso_meta.pdf
-docs/fontes/Un*_Material_de_apoio_Meta.pdf
+# Material de curso da Meta: ~160 MB que todo integrante já acessa pelo programa, e que tornava
+# clone e deploy lentos sem acrescentar nada ao produto. Continua no disco de quem já tem; sai do
+# repositório. O que o projeto precisa citar dessas fontes está em docs/DATA_SOURCES.md, por
+# DOI/PMID, que é referência estável e não ocupa espaço.
+docs/fontes/
+docs/Ebooks Meta/
 
-# Assets da página salva do plano de estudo (~180 arquivos JS/CSS). O .html continua versionado.
-docs/fontes/*_files/
+# Binários de apresentação exportados: mudam a cada rodada, não são revisáveis em diff e o
+# original vive na ferramenta de design. O texto do pitch continua versionado em docs/.
+docs/pitch/
+docs/pitch.zip
+docs/Eat_Control_AI_Diagrama_Arquitetura.pdf
+docs/DIAGRAMA_ARQUITETURA.png
+docs/DIAGRAMA_ARQUITETURA.svg
+docs/render_diagram.html
+
+# Fotos soltas na raiz vindas de compartilhamento; não são asset do projeto.
+/*.jpg
+/*.jpeg
 
 # Páginas salvas do Developer Center. O HTML do Comet embute o payload das queries GraphQL,
 # incluindo o CLIENT_TOKEN do projeto — ou seja, é credencial, não documentação.

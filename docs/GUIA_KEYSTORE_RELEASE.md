@@ -244,5 +244,5 @@ Registre no gerenciador de senhas, junto do item: alias, data de criação, vali
 - O beta atual com o parceiro usa **APK debug**, cuja assinatura já está cadastrada. Ele continua
   válido para testar Ray-Ban e DAT.
 - Este guia destrava o item `EQ-03` do inventário de entrega.
-- Após concluir, atualize `docs/INVENTARIO_ENTREGA_2026-08-22.md`: seção 9.3 e o bloco de release
+- Após concluir, atualize `docs/hackathon-2026/INVENTARIO_ENTREGA_2026-08-22.md`: seção 9.3 e o bloco de release
   definitivo em 9.7, registrando apenas estados e fingerprint, nunca senhas.

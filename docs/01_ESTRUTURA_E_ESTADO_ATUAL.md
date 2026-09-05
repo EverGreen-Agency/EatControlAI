@@ -9,7 +9,7 @@
 > Atualizado em **19 de agosto de 2026**.
 >
 > Para o estado operacional da entrega de 22/08 — pendências, responsáveis e bloqueios — a fonte
-> canônica é [`INVENTARIO_ENTREGA_2026-08-22.md`](INVENTARIO_ENTREGA_2026-08-22.md). Este documento
+> canônica é [`hackathon-2026/INVENTARIO_ENTREGA_2026-08-22.md`](hackathon-2026/INVENTARIO_ENTREGA_2026-08-22.md). Este documento
 > descreve o repositório; aquele acompanha a entrega.
 
 ---
