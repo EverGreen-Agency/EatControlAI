@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roadmap aberto — Eat Control</title>
+<meta name="description" content="O que já está pronto, o que estamos construindo agora e o que ficou de fora do Eat Control. Atualizado conforme o produto avança, incluindo o que deu errado.">
+<link rel="canonical" href="https://eatcontrol.app/roadmap/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Roadmap aberto — Eat Control">
+<meta property="og:description" content="Construindo em público: o que está pronto, o que falta e o que decidimos não fazer.">
+<meta property="og:url" content="https://eatcontrol.app/roadmap/">
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <svg viewBox="0 0 108 108" aria-hidden="true" fill="none">
+        <rect width="108" height="108" rx="24" fill="#0E1A2E"/>
+        <g stroke="#42E0AB" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M31 43V35a4 4 0 0 1 4-4h8"/><path d="M65 31h8a4 4 0 0 1 4 4v8"/>
+          <path d="M77 65v8a4 4 0 0 1-4 4h-8"/><path d="M43 77h-8a4 4 0 0 1-4-4v-8"/>
+        </g>
+        <path d="M42 55l8 8 17-19" stroke="#F7F9FC" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Eat&nbsp;Control
+    </a>
+    <nav class="site-nav" aria-label="Principal">
+      <a href="/#como-funciona">Como funciona</a>
+      <a href="/#privacidade">Privacidade</a>
+      <a href="/roadmap/" aria-current="page">Roadmap</a>
+      <a href="mailto:contato@eatcontrol.app?subject=Quero%20testar%20o%20Eat%20Control" class="btn btn-primary">Quero testar</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap stack">
+    <p class="eyebrow">Construindo em público</p>
+    <h1>Roadmap aberto</h1>
+    <p class="lede">O que está pronto, o que está sendo feito agora e o que decidimos deixar de fora. Inclui o que deu errado — é a parte que costuma ensinar mais.</p>
+    <p class="faint">Última atualização: 5 de setembro de 2026.</p>
+  </div>
+</section>
+
+<section class="wrap stack-lg">
+  <div class="stack">
+    <h2>Pronto <span class="tag" data-state="done">no app</span></h2>
+    <div class="track">
+      <article class="item" data-state="done">
+        <h3>Quatro trilhas de análise</h3>
+        <p>Código de barras, rótulo por OCR, cardápio e prato assistido — todas rodando no aparelho, com o roteamento escolhendo sozinho o caminho mais barato.</p>
+      </article>
+      <article class="item" data-state="done">
+        <h3>Motor de decisão com hierarquia de evidência</h3>
+        <p>Quatro estados possíveis, incluindo "informação insuficiente". O que o fabricante declara pesa mais do que o que um modelo inferiu.</p>
+      </article>
+      <article class="item" data-state="done">
+        <h3>Base pública de produtos</h3>
+        <p>O catálogo de demonstração deu lugar ao Open Food Facts: escanear um produto real traz ingredientes, alérgenos declarados e composição por 100&nbsp;g.</p>
+      </article>
+      <article class="item" data-state="done">
+        <h3>Regras clínicas GLP-1 ligadas ao app</h3>
+        <p>O conjunto de regras validado com endocrinologista passou a rodar em toda análise, na tela e na voz, com a origem de cada achado visível.</p>
+      </article>
+      <article class="item" data-state="done">
+        <h3>Regras pessoais e registro de sintomas</h3>
+        <p>Você cadastra o que quer evitar. E ao registrar um sinal de alerta, o app para de avaliar refeição e orienta procurar avaliação médica.</p>
+      </article>
+    </div>
+  </div>
+
+  <div class="stack">
+    <h2>Agora <span class="tag" data-state="doing">em construção</span></h2>
+    <div class="track">
+      <article class="item" data-state="doing">
+        <h3>Publicação na Play Store</h3>
+        <p>Assinatura de release, ficha da loja e teste fechado. É o que separa um projeto de um produto que alguém consegue instalar.</p>
+      </article>
+      <article class="item" data-state="doing">
+        <h3>Reconhecimento de prato que funcione de verdade</h3>
+        <p>Hoje o app reconhece categorias amplas — salada, frango, sobremesa. Não reconhece feijoada. Estamos decidindo o caminho, e ele tem um custo de privacidade que vamos explicar antes de tomar.</p>
+      </article>
+      <article class="item" data-state="doing">
+        <h3>Assinatura</h3>
+        <p>Um plano gratuito que resolve a decisão do dia a dia e um plano pago para quem quer acompanhamento contínuo.</p>
+      </article>
+    </div>
+  </div>
+
+  <div class="stack">
+    <h2>Decidimos não fazer <span class="tag">por enquanto</span></h2>
+    <div class="track">
+      <article class="item">
+        <h3>Estimar calorias por foto</h3>
+        <p>A tecnologia existe e erra centenas de quilocalorias por refeição sem avisar. Preferimos ler o que está declarado a exibir um número bonito e errado.</p>
+      </article>
+      <article class="item">
+        <h3>Sincronizar histórico na nuvem</h3>
+        <p>Exigiria subir dado de saúde para um servidor. Enquanto não houver um motivo que valha isso para você, o histórico fica no seu aparelho.</p>
+      </article>
+      <article class="item">
+        <h3>Óculos inteligentes</h3>
+        <p>O aplicativo nasceu integrado ao toolkit da Meta para wearables e isso continua funcionando. Mas óculos são um capítulo seguinte, não a porta de entrada.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="panel stack">
+    <h2>Acompanhe ou participe</h2>
+    <p class="muted">Publicamos o que quebrou junto com o que funcionou. Se você está em tratamento com GLP-1 e quer testar cedo, é só pedir.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="mailto:contato@eatcontrol.app?subject=Quero%20testar%20o%20Eat%20Control">Pedir uma vaga no teste</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p class="faint">Eat Control · orientação educativa. Não diagnostica, não altera doses e não substitui profissional de saúde.</p>
+    <nav class="foot-links" aria-label="Rodapé">
+      <a href="/roadmap/">Roadmap</a>
+      <a href="/privacidade/">Privacidade</a>
+      <a href="/termos/">Termos</a>
+      <a href="mailto:contato@eatcontrol.app">Contato</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

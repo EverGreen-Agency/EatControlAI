@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eat Control — decida o que comer, com evidência</title>
+<meta name="description" content="Aponte a câmera para um rótulo, um código de barras ou um prato e receba uma resposta rastreável sobre a sua alimentação. Feito para quem está em tratamento com GLP-1. Análise no próprio aparelho.">
+<link rel="canonical" href="https://eatcontrol.app/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Eat Control">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Eat Control — decida o que comer, com evidência">
+<meta property="og:description" content="Resposta rastreável no instante da decisão alimentar. Quando não sabe, o app diz que não sabe.">
+<meta property="og:url" content="https://eatcontrol.app/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://eatcontrol.app/#org",
+      "name": "Eat Control",
+      "url": "https://eatcontrol.app/",
+      "description": "Aplicativo de apoio a decisões alimentares para pessoas em tratamento com GLP-1."
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "Eat Control",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Android",
+      "inLanguage": "pt-BR",
+      "publisher": { "@id": "https://eatcontrol.app/#org" },
+      "featureList": [
+        "Leitura de rótulo por OCR no próprio aparelho",
+        "Consulta de produto por código de barras",
+        "Regras alimentares pessoais criadas pelo usuário",
+        "Registro de sintomas com encaminhamento a profissional"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "O Eat Control substitui acompanhamento profissional?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Não. O aplicativo não diagnostica, não altera dose de medicamento e não substitui acompanhamento de profissional de saúde. Ele organiza a informação declarada no rótulo e a compara com o que você configurou."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Minhas fotos e meu histórico saem do aparelho?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "As fotos não são salvas e o histórico fica neste aparelho, fora de backup em nuvem. A leitura de rótulo, o motor de decisão e a voz funcionam sem internet."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "O Eat Control conta calorias?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ele lê a tabela nutricional quando ela existe e soma apenas o que você confirmou ter comido. A pergunta central do aplicativo não é quantas calorias tem, e sim se aquela escolha conflita com o seu plano."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <svg viewBox="0 0 108 108" aria-hidden="true" fill="none">
+        <rect width="108" height="108" rx="24" fill="#0E1A2E"/>
+        <g stroke="#42E0AB" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M31 43V35a4 4 0 0 1 4-4h8"/><path d="M65 31h8a4 4 0 0 1 4 4v8"/>
+          <path d="M77 65v8a4 4 0 0 1-4 4h-8"/><path d="M43 77h-8a4 4 0 0 1-4-4v-8"/>
+        </g>
+        <path d="M42 55l8 8 17-19" stroke="#F7F9FC" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Eat&nbsp;Control
+    </a>
+    <nav class="site-nav" aria-label="Principal">
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#privacidade">Privacidade</a>
+      <a href="/roadmap/">Roadmap</a>
+      <a href="mailto:contato@eatcontrol.app?subject=Quero%20testar%20o%20Eat%20Control" class="btn btn-primary">Quero testar</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap stack">
+    <p class="eyebrow">Para quem está em tratamento com GLP-1</p>
+    <h1>A decisão acontece no mercado,<br>não no consultório.</h1>
+    <p class="lede">Aponte a câmera para um rótulo, um código de barras ou um cardápio. O Eat Control responde se aquilo conflita com o seu plano — e mostra em que evidência se baseou.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="mailto:contato@eatcontrol.app?subject=Quero%20testar%20o%20Eat%20Control">Entrar no teste fechado</a>
+      <a class="btn btn-ghost" href="/roadmap/">Ver o que estamos construindo</a>
+    </div>
+    <p class="faint">Android. Em teste fechado, com vagas limitadas.</p>
+  </div>
+</section>
+
+<section id="como-funciona" class="wrap stack-lg">
+  <div class="stack">
+    <p class="eyebrow">Como funciona</p>
+    <h2>Quatro maneiras de perguntar a mesma coisa</h2>
+    <p class="muted">Você não escolhe o modo. O app decide sozinho qual caminho é mais barato e mais confiável para o que está na sua frente.</p>
+  </div>
+  <div class="grid">
+    <article class="card">
+      <p class="num">01</p>
+      <h3>Código de barras</h3>
+      <p>Lê o EAN e busca o produto numa base pública com ingredientes, alérgenos declarados e composição. É a evidência mais forte que existe sem você digitar nada.</p>
+    </article>
+    <article class="card">
+      <p class="num">02</p>
+      <h3>Rótulo</h3>
+      <p>Quando não há código, o texto da embalagem é lido no próprio aparelho. "Zero lactose" na frente não anula "contém leite" no verso — e o app sabe disso.</p>
+    </article>
+    <article class="card">
+      <p class="num">03</p>
+      <h3>Cardápio</h3>
+      <p>Estrutura as opções do menu e mostra o que dá para observar em cada uma. Preço nunca vira nutriente, e nada entra no seu histórico sem você confirmar.</p>
+    </article>
+    <article class="card">
+      <p class="num">04</p>
+      <h3>Prato</h3>
+      <p>Sugere os componentes que reconhece e pede que você corrija. Uma foto não determina receita, ingrediente escondido nem quantidade — então ele não finge que determina.</p>
+    </article>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="panel stack">
+    <p class="eyebrow">O que nos separa dos outros</p>
+    <h2>Quando não sabe, ele diz que não sabe.</h2>
+    <p class="muted">Aplicativos que estimam calorias por foto erram, em média, centenas de quilocalorias por refeição — e mostram o número com a mesma confiança de sempre. O Eat Control trabalha com quatro respostas possíveis, e uma delas é <strong>informação insuficiente</strong>.</p>
+    <hr class="rule">
+    <div class="grid">
+      <article class="card">
+        <h3>Evidência com hierarquia</h3>
+        <p>O que o fabricante declara vale mais que o que um modelo achou. Toda resposta mostra de onde veio cada achado e qual o peso dele.</p>
+      </article>
+      <article class="card">
+        <h3>Regras suas, não nossas</h3>
+        <p>Você cadastra o que quer evitar ou observar. O app cita a sua regra ao avisar, em vez de decidir por você o que é bom ou ruim.</p>
+      </article>
+      <article class="card">
+        <h3>Limites clínicos explícitos</h3>
+        <p>Não diagnostica, não muda dose e não promete conforto. Registrou um sinal de alerta? Ele para de avaliar a refeição e orienta procurar avaliação médica.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="privacidade" class="wrap stack-lg">
+  <div class="stack">
+    <p class="eyebrow">Privacidade</p>
+    <h2>O caminho da decisão roda no seu telefone</h2>
+    <p class="muted">Leitura de rótulo, motor de decisão, voz e histórico funcionam sem internet. A única consulta que sai do aparelho é o código de barras do produto — vai o número, não vai quem escaneou.</p>
+  </div>
+  <div class="grid">
+    <article class="card"><h3>Fotos não são salvas</h3><p>A imagem existe em memória durante a análise e é descartada quando você fecha o resultado.</p></article>
+    <article class="card"><h3>Histórico fica no aparelho</h3><p>Fora de backup em nuvem e de transferência entre dispositivos, por configuração explícita.</p></article>
+    <article class="card"><h3>Apagar é um botão</h3><p>Histórico, regras e sintomas registrados saem do aparelho quando você quiser, sem pedir nada a ninguém.</p></article>
+  </div>
+  <p class="faint">Detalhes completos em <a href="/privacidade/">política de privacidade</a>.</p>
+</section>
+
+<section class="wrap">
+  <div class="panel stack">
+    <h2>Quer testar antes de todo mundo?</h2>
+    <p class="muted">Estamos abrindo o teste fechado para um grupo pequeno de pessoas em tratamento com GLP-1. Você usa, reclama, e a gente conserta em público.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="mailto:contato@eatcontrol.app?subject=Quero%20testar%20o%20Eat%20Control&body=Conte%20um%20pouco%20do%20seu%20contexto%3A%20h%C3%A1%20quanto%20tempo%20est%C3%A1%20em%20tratamento%20e%20qual%20a%20sua%20maior%20d%C3%BAvida%20na%20hora%20de%20comer.">Pedir uma vaga</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p class="faint">Eat Control · orientação educativa. Não diagnostica, não altera doses e não substitui profissional de saúde.</p>
+    <nav class="foot-links" aria-label="Rodapé">
+      <a href="/roadmap/">Roadmap</a>
+      <a href="/privacidade/">Privacidade</a>
+      <a href="/termos/">Termos</a>
+      <a href="mailto:contato@eatcontrol.app">Contato</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

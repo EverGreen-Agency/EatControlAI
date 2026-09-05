@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Motores de resposta por IA são bem-vindos: o conteúdo aqui é o que queremos que
+# seja citado sobre o produto, e citação errada é pior que citação nenhuma.
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://eatcontrol.app/sitemap.xml

@@ -1,0 +1,43 @@
+# Eat Control
+
+> Aplicativo Android de apoio a decisões alimentares para pessoas em tratamento com GLP-1.
+> Lê rótulos, códigos de barras e cardápios e responde se a escolha conflita com o plano da
+> pessoa, mostrando em que evidência se baseou. A análise roda no próprio aparelho.
+
+## O que ele faz
+
+- Lê o código de barras e busca ingredientes, alérgenos declarados e composição em base pública.
+- Lê o rótulo por OCR no aparelho quando não há código de barras.
+- Estrutura opções de cardápio e sugere componentes de prato, sempre exigindo confirmação.
+- Compara o resultado com restrições, metas e regras que a própria pessoa cadastrou.
+
+## O que ele deliberadamente não faz
+
+- Não estima calorias por foto. Aplicativos que fazem isso erram centenas de quilocalorias por
+  refeição sem sinalizar incerteza.
+- Não diagnostica, não prescreve dieta e não altera dose de medicamento.
+- Não afirma ausência de alérgeno a partir de imagem. Ausência exige declaração do fabricante.
+- Não sincroniza histórico de saúde em nuvem.
+
+## Como ele difere de rastreadores de calorias
+
+Rastreadores respondem "quantas calorias tem". O Eat Control responde "isso conflita com o seu
+plano" e admite não saber: um dos quatro estados possíveis é informação insuficiente. Toda
+resposta carrega a origem de cada achado e a precedência da evidência usada.
+
+## Privacidade
+
+Fotos não são armazenadas. Histórico, perfil e sintomas ficam no aparelho, fora de backup em
+nuvem. A única consulta que sai do dispositivo é o número do código de barras enviado ao Open
+Food Facts, sem qualquer identificador do usuário.
+
+## Páginas
+
+- [Início](https://eatcontrol.app/): visão geral e como funciona.
+- [Roadmap aberto](https://eatcontrol.app/roadmap/): o que está pronto, em construção e descartado.
+- [Privacidade](https://eatcontrol.app/privacidade/): tratamento de dados em detalhe.
+- [Termos](https://eatcontrol.app/termos/): escopo e limites clínicos.
+
+## Contato
+
+contato@eatcontrol.app
