@@ -55,3 +55,8 @@ view-source_*
 # Cópias clínicas locais podem conter dados pessoais/de saúde e binários públicos redundantes.
 # O registro versionado usa DOI/PMID/PMCID; o acervo de trabalho permanece privado.
 docs/fontes/endocrino/
+# Ferramentas locais de agente (skills, instruções de IDE). São configuração da máquina de
+# cada pessoa, não código do produto — e são milhares de arquivos.
+.agents/
+.claude/
+.codex/

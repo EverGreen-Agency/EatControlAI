@@ -44,6 +44,8 @@ import com.eatcontrolai.ui.theme.EcColors
 fun PlanScreen(viewModel: EatControlViewModel) {
     val profile by viewModel.profile.collectAsState()
     val dailyProgress by viewModel.dailyProgress.collectAsState()
+    val personalRules by viewModel.personalRules.collectAsState()
+    val symptomReports by viewModel.symptomReports.collectAsState()
 
     LazyColumn(
         modifier = Modifier.fillMaxWidth().statusBarsPadding(),
@@ -76,6 +78,22 @@ fun PlanScreen(viewModel: EatControlViewModel) {
                     }
                 }
             }
+        }
+
+        item {
+            PersonalRulesCard(
+                rules = personalRules,
+                onSave = { target, action -> viewModel.savePersonalRule(target, action) },
+                onRemove = viewModel::removePersonalRule
+            )
+        }
+
+        item {
+            SymptomCard(
+                reports = symptomReports,
+                onReport = { viewModel.reportSymptom(it) },
+                onClear = viewModel::clearSymptoms
+            )
         }
 
         item {

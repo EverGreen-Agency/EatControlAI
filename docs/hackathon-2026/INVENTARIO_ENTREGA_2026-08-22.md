@@ -56,7 +56,7 @@ Responsáveis usados no checklist:
 | Dashboard factual | `IMPLEMENTADO` | Home/Plan usam `dailyProgress`; não exibem nome, hidratação, meta ou percentual demonstrativo |
 | Cardápio (`MENU`) | `IMPLEMENTADO`, não `VALIDADO` em hardware | OCR + `MenuParser` próprio; seção, nome, descrição, preço e termos observados; preço não vira nutriente; confirmação obrigatória antes do histórico |
 | Prato (`PLATE`) | `IMPLEMENTADO`, não `VALIDADO` em hardware | ML Kit bundled/offline + classes fechadas + gate experimental `0,65`; desconhecidos não são forçados; confirmação obrigatória; sem volume/macros automáticos |
-| Regras GLP-1 | `IMPLEMENTADO` no domínio | `glp1-rules-v1` com R1 a R6, léxico proibido e composição aprovada; falta ligar à interface e obter o registro formal |
+| Regras GLP-1 | `IMPLEMENTADO` no domínio e no aplicativo | `glp1-rules-v1` com R1 a R6, léxico proibido e composição aprovada; roda em toda análise, aparece na folha de resultado e entra na fala. Falta o registro formal (EQ-11): até lá `underReview` mantém "regra em revisão" em toda resposta |
 | Regras pessoais e registro de desconforto | `IMPLEMENTADO` no domínio e na persistência | correspondência direta gera atenção, correspondência possível gera pergunta; dados locais e apagáveis; tela e ligação com a análise ainda `PENDENTE` |
 | Alertas de histórico | `IMPLEMENTADO` no domínio | proteína abaixo da meta em dias completos e desconforto registrado em refeição com o mesmo componente |
 | Composição/porção/preparo de prato | `BLOQUEADO` | falta fonte auditável de composição e medidas; a v1 registra componentes confirmados, não macros |
@@ -132,7 +132,7 @@ Não pedir uma “dieta universal”. Pedir um conjunto de regras demonstrativas
 - [x] `KIRO` Criar mensagens GLP-1 com linguagem aprovada, sem diagnóstico ou garantia.
 - [x] `KIRO` Persistir regra pessoal e sintoma relatado no armazenamento local.
 - [x] `KIRO` Implementar alertas baseados em histórico.
-- [ ] `KIRO` Ligar o rule pack ao orquestrador, à interface e à voz.
+- [x] `KIRO` Ligar o rule pack ao orquestrador, à interface e à voz (04/09/2026).
 - [ ] `KIRO` Criar tela para cadastrar regra pessoal e relatar sintoma.
 - [x] `KIRO` Implementar cardápio como OCR + `MenuParser` próprio + revisão e confirmação factual.
 - [ ] `KIRO` Implementar fallback completo de produto desconhecido: OCR → catálogo local → perguntas → insuficiente.

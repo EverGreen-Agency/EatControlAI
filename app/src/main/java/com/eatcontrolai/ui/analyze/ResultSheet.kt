@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import com.eatcontrolai.core.model.Allergen
 import com.eatcontrolai.core.model.NutrientAmount
 import com.eatcontrolai.core.model.NutrientProgress
+import com.eatcontrolai.domain.glp1.HistoryAlert
+import com.eatcontrolai.domain.glp1.hasSomethingToSay
 import com.eatcontrolai.domain.plate.PlateFoodClass
 import com.eatcontrolai.orchestration.AnalysisTrack
 import com.eatcontrolai.orchestration.InteractionResult
@@ -53,6 +55,7 @@ fun ResultSheet(
     dailyProgress: List<NutrientProgress> = emptyList(),
     goalsConfigured: Boolean = false,
     consumptionLogged: Boolean = false,
+    historyAlerts: List<HistoryAlert> = emptyList(),
     onPortionsChange: (Double) -> Unit = {},
     onRegisterConsumption: () -> Unit = {},
     onSelectMenuOption: (String) -> Unit = {},
@@ -121,6 +124,13 @@ fun ResultSheet(
                 onRegister = onRegisterPlate
             )
         }
+
+        // Depois dos painéis assistidos porque é o que eles confirmam que alimenta esta leitura.
+        result.glp1
+            ?.takeIf { it.hasSomethingToSay || historyAlerts.isNotEmpty() }
+            ?.let { assessment ->
+                Glp1Panel(assessment = assessment, historyAlerts = historyAlerts)
+            }
 
         if (result.track == AnalysisTrack.LABEL ||
             result.track == AnalysisTrack.BARCODE ||

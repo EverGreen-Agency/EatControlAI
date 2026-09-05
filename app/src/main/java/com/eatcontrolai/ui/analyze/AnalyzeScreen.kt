@@ -429,6 +429,7 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                 dailyProgress = dailyProgress,
                 goalsConfigured = profile.macroGoals.isConfigured,
                 consumptionLogged = state.consumptionLogged,
+                historyAlerts = state.historyAlerts,
                 onPortionsChange = viewModel::setPortions,
                 onRegisterConsumption = viewModel::registerConsumption,
                 onSelectMenuOption = viewModel::selectMenuOption,

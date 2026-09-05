@@ -20,6 +20,18 @@ import com.eatcontrolai.core.model.NutrientProgress
 import com.eatcontrolai.core.model.Restriction
 import com.eatcontrolai.core.model.RestrictionSeverity
 import com.eatcontrolai.core.model.UncertaintyPolicy
+import com.eatcontrolai.core.model.UserProfile
+import com.eatcontrolai.domain.glp1.EscalationLevel
+import com.eatcontrolai.domain.glp1.Glp1Context
+import com.eatcontrolai.domain.glp1.Glp1HistoryAlerts
+import com.eatcontrolai.domain.glp1.Glp1SpokenLine
+import com.eatcontrolai.domain.glp1.HistoryAlert
+import com.eatcontrolai.domain.glp1.PersonalRule
+import com.eatcontrolai.domain.glp1.PersonalRuleAction
+import com.eatcontrolai.domain.glp1.PersonalRuleOrigin
+import com.eatcontrolai.domain.glp1.SymptomKind
+import com.eatcontrolai.domain.glp1.SymptomReport
+import com.eatcontrolai.domain.glp1.withPerception
 import com.eatcontrolai.domain.nutrition.NutritionCalculator
 import com.eatcontrolai.domain.plate.PlateFoodClass
 import com.eatcontrolai.domain.voice.VoiceIntentParser
@@ -30,6 +42,7 @@ import com.eatcontrolai.glasses.MockScenes
 import com.eatcontrolai.glasses.SceneKind
 import com.eatcontrolai.orchestration.AnalysisTrack
 import com.eatcontrolai.orchestration.InteractionResult
+import com.eatcontrolai.orchestration.glp1Perception
 import java.util.UUID
 import java.util.Calendar
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -99,11 +112,21 @@ data class AnalyzeState(
     /** Porções confirmadas pelo usuário para a refeição atual. */
     val portions: Double = 1.0,
     /** `true` depois de o consumo desta refeição entrar no total do dia. */
-    val consumptionLogged: Boolean = false
+    val consumptionLogged: Boolean = false,
+    /** Lembretes do histórico local: meta abaixo em dias fechados e desconforto que a pessoa anotou. */
+    val historyAlerts: List<HistoryAlert> = emptyList()
 ) {
     /** Consumo desta refeição. Vazio quando a tabela não permite conta honesta. */
     val consumedNutrients: List<NutrientAmount>
         get() = result?.let { NutritionCalculator.consumed(it.nutrition, portions) } ?: emptyList()
+
+    /**
+     * Porções para efeito de regra: existem só depois de a pessoa registrar o consumo.
+     *
+     * O seletor da tela começa em uma porção por conveniência de digitação; isso é um padrão de
+     * formulário, não uma quantidade que alguém confirmou ter comido.
+     */
+    val confirmedPortions: Double? get() = portions.takeIf { consumptionLogged }
 
     val scenes: List<MockScene>
         get() = when {
@@ -126,6 +149,10 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
     val history = container.history.records
     val datRegistrationState = container.datGlasses.registrationState
 
+    /** Entradas da camada GLP-1 que a própria pessoa cria. Ambas locais e apagáveis. */
+    val personalRules = container.personalRules.rules
+    val symptomReports = container.symptoms.reports
+
     /**
      * Total do dia versus metas configuradas.
      *
@@ -134,12 +161,26 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
      */
     val dailyProgress: StateFlow<List<NutrientProgress>> =
         combine(container.history.records, container.profiles.profile) { records, profile ->
-            val startOfDay = startOfToday()
-            val consumed = records
-                .filter { it.timestampMillis >= startOfDay }
-                .flatMap { it.consumedNutrients }
-            NutritionCalculator.progress(NutritionCalculator.total(consumed), profile.macroGoals)
+            progressOf(records, profile)
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /**
+     * A derivação em si, separada do fluxo.
+     *
+     * O rule pack precisa do progresso do dia no mesmo instante em que um registro acabou de mudar o
+     * histórico, e o [StateFlow] só recompõe no próximo despacho da corrotina. Ler a fonte direto
+     * evita avaliar a refeição contra o total de um segundo atrás.
+     */
+    private fun progressOf(
+        records: List<MealRecord>,
+        profile: UserProfile
+    ): List<NutrientProgress> {
+        val startOfDay = startOfToday()
+        val consumed = records
+            .filter { it.timestampMillis >= startOfDay }
+            .flatMap { it.consumedNutrients }
+        return NutritionCalculator.progress(NutritionCalculator.total(consumed), profile.macroGoals)
+    }
 
     private val _analyze = MutableStateFlow(AnalyzeState())
     val analyze: StateFlow<AnalyzeState> = _analyze.asStateFlow()
@@ -324,10 +365,11 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
                 refreshGlasses()
             }
 
+            val glp1Context = glp1Seed()
             val result = if (state.mode.auto) {
-                container.orchestrator.analyzeAuto(profile.value)
+                container.orchestrator.analyzeAuto(profile.value, glp1Context = glp1Context)
             } else {
-                container.orchestrator.analyze(track, profile.value)
+                container.orchestrator.analyze(track, profile.value, glp1Context = glp1Context)
             }
             val record = result
                 .takeUnless { it.track == AnalysisTrack.MENU || it.track == AnalysisTrack.PLATE }
@@ -340,7 +382,8 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
                     resultRecordId = record?.id,
                     showResult = true,
                     portions = 1.0,
-                    consumptionLogged = false
+                    consumptionLogged = false,
+                    historyAlerts = historyAlertsFor(result)
                 )
             }
         } catch (throwable: Throwable) {
@@ -369,8 +412,138 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
 
     /** Fecha a visualização e remove da memória o único objeto que mantém os bytes da foto. */
     fun dismissResult() = _analyze.update {
-        it.copy(result = null, resultRecordId = null, showResult = false)
+        it.copy(result = null, resultRecordId = null, showResult = false, historyAlerts = emptyList())
     }
+
+    // ------------------------------------------------------------------- GLP-1
+
+    /**
+     * A metade da pessoa no contexto do rule pack: o que ela configurou e registrou.
+     *
+     * Tudo aqui é local e declarado por ela — metas, restrições, regras próprias e sintomas
+     * relatados. A metade da percepção é preenchida pela análise, em `withPerception`.
+     */
+    private fun glp1Seed(): Glp1Context = Glp1Context(
+        dailyProgress = progressOf(container.history.records.value, profile.value),
+        restrictions = profile.value.restrictions,
+        personalRules = container.personalRules.rules.value,
+        symptomReports = container.symptoms.reports.value.map { it.kind }
+    )
+
+    /**
+     * Reavalia o rule pack depois de uma confirmação.
+     *
+     * Confirmar componentes, escolher a opção do cardápio ou informar a porção muda a entrada do
+     * pack, não só o texto da tela. Sem reavaliar, a resposta continuaria descrevendo a refeição
+     * anterior à confirmação — que é justamente a refeição que a pessoa acabou de corrigir.
+     */
+    private fun reassessGlp1(
+        result: InteractionResult,
+        confirmedPortions: Double? = null
+    ): InteractionResult = result.copy(
+        glp1 = container.glp1Rules.evaluate(
+            glp1Seed().withPerception(result.glp1Perception(confirmedPortions))
+        )
+    )
+
+    /**
+     * Cria ou atualiza uma regra da pessoa.
+     *
+     * O alvo digitado vira o termo de correspondência: quem escreve "camarão" espera que camarão
+     * escrito no rótulo conte. Não há inferência de sinônimo — casar "frutos do mar" com camarão
+     * seria o aplicativo decidindo por ela o que a regra dela significa.
+     */
+    fun savePersonalRule(
+        target: String,
+        action: PersonalRuleAction,
+        origin: PersonalRuleOrigin = PersonalRuleOrigin.PREFERENCE,
+        note: String = "",
+        id: String? = null
+    ) {
+        val normalizedTarget = target.trim()
+        if (normalizedTarget.isEmpty()) {
+            showToast("Escreva o que você quer evitar ou observar.")
+            return
+        }
+
+        container.personalRules.save(
+            PersonalRule(
+                id = id ?: UUID.randomUUID().toString(),
+                target = normalizedTarget,
+                action = action,
+                origin = origin,
+                note = note.trim(),
+                matchTerms = setOf(normalizedTarget)
+            )
+        )
+        refreshGlp1()
+        showToast(
+            if (action == PersonalRuleAction.AVOID) {
+                "Vou avisar quando $normalizedTarget aparecer."
+            } else {
+                "Vou observar $normalizedTarget nas próximas análises."
+            }
+        )
+    }
+
+    fun removePersonalRule(id: String) {
+        container.personalRules.remove(id)
+        refreshGlp1()
+        showToast("Regra removida deste aparelho.")
+    }
+
+    /**
+     * Registra um sintoma relatado pela pessoa.
+     *
+     * Vincula à refeição em tela quando existir uma: é esse vínculo que permite lembrar depois
+     * "você registrou desconforto após refeição parecida" sem o aplicativo atribuir causa.
+     */
+    fun reportSymptom(kind: SymptomKind, note: String = "") {
+        container.symptoms.add(
+            SymptomReport(
+                kind = kind,
+                timestampMillis = System.currentTimeMillis(),
+                relatedRecordId = _analyze.value.resultRecordId,
+                note = note.trim()
+            )
+        )
+        refreshGlp1()
+        showToast(
+            if (kind.level == EscalationLevel.MEDICAL_EVALUATION) {
+                "Registrado. Procure avaliação médica antes de seguir com orientação alimentar."
+            } else {
+                "Registrado neste aparelho. Vou considerar isso nas próximas análises."
+            }
+        )
+    }
+
+    fun clearSymptoms() {
+        container.symptoms.clear()
+        refreshGlp1()
+        showToast("Registros de sintoma apagados do aparelho.")
+    }
+
+    /** Reavalia o resultado em tela quando o contexto da pessoa muda por fora da análise. */
+    private fun refreshGlp1() {
+        val current = _analyze.value.result ?: return
+        val reassessed = reassessGlp1(current, _analyze.value.confirmedPortions)
+        _analyze.update {
+            it.copy(result = reassessed, historyAlerts = historyAlertsFor(reassessed))
+        }
+    }
+
+    /** Lembretes do histórico local, sempre contra meta cadastrada e desconforto que ela anotou. */
+    private fun historyAlertsFor(result: InteractionResult): List<HistoryAlert> =
+        Glp1HistoryAlerts.evaluate(
+            records = container.history.records.value,
+            goals = profile.value.macroGoals,
+            symptomReports = container.symptoms.reports.value,
+            currentComponents = result.plateAnalysis
+                ?.takeIf { it.registered }
+                ?.selectedComponents
+                .orEmpty(),
+            nowMillis = System.currentTimeMillis()
+        )
 
     // ---------------------------------------------------- cardápio e prato
 
@@ -536,7 +709,15 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
             )
         }
         if (existing == null) container.history.add(record) else container.history.replace(record)
-        _analyze.update { it.copy(result = result, resultRecordId = record.id) }
+        // A confirmação é entrada do rule pack, não enfeite de tela: reavalia antes de exibir.
+        val reassessed = reassessGlp1(result, confirmedPortions = _analyze.value.confirmedPortions)
+        _analyze.update {
+            it.copy(
+                result = reassessed,
+                resultRecordId = record.id,
+                historyAlerts = historyAlertsFor(reassessed)
+            )
+        }
     }
 
     // -------------------------------------------------------------- nutrição
@@ -556,7 +737,16 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
                     )
                 }
         }
-        _analyze.update { it.copy(portions = portions, consumptionLogged = false) }
+        // Mudar a porção desfaz o lançamento anterior; sem consumo confirmado, o pack volta a
+        // avaliar a refeição sem quantidade.
+        val reassessed = state.result?.let { reassessGlp1(it, confirmedPortions = null) }
+        _analyze.update {
+            it.copy(
+                portions = portions,
+                consumptionLogged = false,
+                result = reassessed ?: it.result
+            )
+        }
     }
 
     /**
@@ -579,7 +769,16 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
         container.history.replace(
             com.eatcontrolai.domain.nutrition.MealRecordUpdater.withConsumption(current, consumed)
         )
-        _analyze.update { it.copy(consumptionLogged = true) }
+        // Agora existem quantidade confirmada e total do dia atualizado: as duas entradas que o
+        // rule pack usa para comparar consumo com meta cadastrada.
+        val reassessed = state.result?.let { reassessGlp1(it, confirmedPortions = state.portions) }
+        _analyze.update {
+            it.copy(
+                consumptionLogged = true,
+                result = reassessed ?: it.result,
+                historyAlerts = reassessed?.let(::historyAlertsFor) ?: it.historyAlerts
+            )
+        }
         showToast("Consumo registrado no total de hoje.")
     }
 
@@ -617,7 +816,10 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
 
         val evidence = current.decision.evidence + confirmation
         val decision = container.decisionEngine.decide(profile.value, evidence)
-        val updated = current.copy(decision = decision)
+        val updated = reassessGlp1(
+            current.copy(decision = decision),
+            confirmedPortions = _analyze.value.confirmedPortions
+        )
 
         _analyze.update { it.copy(result = updated) }
         if (recordId != null) {
@@ -635,7 +837,7 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             container.audioRouter.routeToGlasses()
             try {
-                container.glasses.playSpeech(decision.shortMessage)
+                container.glasses.playSpeech(Glp1SpokenLine.compose(decision, updated.glp1))
             } finally {
                 container.audioRouter.release()
             }

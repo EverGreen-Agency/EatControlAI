@@ -66,20 +66,20 @@ enum class EscalationLevel { NONE, PROFESSIONAL, MEDICAL_EVALUATION }
  *
  * Nenhum deles é inferido de imagem ou de histórico alimentar: sintoma é relato, não inferência.
  */
-enum class SymptomKind(val level: EscalationLevel) {
-    PERSISTENT_GI(EscalationLevel.PROFESSIONAL),
-    RAPID_WEIGHT_LOSS(EscalationLevel.PROFESSIONAL),
-    DIFFICULTY_EATING(EscalationLevel.PROFESSIONAL),
-    MUSCLE_WEAKNESS(EscalationLevel.PROFESSIONAL),
-    PREGNANCY(EscalationLevel.PROFESSIONAL),
-    RELEVANT_COMORBIDITY(EscalationLevel.PROFESSIONAL),
-    EATING_DISORDER_HISTORY(EscalationLevel.PROFESSIONAL),
-    MEDICATION_DOUBT(EscalationLevel.PROFESSIONAL),
-    SEVERE_ABDOMINAL_PAIN(EscalationLevel.MEDICAL_EVALUATION),
-    REPEATED_VOMITING(EscalationLevel.MEDICAL_EVALUATION),
-    CANNOT_KEEP_LIQUIDS(EscalationLevel.MEDICAL_EVALUATION),
-    DEHYDRATION_SIGNS(EscalationLevel.MEDICAL_EVALUATION),
-    ALLERGIC_REACTION(EscalationLevel.MEDICAL_EVALUATION)
+enum class SymptomKind(val level: EscalationLevel, val displayName: String) {
+    PERSISTENT_GI(EscalationLevel.PROFESSIONAL, "enjoo ou desconforto que não passa"),
+    RAPID_WEIGHT_LOSS(EscalationLevel.PROFESSIONAL, "perda de peso muito rápida"),
+    DIFFICULTY_EATING(EscalationLevel.PROFESSIONAL, "dificuldade para comer"),
+    MUSCLE_WEAKNESS(EscalationLevel.PROFESSIONAL, "fraqueza ou perda de força"),
+    PREGNANCY(EscalationLevel.PROFESSIONAL, "gravidez ou amamentação"),
+    RELEVANT_COMORBIDITY(EscalationLevel.PROFESSIONAL, "outra condição de saúde relevante"),
+    EATING_DISORDER_HISTORY(EscalationLevel.PROFESSIONAL, "histórico de transtorno alimentar"),
+    MEDICATION_DOUBT(EscalationLevel.PROFESSIONAL, "dúvida sobre a medicação"),
+    SEVERE_ABDOMINAL_PAIN(EscalationLevel.MEDICAL_EVALUATION, "dor abdominal forte"),
+    REPEATED_VOMITING(EscalationLevel.MEDICAL_EVALUATION, "vômitos repetidos"),
+    CANNOT_KEEP_LIQUIDS(EscalationLevel.MEDICAL_EVALUATION, "não consigo segurar líquidos"),
+    DEHYDRATION_SIGNS(EscalationLevel.MEDICAL_EVALUATION, "sinais de desidratação"),
+    ALLERGIC_REACTION(EscalationLevel.MEDICAL_EVALUATION, "reação alérgica")
 }
 
 /**

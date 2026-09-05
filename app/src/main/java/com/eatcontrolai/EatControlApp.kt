@@ -3,6 +3,8 @@ package com.eatcontrolai
 import android.app.Application
 import com.eatcontrolai.data.LocalStore
 import com.eatcontrolai.data.MealHistoryRepository
+import com.eatcontrolai.data.OpenFoodFactsClient
+import com.eatcontrolai.domain.barcode.BarcodeRepository
 import com.eatcontrolai.data.PersonalRuleRepository
 import com.eatcontrolai.data.PrivacyRepository
 import com.eatcontrolai.data.ProfileRepository
@@ -88,11 +90,29 @@ class AppContainer(application: Application) {
 
     val decisionEngine = FoodDecisionEngine()
 
+    /**
+     * Rule pack GLP-1 (`glp1-rules-v1`).
+     *
+     * `underReview` permanece no padrão `true`: o conteúdo clínico foi validado, mas o registro
+     * formal da validação ainda não existe, e a interface precisa dizer isso.
+     */
+    val glp1Rules: RulePack = Glp1RulePackV1()
+
+    /**
+     * Catálogo de demonstração na frente, Open Food Facts atrás.
+     *
+     * É a única consulta de rede do aplicativo, e ela carrega só o código de barras. O caminho de
+     * decisão continua local: sem internet, a trilha cai para o OCR do rótulo.
+     */
+    val products = BarcodeRepository(remote = OpenFoodFactsClient())
+
     val orchestrator = InteractionOrchestrator(
         glasses = glasses,
         models = models,
         decisionEngine = decisionEngine,
-        metrics = metrics
+        metrics = metrics,
+        barcodeRepository = products,
+        rulePack = glp1Rules
     )
 
     private val store = LocalStore(application)
@@ -107,12 +127,4 @@ class AppContainer(application: Application) {
     val personalRules = PersonalRuleRepository(store, scope)
 
     val symptoms = SymptomRepository(store, scope)
-
-    /**
-     * Rule pack GLP-1 (`glp1-rules-v1`).
-     *
-     * `underReview` permanece no padrão `true`: o conteúdo clínico foi validado, mas o registro
-     * formal da validação ainda não existe, e a interface precisa dizer isso.
-     */
-    val glp1Rules: RulePack = Glp1RulePackV1()
 }

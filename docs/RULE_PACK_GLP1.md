@@ -1,7 +1,8 @@
 # Rule pack GLP-1 — especificação v1
 
 Identificador: `glp1-rules-v1`
-Estado: `IMPLEMENTADO NO DOMÍNIO`, `NÃO LIGADO À INTERFACE`, `NÃO ATIVADO COMO CONTEÚDO VALIDADO`
+Estado: `IMPLEMENTADO NO DOMÍNIO`, `LIGADO AO ORQUESTRADOR, À INTERFACE E À VOZ` (04/09/2026),
+`NÃO ATIVADO COMO CONTEÚDO VALIDADO`
 Base de validação: [`VALIDACAO_CLINICA_2026-08-18.md`](VALIDACAO_CLINICA_2026-08-18.md) (`VAL-GLP1-R1`)
 Data: 18/08/2026
 
@@ -20,7 +21,7 @@ Data: 18/08/2026
 | Alertas de histórico | `domain/glp1/Glp1HistoryAlerts.kt` | `IMPLEMENTADO` |
 | Persistência de regra pessoal e sintoma | `data/Serialization.kt`, `data/Repositories.kt`, `data/LocalStore.kt` | `IMPLEMENTADO` |
 | Disponibilidade no grafo de dependências | `EatControlApp.kt` | `IMPLEMENTADO` |
-| Ligação com orquestrador, interface e voz | — | `PENDENTE` |
+| Ligação com orquestrador, interface e voz | `orchestration/InteractionOrchestrator.kt`, `domain/glp1/Glp1Interaction.kt`, `ui/EatControlViewModel.kt`, `ui/analyze/Glp1Panel.kt` | `IMPLEMENTADO` |
 | Tela para criar regra pessoal e relatar sintoma | — | `PENDENTE` |
 
 Decisão de modelagem: em vez de criar um tipo paralelo `NutritionEvidence`, a proveniência ficou em
@@ -261,7 +262,7 @@ Coberta por `RegulatoryLabelRulesTest`, `Glp1RulePackTest` e `Glp1MessageCompose
 | 7 | Composição de mensagem e teste de léxico proibido | `IMPLEMENTADO` |
 | 8 | Persistência local de regra pessoal e sintoma | `IMPLEMENTADO` |
 | 9 | Alertas de histórico, como proteína abaixo da meta em dias recentes | `IMPLEMENTADO` |
-| 10 | Ligação com orquestrador, interface e voz | `PENDENTE` |
+| 10 | Ligação com orquestrador, interface e voz | `IMPLEMENTADO` |
 
 As etapas 8 e 9 introduzem dados novos de saúde no aparelho e mantêm a política atual: armazenamento
 local, exclusão pelo usuário e ausência de backup em nuvem, já garantida pela exclusão do DataStore

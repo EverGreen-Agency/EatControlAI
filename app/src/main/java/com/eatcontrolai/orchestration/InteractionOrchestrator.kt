@@ -15,6 +15,12 @@ import com.eatcontrolai.domain.plate.PlateLabelMapper
 import com.eatcontrolai.domain.barcode.BarcodeRepository
 import com.eatcontrolai.domain.decision.FoodDecisionEngine
 import com.eatcontrolai.domain.evidence.EvidenceBuilder
+import com.eatcontrolai.domain.glp1.Glp1Assessment
+import com.eatcontrolai.domain.glp1.Glp1Context
+import com.eatcontrolai.domain.glp1.Glp1Perception
+import com.eatcontrolai.domain.glp1.Glp1SpokenLine
+import com.eatcontrolai.domain.glp1.RulePack
+import com.eatcontrolai.domain.glp1.withPerception
 import com.eatcontrolai.domain.routing.ContextRouter
 import com.eatcontrolai.glasses.Earcon
 import com.eatcontrolai.glasses.GlassesGateway
@@ -46,12 +52,61 @@ data class InteractionResult(
      */
     val nutrition: NutritionFacts = NutritionFacts(),
     val menuAnalysis: MenuAnalysis? = null,
-    val plateAnalysis: PlateAnalysis? = null
+    val plateAnalysis: PlateAnalysis? = null,
+    /**
+     * Leitura do rule pack GLP-1 sobre esta interação.
+     *
+     * Nula quando não há rule pack configurado ou quando a camada de aplicação não forneceu o
+     * contexto da pessoa — sem metas, restrições e regras cadastradas não existe avaliação GLP-1,
+     * e inventar um contexto vazio produziria silêncio com cara de resposta.
+     */
+    val glp1: Glp1Assessment? = null
 ) {
     // frameJpeg é ByteArray: equals/hashCode gerados por data class comparariam referência.
     override fun equals(other: Any?) = this === other
     override fun hashCode() = interactionId.hashCode()
 }
+
+/**
+ * A metade da percepção do contexto GLP-1, derivada do que a interação observou.
+ *
+ * Três recortes deliberados, e todos existem para não atribuir à pessoa o que ela não confirmou:
+ *
+ * 1. em cardápio, o texto livre **não** vira termo observado — a página inteira tem os pratos que
+ *    ela não escolheu; valem apenas os termos da opção selecionada;
+ * 2. componente de prato só conta depois de registrado, nunca como candidato do modelo;
+ * 3. porção só existe quando informada.
+ */
+fun glp1PerceptionOf(
+    track: AnalysisTrack,
+    nutrition: NutritionFacts,
+    recognizedText: String,
+    menuAnalysis: MenuAnalysis?,
+    plateAnalysis: PlateAnalysis?,
+    confirmedPortions: Double? = null
+): Glp1Perception = Glp1Perception(
+    facts = nutrition,
+    recognizedText = if (track == AnalysisTrack.MENU) "" else recognizedText,
+    knownTerms = menuAnalysis?.selectedOption
+        ?.takeIf { menuAnalysis.registered }
+        ?.observedTerms
+        ?.toSet()
+        .orEmpty(),
+    confirmedComponents = plateAnalysis?.takeIf { it.registered }?.selectedComponents.orEmpty(),
+    confirmedPortions = confirmedPortions,
+    hasVisualInference = plateAnalysis != null
+)
+
+/** A mesma derivação, para quando a interface recalcula depois de uma confirmação. */
+fun InteractionResult.glp1Perception(confirmedPortions: Double? = null): Glp1Perception =
+    glp1PerceptionOf(
+        track = track,
+        nutrition = nutrition,
+        recognizedText = recognizedText,
+        menuAnalysis = menuAnalysis,
+        plateAnalysis = plateAnalysis,
+        confirmedPortions = confirmedPortions
+    )
 
 /**
  * Costura as verticais do produto (UF-01 rótulo e UF-02 barcode de `docs/USER_FLOWS.md`).
@@ -65,7 +120,14 @@ class InteractionOrchestrator(
     private val decisionEngine: FoodDecisionEngine,
     private val metrics: MetricsRecorder,
     private val barcodeRepository: BarcodeRepository = BarcodeRepository(),
-    private val earcon: Earcon = Earcon()
+    private val earcon: Earcon = Earcon(),
+    /**
+     * Rule pack GLP-1, quando houver.
+     *
+     * Opcional porque as trilhas de percepção e o motor determinístico não dependem dele: um
+     * orquestrador sem rule pack continua respondendo sobre conflito com o plano de restrições.
+     */
+    private val rulePack: RulePack? = null
 ) {
 
     /**
@@ -75,7 +137,11 @@ class InteractionOrchestrator(
      * primeiro; se resolver, para por aí e o OCR nem é chamado. Só quando não há código de barras é
      * que se paga o OCR, e o [ContextRouter] então decide entre rótulo e "não sei".
      */
-    suspend fun analyzeAuto(profile: UserProfile, speakResult: Boolean = true): InteractionResult {
+    suspend fun analyzeAuto(
+        profile: UserProfile,
+        speakResult: Boolean = true,
+        glp1Context: Glp1Context? = null
+    ): InteractionResult {
         val interactionId = UUID.randomUUID().toString()
         val startedAt = System.nanoTime()
 
@@ -150,14 +216,18 @@ class InteractionOrchestrator(
             is ContextRouter.Decision.Menu, is ContextRouter.Decision.Plate -> "assistive_guardrails_v1"
             else -> "deterministic_rules_v1"
         }
+        val assessment = assess(glp1Context, routing.track ?: AnalysisTrack.LABEL, perception)
         record(interactionId, Stage.RULE_ENGINE, sinceMs(ruleStart), ruleProvider)
 
-        if (speakResult) speakAndRecord(interactionId, startedAt, decision.shortMessage)
+        if (speakResult) {
+            speakAndRecord(interactionId, startedAt, Glp1SpokenLine.compose(decision, assessment))
+        }
         record(interactionId, Stage.END_TO_END, sinceMs(startedAt))
 
         return InteractionResult(
             interactionId = interactionId,
             track = routing.track ?: AnalysisTrack.LABEL,
+            glp1 = assessment,
             decision = decision,
             recognizedText = perception.recognizedText,
             scannedEan = perception.ean ?: ean,
@@ -171,13 +241,16 @@ class InteractionOrchestrator(
         )
     }
 
-    private fun resolveProduct(ean: String): Perception? {
-        val product = barcodeRepository.findByEan(ean) ?: return null
+    private suspend fun resolveProduct(ean: String): Perception? {
+        val product = barcodeRepository.lookup(ean) ?: return null
         return Perception(
             evidence = listOf(barcodeRepository.toEvidence(product)),
             recognizedText = product.ingredientsText,
             ean = ean,
-            productName = product.productName
+            productName = product.productName,
+            // Composição declarada pela base entra sem passar por OCR: é a evidência mais forte
+            // que a trilha de produto consegue produzir.
+            nutrition = product.nutrition
         )
     }
 
@@ -191,7 +264,8 @@ class InteractionOrchestrator(
     suspend fun analyze(
         track: AnalysisTrack,
         profile: UserProfile,
-        speakResult: Boolean = true
+        speakResult: Boolean = true,
+        glp1Context: Glp1Context? = null
     ): InteractionResult {
         val interactionId = UUID.randomUUID().toString()
         val startedAt = System.nanoTime()
@@ -219,15 +293,19 @@ class InteractionOrchestrator(
         } else {
             "assistive_guardrails_v1"
         }
+        val assessment = assess(glp1Context, track, perception)
         record(interactionId, Stage.RULE_ENGINE, sinceMs(ruleStart), ruleProvider)
 
-        if (speakResult) speakAndRecord(interactionId, startedAt, decision.shortMessage)
+        if (speakResult) {
+            speakAndRecord(interactionId, startedAt, Glp1SpokenLine.compose(decision, assessment))
+        }
 
         record(interactionId, Stage.END_TO_END, sinceMs(startedAt))
 
         return InteractionResult(
             interactionId = interactionId,
             track = track,
+            glp1 = assessment,
             decision = decision,
             recognizedText = perception.recognizedText,
             scannedEan = perception.ean,
@@ -237,6 +315,32 @@ class InteractionOrchestrator(
             nutrition = perception.nutrition,
             menuAnalysis = perception.menuAnalysis,
             plateAnalysis = perception.plateAnalysis
+        )
+    }
+
+    /**
+     * Avalia a interação pelo rule pack GLP-1.
+     *
+     * Devolve nulo quando falta o pack ou o contexto da pessoa — e nulo aqui significa "não avaliei",
+     * não "está tudo bem". Quem consome distingue os dois casos.
+     */
+    private fun assess(
+        seed: Glp1Context?,
+        track: AnalysisTrack,
+        perception: Perception
+    ): Glp1Assessment? {
+        val pack = rulePack ?: return null
+        val context = seed ?: return null
+        return pack.evaluate(
+            context.withPerception(
+                glp1PerceptionOf(
+                    track = track,
+                    nutrition = perception.nutrition,
+                    recognizedText = perception.recognizedText,
+                    menuAnalysis = perception.menuAnalysis,
+                    plateAnalysis = perception.plateAnalysis
+                )
+            )
         )
     }
 
@@ -282,13 +386,14 @@ class InteractionOrchestrator(
             return Perception(evidence = emptyList(), recognizedText = "Nenhum código de barras legível.")
         }
 
-        val product = barcodeRepository.findByEan(ean)
+        val product = barcodeRepository.lookup(ean)
         if (product != null) {
             return Perception(
                 evidence = listOf(barcodeRepository.toEvidence(product)),
                 recognizedText = product.ingredientsText,
                 ean = ean,
-                productName = product.productName
+                productName = product.productName,
+                nutrition = product.nutrition
             )
         }
 

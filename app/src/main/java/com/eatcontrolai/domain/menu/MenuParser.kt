@@ -1,5 +1,6 @@
 package com.eatcontrolai.domain.menu
 
+import com.eatcontrolai.domain.label.FoodTerms
 import java.text.Normalizer
 
 /** Uma opção observada no cardápio. Nenhum campo nutricional é inferido. */
@@ -48,18 +49,6 @@ object MenuParser {
     )
 
     private val ignoredTitles = setOf("CARDAPIO", "MENU", "RESTAURANTE", "DELIVERY")
-
-    private val factualTerms = linkedMapOf(
-        "GRELHAD" to "grelhado",
-        "FRIT" to "frito",
-        "ASSAD" to "assado",
-        "EMPANAD" to "empanado",
-        "CREMOS" to "cremoso",
-        "MOLHO" to "molho",
-        "QUEIJO" to "queijo",
-        "SALADA" to "salada",
-        "LEGUME" to "legumes"
-    )
 
     /**
      * Quantas linhas terminam em preço.
@@ -149,17 +138,14 @@ object MenuParser {
         val options = drafts
             .filterNot { normalize(it.name) in ignoredTitles || normalize(it.name) in sectionNames }
             .mapIndexed { index, draft ->
-                val searchable = normalize("${draft.name} ${draft.description}")
                 MenuOption(
                     id = "menu-option-${index + 1}",
                     section = draft.section,
                     name = draft.name,
                     description = draft.description,
                     priceText = draft.priceText,
-                    observedTerms = factualTerms
-                        .filterKeys(searchable::contains)
-                        .values
-                        .distinct(),
+                    // Mesmo vocabulário do rótulo: o rule pack GLP-1 reage ao termo, não à origem.
+                    observedTerms = FoodTerms.observedIn("${draft.name} ${draft.description}"),
                     sourceLines = draft.sourceLines.toList()
                 )
             }
