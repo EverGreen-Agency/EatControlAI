@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">EatControlAI</string>
+    <!--
+        Nome sob o ícone. Curto de propósito: o launcher trunca por volta de 12 caracteres, e
+        "EatControlAI" chegava lá sem espaço, parecendo nome de pacote em vez de produto.
+        O nome completo do produto — Eat Control AI — vive na ficha da loja.
+    -->
+    <string name="app_name">Eat Control</string>
 </resources>

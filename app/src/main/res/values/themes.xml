@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.EatControlAI" parent="android:Theme.Material.Light.NoActionBar" />
+    <!--
+        Tema de sistema, usado antes de o Compose desenhar o primeiro frame.
+
+        Era `Material.Light` num aplicativo inteiramente escuro, o que produzia um flash branco em
+        todo início a frio. O fundo aqui acompanha `EcColors.Background`; as barras ficam
+        transparentes porque as telas já aplicam os próprios insets.
+    -->
+    <style name="Theme.EatControlAI" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/ec_background</item>
+        <item name="android:colorBackground">@color/ec_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
 </resources>
