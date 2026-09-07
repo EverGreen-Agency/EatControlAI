@@ -40,4 +40,4 @@ Food Facts, sem qualquer identificador do usuário.
 
 ## Contato
 
-eatcontro.ai@gmail.com
+eatcontrol.ai@gmail.com
