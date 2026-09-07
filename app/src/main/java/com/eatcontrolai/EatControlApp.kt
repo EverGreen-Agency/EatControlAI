@@ -93,10 +93,20 @@ class AppContainer(application: Application) {
     /**
      * Rule pack GLP-1 (`glp1-rules-v1`).
      *
-     * `underReview` permanece no padrão `true`: o conteúdo clínico foi validado, mas o registro
-     * formal da validação ainda não existe, e a interface precisa dizer isso.
+     * `underReview = false` porque o aplicativo **não afirma revisão profissional em lugar nenhum**.
+     * A flag existia para divulgar um estado intermediário — "conteúdo revisado, registro formal
+     * pendente" — e esse estado não é o nosso: nenhum profissional assinou o rule pack, e nenhum
+     * assinaria antes de ver o produto funcionando. Sem afirmação de validação, o aviso de revisão
+     * não tem o que qualificar; ele só levantaria uma pergunta que a interface não responde.
+     *
+     * O que sustenta as regras hoje é o que elas realmente são: limites de rotulagem da Anvisa
+     * sobre composição declarada, metas que a própria pessoa configurou e regras que ela criou.
+     * Os termos de uso dizem isso, e nada além disso.
+     *
+     * Quando houver registro formal — nome, CRM ou CRN, data e escopo —, volte para `true` **e**
+     * acrescente a atribuição na interface. As duas coisas juntas, nunca uma sem a outra.
      */
-    val glp1Rules: RulePack = Glp1RulePackV1()
+    val glp1Rules: RulePack = Glp1RulePackV1(underReview = false)
 
     /**
      * Catálogo de demonstração na frente, Open Food Facts atrás.

@@ -9,7 +9,7 @@ HTML estático, sem build. Quatro páginas, uma folha de estilo, zero dependênc
 3. Framework preset: *Other*. Sem comando de build, sem diretório de saída.
 4. Deploy.
 
-Domínio: aponte `eatcontrol.app` em *Settings → Domains*. Antes disso, os endereços
+Domínio: aponte `eatcontrol.com.br` em *Settings → Domains*. Antes disso, os endereços
 canônicos e o sitemap apontam para esse domínio e precisam ser trocados se o domínio final
 for outro.
 
@@ -28,7 +28,7 @@ sitemap.xml
 
 ## Antes de publicar
 
-- [ ] Trocar `contato@eatcontrol.app` pelo endereço real, em todas as páginas.
+- [ ] CONFERIR o e-mail. As páginas usam `eatcontro.ai@gmail.com`, exatamente como foi informado — se faltou um "l" em "eatcontrol", corrija antes de publicar.
 - [ ] Revisar a política de privacidade com quem responde juridicamente pelo projeto. O
       conteúdo descreve com precisão o que o aplicativo faz hoje, mas descrição técnica
       correta não é o mesmo que peça jurídica revisada.

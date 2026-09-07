@@ -33,11 +33,11 @@ Food Facts, sem qualquer identificador do usuário.
 
 ## Páginas
 
-- [Início](https://eatcontrol.app/): visão geral e como funciona.
-- [Roadmap aberto](https://eatcontrol.app/roadmap/): o que está pronto, em construção e descartado.
-- [Privacidade](https://eatcontrol.app/privacidade/): tratamento de dados em detalhe.
-- [Termos](https://eatcontrol.app/termos/): escopo e limites clínicos.
+- [Início](https://eatcontrol.com.br/): visão geral e como funciona.
+- [Roadmap aberto](https://eatcontrol.com.br/roadmap/): o que está pronto, em construção e descartado.
+- [Privacidade](https://eatcontrol.com.br/privacidade/): tratamento de dados em detalhe.
+- [Termos](https://eatcontrol.com.br/termos/): escopo e limites clínicos.
 
 ## Contato
 
-contato@eatcontrol.app
+eatcontro.ai@gmail.com
