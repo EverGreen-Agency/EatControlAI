@@ -62,3 +62,39 @@ na política. Se for necessário depois, entra pelo mesmo portão de consentimen
 **A política de privacidade descreve exatamente esta configuração** (seção 9). Ao trocar
 de ferramenta, atualize a seção junto — política que não corresponde ao código é pior que
 política nenhuma.
+
+## Formulário e WhatsApp
+
+O botão "Pedir uma vaga" era um `mailto:` — abre cliente de e-mail, e num celular
+frequentemente não abre nada. Agora existe formulário de verdade, configurado em
+`assets/site.js`:
+
+```js
+formEndpoint: '',   // formspree.io → New Form → cole a URL https://formspree.io/f/xxxxxxxx
+whatsapp: '',       // só dígitos com país e DDD: '5551999999999'
+```
+
+Comportamento por configuração, sem estado quebrado em nenhum caso:
+
+| Configurado | O que aparece |
+|---|---|
+| nada | botão de e-mail apenas (funciona, só não é o ideal) |
+| `whatsapp` | botão de e-mail + botão do WhatsApp |
+| `formEndpoint` | formulário completo com estados de envio, sucesso e erro |
+| ambos | formulário + WhatsApp ao lado do enviar |
+
+Se o envio falhar por rede, o próprio erro oferece o mesmo conteúdo por e-mail — o
+visitante nunca fica sem saída.
+
+Formspree grátis: 50 envios por mês, sem backend, sem cartão. Suficiente para o teste
+fechado; se estourar, o mesmo formulário aponta para outro endpoint sem mudar HTML.
+
+## Marca
+
+Os arquivos vêm de `EatControl_Precision_Intelligence_BrandKit_v1.0/` e foram copiados
+para `assets/`. Tokens de cor em `site.css` espelham `03_Design_System/tokens.css`:
+Ink `#0B0F14`, Deep Ocean `#062439`, Signal Cyan `#2DD4E7`, Warm White `#F7F4EE`.
+Títulos em Manrope, interface em Inter, ambos via Google Fonts.
+
+Ao atualizar o brandkit, recopie os SVGs e confira os tokens — não edite as cores
+diretamente no CSS sem refletir a mudança no kit.

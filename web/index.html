@@ -13,9 +13,16 @@
 <meta property="og:title" content="Eat Control — decida o que comer, com evidência">
 <meta property="og:description" content="Resposta rastreável no instante da decisão alimentar. Quando não sabe, o app diz que não sabe.">
 <meta property="og:url" content="https://eatcontrol.com.br/">
+<meta property="og:image" content="https://eatcontrol.com.br/assets/icon-512.png">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0b0f14">
 
-<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/icon-512.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/assets/site.css">
 
 <script type="application/ld+json">
@@ -27,6 +34,7 @@
       "@id": "https://eatcontrol.com.br/#org",
       "name": "Eat Control",
       "url": "https://eatcontrol.com.br/",
+      "logo": "https://eatcontrol.com.br/assets/icon-512.png",
       "description": "Aplicativo de apoio a decisões alimentares para pessoas em tratamento com GLP-1."
     },
     {
@@ -38,7 +46,7 @@
       "publisher": { "@id": "https://eatcontrol.com.br/#org" },
       "featureList": [
         "Leitura de rótulo por OCR no próprio aparelho",
-        "Consulta de produto por código de barras",
+        "Consulta de produto por código de barras em base pública",
         "Regras alimentares pessoais criadas pelo usuário",
         "Registro de sintomas com encaminhamento a profissional"
       ]
@@ -80,22 +88,12 @@
 
 <header class="site-head">
   <div class="wrap">
-    <a class="brand" href="/">
-      <svg viewBox="0 0 108 108" aria-hidden="true" fill="none">
-        <rect width="108" height="108" rx="24" fill="#0E1A2E"/>
-        <g stroke="#42E0AB" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M31 43V35a4 4 0 0 1 4-4h8"/><path d="M65 31h8a4 4 0 0 1 4 4v8"/>
-          <path d="M77 65v8a4 4 0 0 1-4 4h-8"/><path d="M43 77h-8a4 4 0 0 1-4-4v-8"/>
-        </g>
-        <path d="M42 55l8 8 17-19" stroke="#F7F9FC" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Eat&nbsp;Control
-    </a>
+    <a class="brand" href="/"><img src="/assets/mark.svg" alt="" width="30" height="30">Eat&nbsp;Control</a>
     <nav class="site-nav" aria-label="Principal">
       <a href="#como-funciona">Como funciona</a>
       <a href="#privacidade">Privacidade</a>
       <a href="/roadmap/">Roadmap</a>
-      <a href="mailto:eatcontrol.ai@gmail.com?subject=Quero%20testar%20o%20Eat%20Control" class="btn btn-primary">Quero testar</a>
+      <a href="#testar" class="btn btn-primary">Quero testar</a>
     </nav>
   </div>
 </header>
@@ -104,40 +102,40 @@
 
 <section class="hero">
   <div class="wrap stack">
-    <p class="eyebrow">Para quem está em tratamento com GLP-1</p>
-    <h1>A decisão acontece no mercado,<br>não no consultório.</h1>
-    <p class="lede">Aponte a câmera para um rótulo, um código de barras ou um cardápio. O Eat Control responde se aquilo conflita com o seu plano — e mostra em que evidência se baseou.</p>
-    <div class="actions">
-      <a class="btn btn-primary" href="mailto:eatcontrol.ai@gmail.com?subject=Quero%20testar%20o%20Eat%20Control">Entrar no teste fechado</a>
+    <p class="eyebrow" data-reveal>Para quem está em tratamento com GLP-1</p>
+    <h1 data-reveal>A decisão acontece no mercado,<br>não no consultório.</h1>
+    <p class="lede" data-reveal>Aponte a câmera para um rótulo, um código de barras ou um cardápio. O Eat Control responde se aquilo conflita com o seu plano — e mostra em que evidência se baseou.</p>
+    <div class="actions" data-reveal>
+      <a class="btn btn-primary" href="#testar">Entrar no teste fechado</a>
       <a class="btn btn-ghost" href="/roadmap/">Ver o que estamos construindo</a>
     </div>
-    <p class="faint">Android. Em teste fechado, com vagas limitadas.</p>
+    <p class="faint" data-reveal>Android. Em teste fechado, com vagas limitadas.</p>
   </div>
 </section>
 
 <section id="como-funciona" class="wrap stack-lg">
   <div class="stack">
-    <p class="eyebrow">Como funciona</p>
-    <h2>Quatro maneiras de perguntar a mesma coisa</h2>
-    <p class="muted">Você não escolhe o modo. O app decide sozinho qual caminho é mais barato e mais confiável para o que está na sua frente.</p>
+    <p class="eyebrow" data-reveal>Como funciona</p>
+    <h2 data-reveal>Quatro maneiras de perguntar a mesma coisa</h2>
+    <p class="muted" data-reveal>Você não escolhe o modo. O app decide sozinho qual caminho é mais barato e mais confiável para o que está na sua frente.</p>
   </div>
   <div class="grid">
-    <article class="card">
+    <article class="card" data-reveal>
       <p class="num">01</p>
       <h3>Código de barras</h3>
       <p>Lê o EAN e busca o produto numa base pública com ingredientes, alérgenos declarados e composição. É a evidência mais forte que existe sem você digitar nada.</p>
     </article>
-    <article class="card">
+    <article class="card" data-reveal>
       <p class="num">02</p>
       <h3>Rótulo</h3>
       <p>Quando não há código, o texto da embalagem é lido no próprio aparelho. "Zero lactose" na frente não anula "contém leite" no verso — e o app sabe disso.</p>
     </article>
-    <article class="card">
+    <article class="card" data-reveal>
       <p class="num">03</p>
       <h3>Cardápio</h3>
-      <p>Estrutura as opções do menu e mostra o que dá para observar em cada uma. Preço nunca vira nutriente, e nada entra no seu histórico sem você confirmar.</p>
+      <p>Estrutura as opções do menu e mostra o que dá para observar em cada uma. Preço nunca vira nutriente, e nada entra no histórico sem você confirmar.</p>
     </article>
-    <article class="card">
+    <article class="card" data-reveal>
       <p class="num">04</p>
       <h3>Prato</h3>
       <p>Sugere os componentes que reconhece e pede que você corrija. Uma foto não determina receita, ingrediente escondido nem quantidade — então ele não finge que determina.</p>
@@ -147,21 +145,21 @@
 
 <section class="wrap">
   <div class="panel stack">
-    <p class="eyebrow">O que nos separa dos outros</p>
-    <h2>Quando não sabe, ele diz que não sabe.</h2>
-    <p class="muted">Aplicativos que estimam calorias por foto erram, em média, centenas de quilocalorias por refeição — e mostram o número com a mesma confiança de sempre. O Eat Control trabalha com quatro respostas possíveis, e uma delas é <strong>informação insuficiente</strong>.</p>
+    <p class="eyebrow" data-reveal>O que nos separa dos outros</p>
+    <h2 data-reveal>Quando não sabe, ele diz que não sabe.</h2>
+    <p class="muted" data-reveal>Aplicativos que deduzem a quantidade pela foto erram, em média, centenas de quilocalorias por refeição — e mostram o número com a mesma confiança de sempre. O Eat Control trabalha com quatro respostas possíveis, e uma delas é <strong>informação insuficiente</strong>.</p>
     <hr class="rule">
-    <div class="grid">
-      <article class="card">
+    <div class="grid grid-3">
+      <article class="card" data-reveal>
         <h3>Evidência com hierarquia</h3>
         <p>O que o fabricante declara vale mais que o que um modelo achou. Toda resposta mostra de onde veio cada achado e qual o peso dele.</p>
       </article>
-      <article class="card">
+      <article class="card" data-reveal>
         <h3>Regras suas, não nossas</h3>
         <p>Você cadastra o que quer evitar ou observar. O app cita a sua regra ao avisar, em vez de decidir por você o que é bom ou ruim.</p>
       </article>
-      <article class="card">
-        <h3>Limites clínicos explícitos</h3>
+      <article class="card" data-reveal>
+        <h3>Limites explícitos</h3>
         <p>Não diagnostica, não muda dose e não promete conforto. Registrou um sinal de alerta? Ele para de avaliar a refeição e orienta procurar avaliação médica.</p>
       </article>
     </div>
@@ -170,24 +168,47 @@
 
 <section id="privacidade" class="wrap stack-lg">
   <div class="stack">
-    <p class="eyebrow">Privacidade</p>
-    <h2>O caminho da decisão roda no seu telefone</h2>
-    <p class="muted">Leitura de rótulo, motor de decisão, voz e histórico funcionam sem internet. A única consulta que sai do aparelho é o código de barras do produto — vai o número, não vai quem escaneou.</p>
+    <p class="eyebrow" data-reveal>Privacidade</p>
+    <h2 data-reveal>O caminho da decisão roda no seu telefone</h2>
+    <p class="muted" data-reveal>Leitura de rótulo, motor de decisão, voz e histórico funcionam sem internet. A única consulta que sai do aparelho é o código de barras do produto — vai o número, não vai quem escaneou.</p>
   </div>
-  <div class="grid">
-    <article class="card"><h3>Fotos não são salvas</h3><p>A imagem existe em memória durante a análise e é descartada quando você fecha o resultado.</p></article>
-    <article class="card"><h3>Histórico fica no aparelho</h3><p>Fora de backup em nuvem e de transferência entre dispositivos, por configuração explícita.</p></article>
-    <article class="card"><h3>Apagar é um botão</h3><p>Histórico, regras e sintomas registrados saem do aparelho quando você quiser, sem pedir nada a ninguém.</p></article>
+  <div class="grid grid-3">
+    <article class="card" data-reveal><h3>Fotos não são salvas</h3><p>A imagem existe em memória durante a análise e é descartada quando você fecha o resultado.</p></article>
+    <article class="card" data-reveal><h3>Histórico fica no aparelho</h3><p>Fora de backup em nuvem e de transferência entre dispositivos, por configuração explícita.</p></article>
+    <article class="card" data-reveal><h3>Apagar é um botão</h3><p>Histórico, regras e sintomas registrados saem do aparelho quando você quiser, sem pedir nada a ninguém.</p></article>
   </div>
-  <p class="faint">Detalhes completos em <a href="/privacidade/">política de privacidade</a>.</p>
+  <p class="faint" data-reveal>Detalhes completos na <a href="/privacidade/">política de privacidade</a>.</p>
 </section>
 
-<section class="wrap">
+<section id="testar" class="wrap">
   <div class="panel stack">
-    <h2>Quer testar antes de todo mundo?</h2>
-    <p class="muted">Estamos abrindo o teste fechado para um grupo pequeno de pessoas em tratamento com GLP-1. Você usa, reclama, e a gente conserta em público.</p>
-    <div class="actions">
-      <a class="btn btn-primary" href="mailto:eatcontrol.ai@gmail.com?subject=Quero%20testar%20o%20Eat%20Control&body=Conte%20um%20pouco%20do%20seu%20contexto%3A%20h%C3%A1%20quanto%20tempo%20est%C3%A1%20em%20tratamento%20e%20qual%20a%20sua%20maior%20d%C3%BAvida%20na%20hora%20de%20comer.">Pedir uma vaga</a>
+    <p class="eyebrow" data-reveal>Teste fechado</p>
+    <h2 data-reveal>Quer testar antes de todo mundo?</h2>
+    <p class="muted" data-reveal>Estamos abrindo para um grupo pequeno de pessoas em tratamento com GLP-1. Você usa, reclama, e a gente conserta em público.</p>
+
+    <form class="form" data-waitlist data-reveal>
+      <div class="field">
+        <label for="nome">Como podemos te chamar</label>
+        <input id="nome" name="nome" type="text" autocomplete="name" required>
+      </div>
+      <div class="field">
+        <label for="email">Seu e-mail</label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="contexto">Qual a sua maior dúvida na hora de comer? <span class="faint">(opcional)</span></label>
+        <textarea id="contexto" name="contexto" rows="3"></textarea>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Pedir uma vaga</button>
+        <a class="btn btn-wa" data-whatsapp href="#" hidden>Falar no WhatsApp</a>
+      </div>
+      <p class="form-status" role="status" aria-live="polite"></p>
+    </form>
+
+    <div class="form-alt" data-reveal>
+      <a class="btn btn-primary" data-mailto href="#">Pedir uma vaga por e-mail</a>
+      <a class="btn btn-wa" data-whatsapp href="#" hidden>Falar no WhatsApp</a>
     </div>
   </div>
 </section>
@@ -201,11 +222,12 @@
       <a href="/roadmap/">Roadmap</a>
       <a href="/privacidade/">Privacidade</a>
       <a href="/termos/">Termos</a>
-      <a href="mailto:eatcontrol.ai@gmail.com">Contato</a>
+      <a data-mailto href="#">Contato</a>
     </nav>
   </div>
 </footer>
 
+<script src="/assets/site.js" defer></script>
 <script src="/assets/analytics.js" defer></script>
 </body>
 </html>

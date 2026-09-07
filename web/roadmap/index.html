@@ -10,29 +10,23 @@
 <meta property="og:title" content="Roadmap aberto — Eat Control">
 <meta property="og:description" content="Construindo em público: o que está pronto, o que falta e o que decidimos não fazer.">
 <meta property="og:url" content="https://eatcontrol.com.br/roadmap/">
-<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0b0f14">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
 
 <header class="site-head">
   <div class="wrap">
-    <a class="brand" href="/">
-      <svg viewBox="0 0 108 108" aria-hidden="true" fill="none">
-        <rect width="108" height="108" rx="24" fill="#0E1A2E"/>
-        <g stroke="#42E0AB" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M31 43V35a4 4 0 0 1 4-4h8"/><path d="M65 31h8a4 4 0 0 1 4 4v8"/>
-          <path d="M77 65v8a4 4 0 0 1-4 4h-8"/><path d="M43 77h-8a4 4 0 0 1-4-4v-8"/>
-        </g>
-        <path d="M42 55l8 8 17-19" stroke="#F7F9FC" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Eat&nbsp;Control
-    </a>
+    <a class="brand" href="/"><img src="/assets/mark.svg" alt="" width="30" height="30">Eat&nbsp;Control</a>
     <nav class="site-nav" aria-label="Principal">
       <a href="/#como-funciona">Como funciona</a>
       <a href="/#privacidade">Privacidade</a>
       <a href="/roadmap/" aria-current="page">Roadmap</a>
-      <a href="mailto:eatcontrol.ai@gmail.com?subject=Quero%20testar%20o%20Eat%20Control" class="btn btn-primary">Quero testar</a>
+      <a href="/#testar" class="btn btn-primary">Quero testar</a>
     </nav>
   </div>
 </header>
@@ -44,7 +38,7 @@
     <p class="eyebrow">Construindo em público</p>
     <h1>Roadmap aberto</h1>
     <p class="lede">O que está pronto, o que está sendo feito agora e o que decidimos deixar de fora. Inclui o que deu errado — é a parte que costuma ensinar mais.</p>
-    <p class="faint">Última atualização: 5 de setembro de 2026.</p>
+    <p class="faint">Última atualização: 7 de setembro de 2026.</p>
   </div>
 </section>
 
@@ -54,22 +48,27 @@
     <div class="track">
       <article class="item" data-state="done">
         <h3>Quatro trilhas de análise</h3>
+        <time>ago 2026</time>
         <p>Código de barras, rótulo por OCR, cardápio e prato assistido — todas rodando no aparelho, com o roteamento escolhendo sozinho o caminho mais barato.</p>
       </article>
       <article class="item" data-state="done">
         <h3>Motor de decisão com hierarquia de evidência</h3>
+        <time>ago 2026</time>
         <p>Quatro estados possíveis, incluindo "informação insuficiente". O que o fabricante declara pesa mais do que o que um modelo inferiu.</p>
       </article>
       <article class="item" data-state="done">
         <h3>Base pública de produtos</h3>
+        <time>5 set 2026</time>
         <p>O catálogo de demonstração deu lugar ao Open Food Facts: escanear um produto real traz ingredientes, alérgenos declarados e composição por 100&nbsp;g.</p>
       </article>
       <article class="item" data-state="done">
         <h3>Camada GLP-1 ligada ao app</h3>
+        <time>4 set 2026</time>
         <p>Um conjunto de regras versionado — limites de rotulagem da Anvisa sobre composição declarada, mais as metas e regras que você cadastra — passou a rodar em toda análise, na tela e na voz, com a origem de cada achado visível.</p>
       </article>
       <article class="item" data-state="done">
         <h3>Regras pessoais e registro de sintomas</h3>
+        <time>5 set 2026</time>
         <p>Você cadastra o que quer evitar. E ao registrar um sinal de alerta, o app para de avaliar refeição e orienta procurar avaliação médica.</p>
       </article>
     </div>
@@ -80,14 +79,17 @@
     <div class="track">
       <article class="item" data-state="doing">
         <h3>Publicação na Play Store</h3>
+        <time>meta: 20 set</time>
         <p>Assinatura de release, ficha da loja e teste fechado. É o que separa um projeto de um produto que alguém consegue instalar.</p>
       </article>
       <article class="item" data-state="doing">
         <h3>Reconhecimento de prato que funcione de verdade</h3>
+        <time>em decisão</time>
         <p>Hoje o app reconhece categorias amplas — salada, frango, sobremesa. Não reconhece feijoada. Estamos decidindo o caminho, e ele tem um custo de privacidade que vamos explicar antes de tomar.</p>
       </article>
       <article class="item" data-state="doing">
         <h3>Assinatura</h3>
+        <time>meta: 25 set</time>
         <p>Um plano gratuito que resolve a decisão do dia a dia e um plano pago para quem quer acompanhamento contínuo.</p>
       </article>
     </div>
@@ -117,7 +119,7 @@
     <h2>Acompanhe ou participe</h2>
     <p class="muted">Publicamos o que quebrou junto com o que funcionou. Se você está em tratamento com GLP-1 e quer testar cedo, é só pedir.</p>
     <div class="actions">
-      <a class="btn btn-primary" href="mailto:eatcontrol.ai@gmail.com?subject=Quero%20testar%20o%20Eat%20Control">Pedir uma vaga no teste</a>
+      <a class="btn btn-primary" href="/#testar">Pedir uma vaga no teste</a>
     </div>
   </div>
 </section>
@@ -131,11 +133,12 @@
       <a href="/roadmap/">Roadmap</a>
       <a href="/privacidade/">Privacidade</a>
       <a href="/termos/">Termos</a>
-      <a href="mailto:eatcontrol.ai@gmail.com">Contato</a>
+      <a data-mailto href="#">Contato</a>
     </nav>
   </div>
 </footer>
 
+<script src="/assets/site.js" defer></script>
 <script src="/assets/analytics.js" defer></script>
 </body>
 </html>
