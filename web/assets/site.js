@@ -10,7 +10,7 @@
     formEndpoint: '',
     whatsapp: 'https://wa.me/5511999999999',
     email: 'eatcontrol.ai@gmail.com',
-    googleDriveBrandKit: 'https://drive.google.com/drive/folders/1eatcontrol-brandkit-placeholder'
+    googleDriveBrandKit: 'https://drive.google.com/drive/folders/1BloJ8GZsRYgw84Djf_riHyDdJxG4KaXe?usp=sharing'
   };
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

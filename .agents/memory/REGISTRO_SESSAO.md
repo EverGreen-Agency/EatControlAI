@@ -22,6 +22,20 @@
 
 ## Histórico de Sessões
 
+### [2026-09-08 — Noite] Implementação de GEO/SEO Avançado, Favicon Adaptável, Telemetria & Google Drive
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Elevar o rankeamento generativo (GEO) e tradicional (SEO), adaptar os favicons para temas claro/escuro, atualizar os links oficiais do Google Drive da marca, e integrar telemetria do Microsoft Clarity e PostHog.
+- **Entregas**:
+  - Integração dos IDs reais de telemetria em [web/assets/analytics.js](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/assets/analytics.js): Microsoft Clarity Web (`yfbcrp7znw`), PostHog (`phc_wPKfPaD2LgBjrZQAnCtk3N2Lk25aCQhsqLf9QzVuwpjo` na região US Cloud `https://us.i.posthog.com`).
+  - Atualização do link oficial do Google Drive da marca (`https://drive.google.com/drive/folders/1BloJ8GZsRYgw84Djf_riHyDdJxG4KaXe?usp=sharing`) em [web/marca/index.html](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/marca/index.html), [web/assets/site.js](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/assets/site.js) e [web/assets/eatcontrol.js](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/assets/eatcontrol.js).
+  - Criação do favicon SVG adaptável ([web/assets/favicon.svg](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/assets/favicon.svg)) com `@media (prefers-color-scheme: dark)` e tags `<link rel="icon" media="(prefers-color-scheme: ...)">` em todas as páginas (`index.html`, `marca`, `roadmap`, `privacidade`, `termos`).
+  - Expansão do grafo Schema.org JSON-LD em [web/index.html](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/index.html) com `Organization` completa (fundadores Eduardo, Gustavo Fugulin e Luís, `sameAs`, redes), `WebSite`, `SoftwareApplication` enriquecida e `FAQPage` estruturada.
+  - Implementação visual e semântica da seção de Dúvidas Frequentes (`#faq`) no site com `<details>` e `<summary>` acessíveis e estilizados no padrão Linear/EatControl.
+  - Atualização de [web/robots.txt](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/robots.txt), [web/sitemap.xml](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/sitemap.xml) e [web/llms.txt](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/llms.txt) com permissões a todos os rastreadores de IA, sitemaps canônicos e guia da marca.
+  - Deploy em produção executado na Vercel (`dpl_88pr583Qzz5iD5gb4DheKKcDhxox`, aliased `https://www.eatcontrol.com.br` e `https://eatcontrol-ai.vercel.app`).
+- **Arquivos Tocados**: `web/assets/analytics.js`, `web/assets/favicon.svg`, `web/assets/eatcontrol.css`, `web/assets/site.css`, `web/assets/eatcontrol.js`, `web/assets/site.js`, `web/index.html`, `web/marca/index.html`, `web/roadmap/index.html`, `web/privacidade/index.html`, `web/termos/index.html`, `web/robots.txt`, `web/sitemap.xml`, `web/llms.txt`.
+- **Próximas Pendências**: Decisão sobre inclusão do SDK do PostHog no app Android e configuração do Clarity no app.
+
 ### [2026-09-08 — Tarde] Correções de Layout, Escala de Logos e Feedback Interativo no BrandKit (/marca/)
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Corrigir estouro de imagens dos logos em cards, adicionar feedback visual de clique na paleta com toast e card ativo, corrigir espaçamentos entre seções colididas (Attention -> Tipografia -> Regras de Ouro) e aplicar o logo vetorial oficial do Google Drive.

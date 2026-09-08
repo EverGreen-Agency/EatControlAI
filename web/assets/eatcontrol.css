@@ -1730,3 +1730,64 @@ h1, h2, h3, h4 {
 .prose strong {
   color: #ffffff;
 }
+
+/* Seção FAQ (Perguntas Frequentes & GEO Citability) */
+.section-faq {
+  padding-block: clamp(4rem, 7vw, 6.5rem);
+}
+.faq-grid {
+  display: grid;
+  gap: 1rem;
+  max-width: 860px;
+  margin: 2.5rem auto 0;
+}
+.faq-item {
+  background: var(--surface-card);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color 0.25s var(--ease-smooth), box-shadow 0.25s var(--ease-smooth);
+}
+.faq-item[open] {
+  border-color: var(--line-highlight);
+  box-shadow: 0 8px 24px rgba(45, 212, 231, 0.08);
+}
+.faq-question {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  font-family: Manrope, sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.faq-question::-webkit-details-marker {
+  display: none;
+}
+.faq-icon {
+  width: 20px;
+  height: 20px;
+  stroke: var(--signal-cyan);
+  flex-shrink: 0;
+  margin-left: 1rem;
+  transition: transform 0.3s var(--ease-spring);
+}
+.faq-item[open] .faq-icon {
+  transform: rotate(45deg);
+}
+.faq-answer {
+  padding: 0 1.5rem 1.4rem;
+  color: var(--text-secondary);
+  font-size: 0.98rem;
+  line-height: 1.65;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 1rem;
+}
+.faq-answer strong {
+  color: #ffffff;
+}
+

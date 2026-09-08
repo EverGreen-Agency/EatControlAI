@@ -9,10 +9,10 @@
 
   var CONFIG = {
     // Microsoft Clarity (mapa de calor e gravação de sessão)
-    clarityId: '',
+    clarityId: 'yfbcrp7znw',
 
     // PostHog (análise de produto e funis)
-    posthogKey: '',
+    posthogKey: 'phc_wPKfPaD2LgBjrZQAnCtk3N2Lk25aCQhsqLf9QzVuwpjo',
     posthogHost: 'https://us.i.posthog.com',
 
     // Google Analytics 4 (GA4: ex: 'G-XXXXXXXXXX')

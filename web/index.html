@@ -17,7 +17,9 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#070b10">
 
-<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/eatcontrol-mark-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: light)">
+<link rel="icon" href="/assets/eatcontrol-mark-light.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/eatcontrol-app-icon-512.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,21 +39,121 @@
       "@type": "Organization",
       "@id": "https://eatcontrol-ai.vercel.app/#org",
       "name": "EatControl",
+      "alternateName": "EatControl AI",
       "url": "https://eatcontrol-ai.vercel.app/",
-      "logo": "https://eatcontrol-ai.vercel.app/assets/eatcontrol-app-icon-512.png",
-      "description": "Inteligência alimentar contextual para pessoas em tratamento com GLP-1."
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://eatcontrol-ai.vercel.app/assets/eatcontrol-app-icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "description": "Copiloto de inteligência alimentar contextual e determinística para pessoas em tratamento com medicamentos GLP-1 (Ozempic, Wegovy, Mounjaro).",
+      "foundingDate": "2026-08-12",
+      "founder": [
+        {
+          "@type": "Person",
+          "name": "Eduardo",
+          "jobTitle": "Fundador & Arquiteto de Tecnologia"
+        },
+        {
+          "@type": "Person",
+          "name": "Gustavo Fugulin",
+          "jobTitle": "Co-fundador & Head de Growth"
+        },
+        {
+          "@type": "Person",
+          "name": "Luís",
+          "jobTitle": "Co-fundador & Operações Clínicas"
+        }
+      ],
+      "sameAs": [
+        "https://drive.google.com/drive/folders/1BloJ8GZsRYgw84Djf_riHyDdJxG4KaXe?usp=sharing",
+        "https://github.com/EverGreen-Agency/EatControlAI"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "eatcontrol.ai@gmail.com",
+        "contactType": "customer support",
+        "availableLanguage": ["Portuguese", "English"]
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://eatcontrol-ai.vercel.app/#website",
+      "url": "https://eatcontrol-ai.vercel.app/",
+      "name": "EatControl — Inteligência Alimentar no Ponto de Decisão",
+      "publisher": {
+        "@id": "https://eatcontrol-ai.vercel.app/#org"
+      },
+      "inLanguage": "pt-BR"
     },
     {
       "@type": "SoftwareApplication",
+      "@id": "https://eatcontrol-ai.vercel.app/#app",
       "name": "EatControl",
       "applicationCategory": "HealthApplication",
       "operatingSystem": "Android",
       "inLanguage": "pt-BR",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BRL"
+      },
       "featureList": [
-        "Leitura de rótulo por OCR no próprio aparelho",
+        "Leitura de rótulo por OCR on-device no próprio aparelho",
         "Consulta de produto por código de barras no Open Food Facts",
-        "Triagem contextual de gatilhos gástricos para GLP-1",
-        "Hierarquia de evidência inegociável"
+        "Triagem contextual de gatilhos gástricos para GLP-1 (gordura, açúcar, acidez)",
+        "Hierarquia de evidência inegociável com declaração explícita de incerteza",
+        "Privacidade local-first com descarte de fotos e histórico no aparelho"
+      ],
+      "author": {
+        "@id": "https://eatcontrol-ai.vercel.app/#org"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://eatcontrol-ai.vercel.app/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "O que é o EatControl e como ele funciona?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "O EatControl é um copiloto de inteligência alimentar contextual em tempo real. Ele permite apontar a câmera para um rótulo, código de barras ou cardápio e receber em segundos uma recomendação determinística sobre a compatibilidade do alimento com suas metas e seu plano de saúde, com foco especial em pessoas usando medicamentos GLP-1."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "O EatControl estima calorias tirando foto do prato?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Não. Aplicativos convencionais tentam adivinhar gramatura e calorias por visão computacional e erram centenas de quilocalorias sem sinalizar incerteza. O EatControl opera com o princípio Reliability-First: baseia-se em tabelas declaradas pelo fabricante, dados auditáveis do Open Food Facts ou pergunta a quantidade ao usuário. Quando a informação for insuficiente, o app declara incerteza em vez de alucinar."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Como o EatControl apoia quem usa Ozempic, Mounjaro ou Wegovy (GLP-1)?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Medicamentos análogos de GLP-1 desaceleram o esvaziamento gástrico e podem causar efeitos adversos severos (náusea, refluxo, constipação) quando o paciente ingere alimentos ricos em gorduras saturadas ou açúcares refinados. O EatControl tria a composição do alimento contra as diretrizes clínicas de GLP-1 e alertas de sintomas cadastrados, auxiliando nas decisões do dia a dia."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Como é garantida a privacidade dos meus dados de saúde e fotos?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "O EatControl adota arquitetura local-first e privacidade por design sob a LGPD. As fotos capturadas são processadas na memória RAM e descartadas imediatamente. Seu histórico, sintomas e preferências alimentares ficam gravados apenas no seu smartphone, sem sincronização obrigatória com servidores em nuvem."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Preciso ter óculos inteligentes para usar o EatControl?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Não. O aplicativo Android funciona de forma 100% autônoma no smartphone, utilizando a câmera, OCR on-device e assistente de voz do próprio aparelho. A integração com óculos inteligentes (wearables) é um módulo de expansão para conveniência futura."
+          }
+        }
       ]
     }
   ]
@@ -72,6 +174,7 @@
       <a href="#simulador">Simulador</a>
       <a href="#evidencias">Hierarquia</a>
       <a href="#privacidade">Privacidade</a>
+      <a href="#faq">Dúvidas</a>
       <a href="/roadmap/">Roadmap</a>
     </nav>
     <div class="nav-cta">
@@ -421,6 +524,67 @@
       <h3>Apagar histórico com 1 clique</h3>
       <p>Você pode resetar todo o histórico, regras de intolerância e sintomas armazenados no aplicativo a qualquer instante diretamente nas configurações.</p>
     </div>
+  </div>
+</section>
+
+<!-- SEÇÃO FAQ (PERGUNTAS FREQUENTES & CITABILIDADE GEO) -->
+<section id="faq" class="wrap section-faq">
+  <div class="text-center" style="max-width:680px;margin-inline:auto;">
+    <div class="section-eyebrow">Dúvidas Frequentes</div>
+    <h2>Perguntas frequentes sobre o EatControl</h2>
+    <p class="section-muted">Entenda como o copiloto atua no suporte a escolhas alimentares seguras, determinísticas e sem alucinações.</p>
+  </div>
+
+  <div class="faq-grid">
+    <details class="faq-item" open>
+      <summary class="faq-question">
+        <span>O que é o EatControl e como ele funciona?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </summary>
+      <div class="faq-answer">
+        O <strong>EatControl</strong> é um copiloto de inteligência alimentar contextual. Você aponta a câmera do smartphone para o código de barras, rótulo nutricional ou cardápio e recebe, em menos de 1 segundo, uma orientação objetiva sobre a compatibilidade daquele alimento com suas metas e seu plano de saúde — com triagem clínica calibrada para quem utiliza medicamentos GLP-1.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary class="faq-question">
+        <span>O EatControl estima calorias tirando foto do prato?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </summary>
+      <div class="faq-answer">
+        <strong>Não.</strong> Aplicativos tradicionais tentam inferir peso e calorias por foto e erram centenas de quilocalorias sem sinalizar incerteza. O EatControl adota o princípio <em>Reliability-First</em>: baseia-se prioritariamente em dados declarados na embalagem ou catálogo auditado (Open Food Facts). Quando a foto de um prato não possui porção declarada, o aplicativo declara <strong>INSUFICIENTE</strong> e pergunta a quantidade antes de opinar.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary class="faq-question">
+        <span>Como o app apoia quem está em tratamento com Ozempic, Mounjaro ou Wegovy?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </summary>
+      <div class="faq-answer">
+        Análogos de GLP-1 reduzem o apetite e retardam o esvaziamento do estômago. O consumo acidental de alimentos com alta densidade de gordura saturada, ultraprocessados ou açúcares pode desencadear náuseas intensas, refluxo ou constipação. O EatControl audita a composição contra a biblioteca de regras de segurança gástrica do GLP-1 para evitar crises no cotidiano.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary class="faq-question">
+        <span>Como é garantida a privacidade dos meus dados e fotos?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </summary>
+      <div class="faq-answer">
+        Arquitetura <strong>local-first</strong> e privacidade por design (LGPD). As imagens da câmera são lidas na memória volátil (RAM) e descartadas imediatamente. Seu histórico de análises, sintomas e preferências alimentares ficam armazenados exclusivamente no seu dispositivo, sem envio para servidores remotos.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary class="faq-question">
+        <span>Preciso de óculos inteligentes para usar o EatControl?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </summary>
+      <div class="faq-answer">
+        <strong>Não.</strong> O EatControl é um aplicativo Android 100% autônomo para smartphone. Ele utiliza a câmera nativa, OCR local e assistente de voz do aparelho. A integração com smart glasses (óculos inteligentes) é uma interface complementar para conveniência futura mãos-livres.
+      </div>
+    </details>
   </div>
 </section>
 

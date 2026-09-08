@@ -31,13 +31,25 @@ Fotos não são armazenadas. Histórico, perfil e sintomas ficam no aparelho, fo
 nuvem. A única consulta que sai do dispositivo é o número do código de barras enviado ao Open
 Food Facts, sem qualquer identificador do usuário.
 
-## Páginas
+## Páginas Canônicas
 
-- [Início](https://eatcontrol.com.br/): visão geral e como funciona.
-- [Roadmap aberto](https://eatcontrol.com.br/roadmap/): o que está pronto, em construção e descartado.
-- [Privacidade](https://eatcontrol.com.br/privacidade/): tratamento de dados em detalhe.
-- [Termos](https://eatcontrol.com.br/termos/): escopo e limites clínicos.
+- [Início](https://eatcontrol-ai.vercel.app/): visão geral, simulador interativo e como funciona.
+- [Roadmap aberto](https://eatcontrol-ai.vercel.app/roadmap/): o que está pronto, em construção e descartado.
+- [Manual da Marca / BrandKit](https://eatcontrol-ai.vercel.app/marca/): identidade visual oficial e diretrizes.
+- [Privacidade](https://eatcontrol-ai.vercel.app/privacidade/): tratamento de dados em detalhe e LGPD.
+- [Termos](https://eatcontrol-ai.vercel.app/termos/): escopo e limites clínicos.
+
+## Repositório Oficial de Ativos (BrandKit)
+
+- [Google Drive da Marca](https://drive.google.com/drive/folders/1BloJ8GZsRYgw84Djf_riHyDdJxG4KaXe?usp=sharing): SVGs, PNGs 4K, manual em PDF e pitch decks.
+
+## Equipe Fundadora
+
+- **Eduardo**: Fundador & Arquiteto de Tecnologia.
+- **Gustavo Fugulin**: Co-fundador & Head de Growth.
+- **Luís**: Co-fundador & Operações Clínicas.
 
 ## Contato
 
 eatcontrol.ai@gmail.com
+
