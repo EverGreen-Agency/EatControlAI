@@ -1518,6 +1518,14 @@ h1, h2, h3, h4 {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
 }
 
+.brand-section {
+  padding-block: clamp(3.5rem, 6vw, 5.5rem);
+  border-bottom: 1px solid var(--line-subtle);
+}
+.brand-section:last-of-type {
+  border-bottom: none;
+}
+
 .grid-features {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1552,18 +1560,31 @@ h1, h2, h3, h4 {
   display: grid;
   gap: 1rem;
   transition: border-color 200ms ease, transform 200ms var(--ease-spring);
+  overflow: hidden;
 }
 .asset-card:hover {
   border-color: var(--line-highlight);
   transform: translateY(-2px);
 }
 .asset-preview {
-  height: 140px;
+  height: 130px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.2rem;
+  padding: 1rem 1.4rem;
+  overflow: hidden;
+  position: relative;
+}
+.asset-preview img,
+.asset-preview svg {
+  max-width: 85%;
+  max-height: 52px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
 .preview-dark {
   background: #03060a;
@@ -1591,11 +1612,42 @@ h1, h2, h3, h4 {
   overflow: hidden;
   cursor: pointer;
   transition: all 200ms var(--ease-spring);
+  position: relative;
 }
 .swatch-card:hover {
   transform: translateY(-3px);
   border-color: var(--signal-cyan);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+.swatch-card.is-copied {
+  border-color: var(--positive) !important;
+  box-shadow: 0 0 25px rgba(66, 201, 139, 0.45) !important;
+  transform: scale(1.02);
+}
+.swatch-feedback {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(7, 14, 22, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--positive);
+  color: var(--positive);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: all 200ms var(--ease-spring);
+}
+.swatch-card.is-copied .swatch-feedback {
+  opacity: 1;
+  transform: translateY(0);
 }
 .swatch-color {
   height: 90px;
@@ -1615,6 +1667,31 @@ h1, h2, h3, h4 {
   font-family: "JetBrains Mono", monospace;
   font-size: 0.78rem;
   color: var(--text-muted);
+}
+
+#copy-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 10000;
+  background: rgba(7, 14, 22, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--positive);
+  color: #ffffff;
+  padding: 0.85rem 1.4rem;
+  border-radius: var(--radius-pill);
+  font-family: Inter, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(66, 201, 139, 0.35);
+  transform: translateY(30px);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 250ms var(--ease-spring);
+}
+#copy-toast.show {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 /* ----------------------------------------------------------- PAINÉIS & TEXTO PROSE */
