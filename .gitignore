@@ -57,6 +57,7 @@ view-source_*
 docs/fontes/endocrino/
 # Ferramentas locais de agente (skills, instruções de IDE). São configuração da máquina de
 # cada pessoa, não código do produto — e são milhares de arquivos.
-.agents/
+.agents/*
+!.agents/memory/
 .claude/
 .codex/
