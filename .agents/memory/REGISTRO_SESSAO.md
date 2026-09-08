@@ -22,6 +22,19 @@
 
 ## Histórico de Sessões
 
+### [2026-09-08 — Tarde] Resolução Definitiva do Bloqueio de Cache na Vercel & Deploy em Produção
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Diagnosticar e eliminar a persistência de cache que travava a versão antiga do site em navegadores normais na Vercel (`eatcontrol-ai.vercel.app`).
+- **Diagnóstico**: O cabeçalho anterior `Cache-Control: public, max-age=31536000, immutable` havia sido gravado pelo Chrome no disco local. Além disso, os commits anteriores haviam subido para o Git mas o comando de publicação da Vercel (`vercel deploy --prod`) não havia sido executado, mantendo a Vercel servindo o HTML antigo.
+- **Entregas**:
+  - Desacoplamento dos bundles para novas URLs não cacheadas: [web/assets/eatcontrol.css](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/assets/eatcontrol.css) e [web/assets/eatcontrol.js](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/assets/eatcontrol.js).
+  - Atualização em todas as páginas HTML ([web/index.html](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/index.html), marca, privacidade, roadmap, termos) apontando para os novos bundles `?v=3.0`.
+  - Configuração de cabeçalhos no [web/vercel.json](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/vercel.json) aplicando `Cache-Control: public, max-age=0, must-revalidate` definitivo.
+  - Deploy em produção executado com sucesso na Vercel (`aliased https://eatcontrol-ai.vercel.app`).
+  - Verificação visual via navegador confirmando que a navbar em pílula de vidro, mockups 3D, tipografia e simulador estão 100% ativos.
+- **Arquivos Tocados**: `web/vercel.json`, `web/index.html`, `web/marca/index.html`, `web/privacidade/index.html`, `web/roadmap/index.html`, `web/termos/index.html`, `web/assets/eatcontrol.css`, `web/assets/eatcontrol.js`.
+- **Próximas Pendências**: Nenhuma no frontend institucional; validar fluxo de cadastro de leads em produção.
+
 ### [2026-09-07 — Madrugada] Redesign Cinematográfico do Site & Manual da Marca (/marca/)
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Elevar a régua visual do site institucional para o padrão Linear.app + Superpower.com (Gauntlet Loop) com GSAP/cinematic components e criar o Manual da Marca oficial com link do Google Drive e downloads de assets.
