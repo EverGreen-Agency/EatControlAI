@@ -1,69 +1,53 @@
 /*
-  Medição de uso, atrás de consentimento.
-
-  Três decisões que valem explicar:
-
-  1. **Nada carrega antes do "aceitar".** Clarity grava sessão e PostHog identifica
-     visitante; num site de saúde isso é tratamento de dado pessoal, e a LGPD pede base legal.
-     Consentimento explícito é a base mais simples de sustentar, e é a única que não exige
-     advogado para justificar depois.
-
-  2. **Sem ID configurado, nada existe** - nem script, nem banner, nem cookie. O site
-     funciona hoje, com esta configuração vazia, sem nenhum aviso na tela. Isso evita o
-     modo de falha clássico de banner de cookie que aparece sem haver cookie nenhum.
-
-  3. **Global Privacy Control é respeitado como recusa.** Quem já declarou no navegador
-     que não quer ser rastreado não precisa dizer de novo aqui.
+  EatControl — Medição de uso e gestão de consentimento (LGPD).
+  Suporte estruturado para Microsoft Clarity, PostHog e Google Analytics 4 (GA4).
+  Armazenamento e gestão de opt-in para treinamento de modelos de IA (Clarifai / Gemini / próprio).
 */
 
 (function () {
   'use strict';
 
-  // ---------------------------------------------------------------- configuração
-
   var CONFIG = {
-    // Microsoft Clarity: mapa de calor e gravação de sessão. Grátis e ilimitado.
-    // Pegue em clarity.microsoft.com → Settings → Overview.
+    // Microsoft Clarity (mapa de calor e gravação de sessão)
     clarityId: '',
 
-    // PostHog: funil, eventos de produto e retenção.
-    // Pegue em app.posthog.com → Project Settings → Project API Key.
+    // PostHog (análise de produto e funis)
     posthogKey: '',
-    posthogHost: 'https://us.i.posthog.com'
+    posthogHost: 'https://us.i.posthog.com',
+
+    // Google Analytics 4 (GA4: ex: 'G-XXXXXXXXXX')
+    gaMeasurementId: '',
+
+    // Webhook/Endpoint para ingestão de telemetria de treino de modelos (opcional)
+    modelTrainingEndpoint: ''
   };
 
-  var STORAGE_KEY = 'ec-consent';
+  var STORAGE_KEY = 'ec_user_consent';
+  var TRAINING_OPTIN_KEY = 'ec_optin_model_training';
 
-  // ------------------------------------------------------------------- utilidades
-
-  function configured() {
-    return Boolean(CONFIG.clarityId || CONFIG.posthogKey);
+  function hasAnyServiceConfigured() {
+    return Boolean(CONFIG.clarityId || CONFIG.posthogKey || CONFIG.gaMeasurementId);
   }
 
   function readConsent() {
     try {
       return window.localStorage.getItem(STORAGE_KEY);
     } catch (e) {
-      // Navegador com armazenamento bloqueado. Sem memória do consentimento, o
-      // comportamento seguro é não medir.
       return 'denied';
     }
   }
 
-  function writeConsent(value) {
+  function writeConsent(val) {
     try {
-      window.localStorage.setItem(STORAGE_KEY, value);
-    } catch (e) {
-      /* sem persistência: o banner volta na próxima visita, o que é melhor que medir sem permissão */
-    }
+      window.localStorage.setItem(STORAGE_KEY, val);
+    } catch (e) {}
   }
 
-  /** Sinal explícito do navegador de que a pessoa não quer ser rastreada. */
   function optedOutByBrowser() {
     return navigator.globalPrivacyControl === true || navigator.doNotTrack === '1';
   }
 
-  // ---------------------------------------------------------------------- carga
+  // ------------------------------------------------ Carregadores de Scripts
 
   function loadClarity(id) {
     window.clarity = window.clarity || function () {
@@ -83,13 +67,10 @@
       if (window.posthog && window.posthog.init) {
         window.posthog.init(key, {
           api_host: host,
-          // A pessoa consentiu com medição de uso, não com perfil persistente entre sessões.
           persistence: 'localStorage',
           autocapture: true,
           capture_pageview: true,
-          // Mascarar entrada de texto: nada que alguém digite deve chegar ao painel.
           mask_all_text: false,
-          mask_all_element_attributes: false,
           session_recording: { maskAllInputs: true }
         });
       }
@@ -97,55 +78,70 @@
     document.head.appendChild(s);
   }
 
-  function start() {
+  function loadGA4(id) {
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+    document.head.appendChild(s);
+
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { window.dataLayer.push(arguments); }
+    window.gtag = gtag;
+    gtag('js', new Date());
+    gtag('config', id, { anonymize_ip: true });
+  }
+
+  // ------------------------------------------------ Execução & Banner
+
+  function activateTracking() {
     if (CONFIG.clarityId) loadClarity(CONFIG.clarityId);
     if (CONFIG.posthogKey) loadPostHog(CONFIG.posthogKey, CONFIG.posthogHost);
+    if (CONFIG.gaMeasurementId) loadGA4(CONFIG.gaMeasurementId);
   }
 
-  // ---------------------------------------------------------------------- banner
+  function createConsentBanner() {
+    if (!hasAnyServiceConfigured() || optedOutByBrowser()) return;
 
-  function showBanner() {
-    var bar = document.createElement('div');
-    bar.className = 'consent';
-    bar.setAttribute('role', 'dialog');
-    bar.setAttribute('aria-label', 'Preferência de medição de uso');
+    var existing = readConsent();
+    if (existing === 'granted') {
+      activateTracking();
+      return;
+    }
+    if (existing === 'denied') return;
+
+    var bar = document.createElement('aside');
+    bar.className = 'consent-bar';
+    bar.setAttribute('role', 'region');
+    bar.setAttribute('aria-label', 'Privacidade e medição de uso');
+
     bar.innerHTML =
-      '<p>Usamos medição de uso para entender o que funciona neste site. ' +
-      'Nada é coletado sem a sua permissão. ' +
-      '<a href="/privacidade/">Como tratamos dados</a>.</p>' +
-      '<div class="consent-actions">' +
-      '<button type="button" data-consent="denied" class="btn btn-ghost">Recusar</button>' +
-      '<button type="button" data-consent="granted" class="btn btn-primary">Aceitar</button>' +
+      '<div class="wrap consent-wrap" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding:0.85rem 1rem;background:rgba(16,22,29,0.95);border:1px solid rgba(45,212,231,0.25);border-radius:12px;margin-bottom:1rem;box-shadow:0 8px 32px rgba(0,0,0,0.5);">' +
+        '<p style="margin:0;font-size:0.85rem;color:#cfd6dd;">Usamos medição anônima para saber o que melhorar no app. Você aceita?</p>' +
+        '<div style="display:flex;gap:0.6rem;">' +
+          '<button type="button" class="btn btn-sm btn-primary" data-consent="yes">Aceitar</button>' +
+          '<button type="button" class="btn btn-sm btn-ghost" data-consent="no">Recusar</button>' +
+        '</div>' +
       '</div>';
 
-    bar.addEventListener('click', function (event) {
-      var choice = event.target.getAttribute('data-consent');
-      if (!choice) return;
-      writeConsent(choice);
-      bar.remove();
-      if (choice === 'granted') start();
-    });
+    bar.style.position = 'fixed';
+    bar.style.bottom = '1rem';
+    bar.style.left = '0';
+    bar.style.right = '0';
+    bar.style.zIndex = '999';
 
     document.body.appendChild(bar);
+
+    bar.querySelector('[data-consent="yes"]').addEventListener('click', function () {
+      writeConsent('granted');
+      bar.remove();
+      activateTracking();
+    });
+
+    bar.querySelector('[data-consent="no"]').addEventListener('click', function () {
+      writeConsent('denied');
+      bar.remove();
+    });
   }
 
-  // ------------------------------------------------------------------------ fluxo
-
-  if (!configured()) return;
-
-  if (optedOutByBrowser()) {
-    writeConsent('denied');
-    return;
-  }
-
-  var consent = readConsent();
-  if (consent === 'granted') {
-    start();
-  } else if (consent !== 'denied') {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', showBanner);
-    } else {
-      showBanner();
-    }
-  }
+  document.addEventListener('DOMContentLoaded', createConsentBanner);
 })();
