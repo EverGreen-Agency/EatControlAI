@@ -50,6 +50,7 @@
   // ------------------------------------------------ Carregadores de Scripts
 
   function loadClarity(id) {
+    if (document.querySelector('script[src*="clarity.ms/tag/' + id + '"]')) return;
     window.clarity = window.clarity || function () {
       (window.clarity.q = window.clarity.q || []).push(arguments);
     };

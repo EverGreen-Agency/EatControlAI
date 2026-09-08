@@ -27,6 +27,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
 <link rel="stylesheet" href="/assets/eatcontrol.css?v=3.0">
 
+<!-- Microsoft Clarity Official Tracking Code -->
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "yfbcrp7znw");
+</script>
+
 <!-- GSAP 3 + ScrollTrigger (CDN) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
@@ -420,6 +429,42 @@
         </div>
       </div>
     </article>
+
+    <!-- BENTO 5: INTERAÇÃO POR VOZ & GARÇOM (SPAN 2) -->
+    <article class="bento-card bento-span-2 spotlight-card">
+      <div class="bento-badge" style="background:rgba(66,201,139,0.15);color:var(--positive);border-color:rgba(66,201,139,0.3);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:4px;vertical-align:-2px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        Voz On-Device &middot; Resposta Falada &lt; 1s
+      </div>
+      <div class="bento-content">
+        <h3>Ouça a descrição do garçom ou pergunte por voz</h3>
+        <p>No restaurante, buffet ou na cozinha, você não precisa ficar digitando. O EatControl escuta a descrição dos ingredientes falada pelo garçom (ou sua própria pergunta), extrai alérgenos e densidade lipídica no próprio smartphone, e devolve o veredito por voz discretamente no fone, óculos ou viva-voz.</p>
+        
+        <div class="micro-voice-chat" style="margin-top:1.2rem;display:grid;gap:0.75rem;">
+          <div class="voice-bubble waiter" style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.85rem 1.1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#1b2533;display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:#8594a1;flex-shrink:0;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93L12 22l-0.75-12.07A4 4 0 0 1 8 6a4 4 0 0 1 4-4z"/></svg>
+            </div>
+            <div>
+              <span style="display:block;font-size:0.75rem;font-family:JetBrains Mono,monospace;color:#8594a1;margin-bottom:0.15rem;">GARÇOM (DESCRIÇÃO DO PRATO)</span>
+              <p style="margin:0;font-size:0.92rem;color:#cfd6dd;">"Esse molho é preparado com manteiga noisette, queijo gorgonzola e redução de nata fresca."</p>
+            </div>
+          </div>
+          <div class="voice-bubble response" style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.85rem 1.1rem;background:rgba(255,92,92,0.08);border:1px solid rgba(255,92,92,0.3);border-radius:12px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,92,92,0.2);display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:#ff5c5c;flex-shrink:0;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            </div>
+            <div>
+              <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.15rem;">
+                <span style="font-size:0.75rem;font-family:JetBrains Mono,monospace;font-weight:700;color:#ff5c5c;">RESPOSTA POR ÁUDIO (TTS 820ms)</span>
+                <span class="verdict-tag tag-incompativel" style="padding:0.15rem 0.45rem;font-size:0.7rem;">INCOMPATÍVEL</span>
+              </div>
+              <p style="margin:0;font-size:0.92rem;color:#f7f4ee;">"Atenção: altíssima concentração de gordura e nata. Risco severo de náusea tardia e refluxo com medicação GLP-1."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
   </div>
 </section>
 
@@ -583,6 +628,16 @@
       </summary>
       <div class="faq-answer">
         <strong>Não.</strong> O EatControl é um aplicativo Android 100% autônomo para smartphone. Ele utiliza a câmera nativa, OCR local e assistente de voz do aparelho. A integração com smart glasses (óculos inteligentes) é uma interface complementar para conveniência futura mãos-livres.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary class="faq-question">
+        <span>Como funciona o entendimento por voz quando o garçom descreve o prato no restaurante?</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </summary>
+      <div class="faq-answer">
+        O EatControl conta com processamento de fala para texto (STT) e sintetizador de voz (TTS) 100% on-device em português brasileiro. Ao ativar o modo de escuta no restaurante, o app capta a explicação do garçom sobre o preparo do prato ou a sua própria pergunta falada, extrai os ingredientes críticos (lactose, gordura saturada, condimentos irritantes) e responde no seu fone, óculos ou viva-voz em menos de 1 segundo se aquela refeição é compatível com seu estômago e medicação GLP-1.
       </div>
     </details>
   </div>

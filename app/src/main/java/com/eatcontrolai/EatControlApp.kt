@@ -46,6 +46,20 @@ class EatControlApp : Application() {
         // O DAT exige inicialização uma única vez por processo, na Application. Chamar qualquer
         // API antes disso devolve NOT_INITIALIZED.
         container.datGlasses.initialize()
+
+        // Microsoft Clarity Android (heatmaps e replay de sessão)
+        val clarityConfig = com.microsoft.clarity.ClarityConfig("yfbedcliec")
+        com.microsoft.clarity.Clarity.initialize(applicationContext, clarityConfig)
+
+        // PostHog Android (telemetria de produto anônima e performance de modelo)
+        val posthogConfig = com.posthog.android.PostHogAndroidConfig(
+            apiKey = "phc_wPKfPaD2LgBjrZQAnCtk3N2Lk25aCQhsqLf9QzVuwpjo",
+            host = "https://us.i.posthog.com"
+        ).apply {
+            captureApplicationLifecycleEvents = true
+            captureScreenViews = true
+        }
+        com.posthog.android.PostHogAndroid.setup(this, posthogConfig)
     }
 }
 

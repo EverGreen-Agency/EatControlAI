@@ -19,6 +19,8 @@ camerax = "1.3.4"
 datastore = "1.1.1"
 orgJson = "20231013"
 mwdat = "0.9.0"
+clarity = "3.+"
+posthog = "3.+"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -52,6 +54,8 @@ org-json = { group = "org.json", name = "json", version.ref = "orgJson" }
 mwdat-core = { group = "com.meta.wearable", name = "mwdat-core", version.ref = "mwdat" }
 mwdat-camera = { group = "com.meta.wearable", name = "mwdat-camera", version.ref = "mwdat" }
 mwdat-mockdevice = { group = "com.meta.wearable", name = "mwdat-mockdevice", version.ref = "mwdat" }
+clarity = { group = "com.microsoft.clarity", name = "clarity", version.ref = "clarity" }
+posthog = { group = "com.posthog", name = "posthog-android", version.ref = "posthog" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

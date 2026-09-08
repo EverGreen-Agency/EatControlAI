@@ -9,6 +9,7 @@
 - Lê o código de barras e busca ingredientes, alérgenos declarados e composição em base pública.
 - Lê o rótulo por OCR no aparelho quando não há código de barras.
 - Estrutura opções de cardápio e sugere componentes de prato, sempre exigindo confirmação.
+- Escuta a descrição falada de ingredientes pelo garçom ou perguntas do usuário (STT on-device em pt-BR) e responde por áudio (TTS < 1s) sobre a compatibilidade com o protocolo GLP-1.
 - Compara o resultado com restrições, metas e regras que a própria pessoa cadastrou.
 
 ## O que ele deliberadamente não faz

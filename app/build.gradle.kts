@@ -283,6 +283,10 @@ dependencies {
     // Persistência local de perfil, privacidade e histórico (ADR-0002: sem nuvem no caminho crítico).
     implementation(libs.androidx.datastore.preferences)
 
+    // Telemetria & Observabilidade de Produto (Clarity para gravações/mapas de calor; PostHog para funis/métricas técnicas)
+    implementation(libs.clarity)
+    implementation(libs.posthog)
+
     // Meta Wearables Device Access Toolkit (ADR-0006). Exige token do GitHub com read:packages em
     // local.properties — sem ele, o Gradle não resolve estes três artefatos.
     implementation(libs.mwdat.core)
