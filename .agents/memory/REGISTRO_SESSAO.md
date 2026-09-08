@@ -22,6 +22,18 @@
 
 ## Histórico de Sessões
 
+### [2026-09-08 — Tarde] Correções de Layout, Escala de Logos e Feedback Interativo no BrandKit (/marca/)
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Corrigir estouro de imagens dos logos em cards, adicionar feedback visual de clique na paleta com toast e card ativo, corrigir espaçamentos entre seções colididas (Attention -> Tipografia -> Regras de Ouro) e aplicar o logo vetorial oficial do Google Drive.
+- **Entregas**:
+  - Correção de escala e contenção dos logos em `.asset-card` e `.asset-preview` via CSS (`max-width: 85%`, `max-height: 52px`, `object-fit: contain`, `overflow: hidden`) e inversão correta das variantes clara/escura.
+  - Adição de feedback visual de cópia nos swatches de cor: badge inline `✓ Copiado!`, glow verde esmeralda no card (`.is-copied`) e toast flutuante no canto inferior direito.
+  - Resolução dos espaçamentos entre seções com `.brand-section` aplicando `clamp(3.5rem, 6vw, 5.5rem)` e borda sutil separadora, eliminando colisão entre Attention, Tipografia e Regras de Ouro.
+  - Substituição do ícone de triângulo aramado pelo SVG vetorial colorido oficial do Google Drive no botão do Hero e no botão de acesso rápido da barra de topo.
+  - Deploy em produção realizado na Vercel (`dpl_CRhLmpeAjBPYy152QBZuanqcMZeB`, alias `https://eatcontrol-ai.vercel.app/marca/`) e verificado visualmente via agente de browser.
+- **Arquivos Tocados**: `web/marca/index.html`, `web/assets/eatcontrol.css`, `web/assets/site.css`.
+- **Próximas Pendências**: Nenhuma pendência aberta.
+
 ### [2026-09-08 — Tarde] Modernização Visual de Roadmap & BrandKit Restrito ao Rodapé
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Elevar a régua visual das subpáginas `/roadmap/` e `/marca/` para o mesmo padrão cinematográfico da landing page e remover o link de BrandKit do menu/header, mantendo-o apenas no rodapé.
