@@ -22,6 +22,19 @@
 
 ## Histórico de Sessões
 
+### [2026-09-08 — Tarde] Modernização Visual de Roadmap & BrandKit Restrito ao Rodapé
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Elevar a régua visual das subpáginas `/roadmap/` e `/marca/` para o mesmo padrão cinematográfico da landing page e remover o link de BrandKit do menu/header, mantendo-o apenas no rodapé.
+- **Entregas**:
+  - Overhaul de [web/roadmap/index.html](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/roadmap/index.html): Layout em 3 trilhas responsivas (`Pronto`, `Construindo`, `Fora de Escopo`), badges de status em cores semânticas, cards interativos e hero com transparência radical.
+  - Overhaul de [web/marca/index.html](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/marca/index.html): Integração da navbar em pílula de vidro fosco, padronização do rodapé, correção de todos os estilos de swatches de cores e cards de assets.
+  - Remoção de `BrandKit` / `Marca` do header/menu principal em todas as páginas ([web/index.html](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/index.html), roadmap, privacidade, termos, marca).
+  - Preservação do link `BrandKit Oficial` exclusivamente no rodapé de todas as páginas.
+  - Atualização e sincronização dos estilos nos bundles [web/assets/eatcontrol.css](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/assets/eatcontrol.css) e [web/assets/site.css](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/web/assets/site.css).
+  - Deploy em produção executado na Vercel (`aliased https://eatcontrol-ai.vercel.app`) e validado visualmente via screenshots no navegador.
+- **Arquivos Tocados**: `web/roadmap/index.html`, `web/marca/index.html`, `web/index.html`, `web/privacidade/index.html`, `web/termos/index.html`, `web/assets/eatcontrol.css`, `web/assets/site.css`.
+- **Próximas Pendências**: Nenhuma no frontend.
+
 ### [2026-09-08 — Tarde] Resolução Definitiva do Bloqueio de Cache na Vercel & Deploy em Produção
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Diagnosticar e eliminar a persistência de cache que travava a versão antiga do site em navegadores normais na Vercel (`eatcontrol-ai.vercel.app`).
