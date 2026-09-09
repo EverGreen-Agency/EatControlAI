@@ -17,15 +17,15 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#070b10">
 
-<link rel="icon" href="/assets/eatcontrol-mark-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: light)">
-<link rel="icon" href="/assets/eatcontrol-mark-light.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/assets/eatcontrol-app-icon-512.png">
+<link rel="icon" href="/assets/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="512x512" href="/assets/eatcontrol-app-icon-512.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
-<link rel="stylesheet" href="/assets/eatcontrol.css?v=3.0">
+<link rel="stylesheet" href="/assets/eatcontrol.css?v=3.1">
 
 <!-- Microsoft Clarity Official Tracking Code -->
 <script type="text/javascript">
@@ -179,15 +179,20 @@
       <span>EatControl</span>
     </a>
     <nav class="nav-links" aria-label="Navegação Principal">
-      <a href="#como-funciona">Tecnologia</a>
-      <a href="#simulador">Simulador</a>
-      <a href="#evidencias">Hierarquia</a>
-      <a href="#privacidade">Privacidade</a>
-      <a href="#faq">Dúvidas</a>
-      <a href="/roadmap/">Roadmap</a>
+      <a href="#como-funciona" data-i18n="nav_tech">Tecnologia</a>
+      <a href="#simulador" data-i18n="nav_sim">Simulador</a>
+      <a href="#evidencias" data-i18n="nav_hierarchy">Hierarquia</a>
+      <a href="#privacidade" data-i18n="nav_privacy">Privacidade</a>
+      <a href="#faq" data-i18n="nav_faq">Dúvidas</a>
+      <a href="/roadmap/" data-i18n="nav_roadmap">Roadmap</a>
     </nav>
     <div class="nav-cta">
-      <a href="#testar" class="btn btn-primary btn-sm">Acesso Antecipado</a>
+      <div class="lang-switch" role="group" aria-label="Seletor de idioma / Language Switcher">
+        <button type="button" class="lang-btn is-active" data-lang="pt" aria-pressed="true">PT</button>
+        <span class="lang-divider">/</span>
+        <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <a href="#testar" class="btn btn-primary btn-sm" data-i18n="nav_cta">Acesso Antecipado</a>
     </div>
   </div>
 </header>
@@ -200,17 +205,17 @@
     <div class="hero-content">
       <div class="hero-badge">
         <span class="badge-dot"></span>
-        <span>PROTOCOLO GLP-1 · OZEMPIC / MOUNJARO / WEGOVY</span>
+        <span data-i18n="hero_badge">PROTOCOLO GLP-1 · OZEMPIC / MOUNJARO / WEGOVY</span>
       </div>
 
-      <h1 class="hero-title">A decisão acontece no mercado,<br><span class="hero-gradient">não no consultório.</span></h1>
+      <h1 class="hero-title" data-i18n="hero_title">A decisão acontece no mercado,<br><span class="hero-gradient">não no consultório.</span></h1>
 
-      <p class="hero-lede">Aponte a câmera para um rótulo, código de barras ou cardápio. O EatControl audita a composição nutricional no próprio smartphone e avisa se aquilo compromete o seu plano.</p>
+      <p class="hero-lede" data-i18n="hero_lede">Aponte a câmera para um rótulo, código de barras ou cardápio. O EatControl audita a composição nutricional no próprio smartphone e avisa se aquilo compromete o seu plano.</p>
 
       <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="#testar">Entrar no teste fechado</a>
+        <a class="btn btn-primary btn-lg" href="#testar" data-i18n="hero_btn_join">Entrar no teste fechado</a>
         <a class="btn btn-glass btn-lg" href="#simulador">
-          <span>Ver simulador ao vivo</span>
+          <span data-i18n="hero_btn_sim">Ver simulador ao vivo</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
       </div>
@@ -218,15 +223,15 @@
       <div class="hero-trust">
         <div class="trust-pill">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-          <span>Base Open Food Facts</span>
+          <span data-i18n="hero_trust_off">Base Open Food Facts</span>
         </div>
         <div class="trust-pill">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span>Decisão On-Device</span>
+          <span data-i18n="hero_trust_local">Decisão On-Device</span>
         </div>
         <div class="trust-pill">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-          <span>Zero Alucinação de Calorias</span>
+          <span data-i18n="hero_trust_hallucination">Zero Alucinação de Calorias</span>
         </div>
       </div>
     </div>
@@ -261,28 +266,32 @@
 <!-- SIMULADOR INTERATIVO AO VIVO -->
 <section id="simulador" class="section-sim wrap">
   <div class="section-head text-center">
-    <p class="section-eyebrow">Simulação em Tempo Real</p>
-    <h2>Experimente o ciclo de decisão clínica</h2>
-    <p class="section-muted">O produto opera sob a cadência <strong>Olhar → Perguntar → Ouvir → Seguir</strong>. Selecione o cenário para testar a inteligência contextual:</p>
+    <p class="section-eyebrow" data-i18n="sim_eyebrow">Simulação em Tempo Real</p>
+    <h2 data-i18n="sim_title">Experimente o ciclo de decisão clínica</h2>
+    <p class="section-muted" data-i18n="sim_muted">O produto opera sob a cadência <strong>Olhar → Perguntar → Ouvir → Seguir</strong>. Selecione o cenário para testar a inteligência contextual:</p>
   </div>
 
   <div class="sim-shell">
     <div class="sim-nav" role="tablist">
-      <button type="button" class="sim-btn is-active" data-tab="rotulo" role="tab">
+      <button type="button" class="sim-btn is-active" data-tab="rotulo" role="tab" data-i18n-tab="rotulo">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h3M17 4h3v3M4 17v3h3M20 17v3h-3M9 12h6M9 16h6"/></svg>
         <span>1. Rótulo por OCR</span>
       </button>
-      <button type="button" class="sim-btn" data-tab="barcode" role="tab">
+      <button type="button" class="sim-btn" data-tab="barcode" role="tab" data-i18n-tab="barcode">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5v14M7 5v14M11 5v14M15 5v14M17 5v14M21 5v14"/></svg>
         <span>2. Código de Barras</span>
       </button>
-      <button type="button" class="sim-btn" data-tab="prato" role="tab">
+      <button type="button" class="sim-btn" data-tab="prato" role="tab" data-i18n-tab="prato">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><path d="M12 2v2M12 20v2"/></svg>
         <span>3. Prato Assistido</span>
       </button>
-      <button type="button" class="sim-btn" data-tab="cardapio" role="tab">
+      <button type="button" class="sim-btn" data-tab="cardapio" role="tab" data-i18n-tab="cardapio">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
         <span>4. Cardápio / Menu</span>
+      </button>
+      <button type="button" class="sim-btn" data-tab="voz" role="tab" data-i18n-tab="voz">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        <span>5. Comando por Voz</span>
       </button>
     </div>
 
@@ -291,14 +300,90 @@
       <div class="phone-chassis">
         <div class="phone-speaker"></div>
         <div class="phone-screen">
-          <div class="scanner-overlay">
-            <div class="scanner-bracket top-left"></div>
-            <div class="scanner-bracket top-right"></div>
-            <div class="scanner-bracket bottom-left"></div>
-            <div class="scanner-bracket bottom-right"></div>
-            <div class="scanner-laser"></div>
+          <!-- TOP STATUS BAR -->
+          <div class="phone-status-bar">
+            <span>12:42</span>
+            <div class="phone-status-icons">
+              <span class="status-badge-local">ON-DEVICE AI</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.28 19.58 10.59 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+            </div>
           </div>
 
+          <!-- DEDICATED CAMERA VIEWFINDER -->
+          <div class="camera-viewfinder" id="sim-viewfinder">
+            <!-- Scene 1: OCR Rótulo -->
+            <div class="viewfinder-scene scene-rotulo active" id="scene-rotulo">
+              <div class="mock-label">
+                <div class="mock-label-title">
+                  <span data-i18n="sim_mock_nutrititle">TABELA NUTRICIONAL</span>
+                  <span style="color:var(--signal-cyan);">OCR AUDIT</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.25rem;">
+                  <span data-i18n="sim_mock_lactose">Lactose declarada</span>
+                  <strong data-i18n="sim_mock_frontal" style="color:var(--positive);">0g (Frontal)</strong>
+                </div>
+                <div class="mock-label-target">
+                  <span data-i18n="sim_mock_milk">CONTÉM LEITE E DERIVADOS</span>
+                  <span data-i18n="sim_mock_target" style="font-size:0.62rem;background:#ff5c5c;color:#fff;padding:0.1rem 0.35rem;border-radius:3px;">ALVO</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Scene 2: Barcode -->
+            <div class="viewfinder-scene scene-barcode" id="scene-barcode">
+              <div class="mock-barcode-box">
+                <div class="mock-barcode-lines"></div>
+                <div class="mock-barcode-num">7 891000 100103</div>
+              </div>
+              <div class="mock-barcode-pill" data-i18n="sim_mock_ean">EAN-13 DETECTADO · 120ms</div>
+            </div>
+
+            <!-- Scene 3: Prato -->
+            <div class="viewfinder-scene scene-prato" id="scene-prato">
+              <div class="scene-prato-overlay">
+                <span class="prato-hud-tag tag-green" data-i18n="sim_mock_salmon">● Salmão Grelhado [96%]</span>
+                <span class="prato-hud-tag tag-green" data-i18n="sim_mock_broccoli">● Brócolis ao Vapor [94%]</span>
+                <span class="prato-hud-tag tag-amber"><span class="hud-dot amber"></span> <span data-i18n="sim_mock_portion">Gramatura: Requer Confirmação</span></span>
+              </div>
+            </div>
+
+            <!-- Scene 4: Cardápio -->
+            <div class="viewfinder-scene scene-cardapio" id="scene-cardapio">
+              <div class="mock-menu-card">
+                <div class="mock-menu-header" data-i18n="sim_mock_menu_head">BISTRO · PRATOS DO CHEF</div>
+                <div class="mock-menu-title" data-i18n="sim_mock_menu_title">Risoto de Mignon ao Molho de Queijo</div>
+                <div class="mock-menu-highlight">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                  <span data-i18n="sim_mock_menu_alert">Alerta: Gorgonzola & Nata Fresca</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Scene 5: Voz & Garçom -->
+            <div class="viewfinder-scene scene-voz" id="scene-voz">
+              <div class="voice-visualizer">
+                <span class="voice-bar"></span><span class="voice-bar"></span>
+                <span class="voice-bar"></span><span class="voice-bar"></span>
+                <span class="voice-bar"></span><span class="voice-bar"></span>
+                <span class="voice-bar"></span><span class="voice-bar"></span>
+              </div>
+              <div class="voice-caption-hud">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                <span data-i18n="sim_mock_voice_hud">VOZ DO GARÇOM DETECTADA</span>
+              </div>
+            </div>
+
+            <!-- SCANNER OVERLAY OVER VIEWFINDER -->
+            <div class="scanner-overlay">
+              <div class="scanner-bracket top-left"></div>
+              <div class="scanner-bracket top-right"></div>
+              <div class="scanner-bracket bottom-left"></div>
+              <div class="scanner-bracket bottom-right"></div>
+              <div class="scanner-laser"></div>
+            </div>
+          </div>
+
+          <!-- DECISION RESULT BOTTOM SHEET -->
           <div class="phone-decision-card">
             <div class="decision-head">
               <span id="sim-verdict-badge" class="verdict-tag tag-incompativel">INCOMPATÍVEL</span>
@@ -309,8 +394,12 @@
               Texto frontal declara "Zero Lactose", mas a lista legal de ingredientes no verso lista expressamente "CONTÉM LEITE E DERIVADOS".
             </div>
             <div class="decision-audio-box">
-              <div class="audio-wave">
-                <span></span><span></span><span></span><span></span>
+              <button type="button" class="audio-play-btn" id="sim-audio-play" aria-label="Ouvir resposta por voz">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <span id="sim-play-label" data-i18n="sim_play_label">Ouvir</span>
+              </button>
+              <div class="audio-wave" id="sim-audio-wave">
+                <span></span><span></span><span></span><span></span><span></span>
               </div>
               <span id="sim-audio-quote">"Atenção: embora anunciado como zero lactose, contém proteína do leite."</span>
             </div>
@@ -322,7 +411,7 @@
       <div class="sim-console">
         <div class="console-meta">
           <span class="console-pill" id="sim-evidence-rank">RANK 2 · DECLARED_LABEL</span>
-          <span class="console-latency">Latência: 140ms</span>
+          <span class="console-latency" id="sim-console-latency" data-i18n="sim_latency">Latência: 140ms</span>
         </div>
         <h3 id="sim-track-title">Leitura de Rótulo por OCR</h3>
         <p class="console-desc" id="sim-track-desc">O motor de percepção cruza a lista legal de ingredientes contra a sua lista de intolerâncias e diretrizes de GLP-1. Promessas de marketing na frente da embalagem nunca anulam o verso obrigatório.</p>
@@ -343,7 +432,7 @@
         </div>
 
         <div class="console-cta">
-          <a href="#testar" class="btn btn-glass btn-sm">Testar este fluxo no seu telefone →</a>
+          <a href="#testar" class="btn btn-glass btn-sm" data-i18n="sim_cta">Testar este fluxo no seu telefone →</a>
         </div>
       </div>
     </div>
@@ -353,9 +442,9 @@
 <!-- QUATRO CAPACIDADES: THE GAPLESS BENTO GRID -->
 <section id="como-funciona" class="wrap section-bento">
   <div class="section-head text-center">
-    <p class="section-eyebrow">Arquitetura de Percepção</p>
-    <h2>Quatro caminhos. Uma única resposta confiável.</h2>
-    <p class="section-muted">O aplicativo escolhe autonomamente a trilha computacional de maior fidelidade para o contexto à sua frente:</p>
+    <p class="section-eyebrow" data-i18n="bento_eyebrow">Arquitetura de Percepção</p>
+    <h2 data-i18n="bento_title">Cinco caminhos. Uma única resposta confiável.</h2>
+    <p class="section-muted" data-i18n="bento_muted">O aplicativo escolhe autonomamente a trilha computacional de maior fidelidade para o contexto à sua frente:</p>
   </div>
 
   <div class="bento-grid">
@@ -363,8 +452,8 @@
     <article class="bento-card bento-span-2 spotlight-card">
       <div class="bento-badge">OCR On-Device</div>
       <div class="bento-content">
-        <h3>Leitura de Rótulo & Ingredientes</h3>
-        <p>Quando não há código de barras, a câmera lê a tabela nutricional oficial e os avisos de alérgenos no próprio aparelho. O motor prioriza avisos regulatórios obrigatórios da Anvisa sobre qualquer marketing de embalagem.</p>
+        <h3 data-i18n="bento_1_title">Leitura de Rótulo & Ingredientes</h3>
+        <p data-i18n="bento_1_desc">Quando não há código de barras, a câmera lê a tabela nutricional oficial e os avisos de alérgenos no próprio aparelho. O motor prioriza avisos regulatórios obrigatórios da Anvisa sobre qualquer marketing de embalagem.</p>
         
         <div class="micro-ui-label">
           <div class="micro-ui-header">
@@ -387,8 +476,8 @@
     <article class="bento-card spotlight-card">
       <div class="bento-badge">EAN-13 · 120ms</div>
       <div class="bento-content">
-        <h3>Código de barras oficial</h3>
-        <p>Lê o código em milissegundos e busca os dados na base auditável do Open Food Facts e tabelas públicas. Informação declarada sem digitação manual.</p>
+        <h3 data-i18n="bento_2_title">Código de barras oficial</h3>
+        <p data-i18n="bento_2_desc">Lê o código em milissegundos e busca os dados na base auditável do Open Food Facts e tabelas públicas. Informação declarada sem digitação manual.</p>
         
         <div class="micro-barcode">
           <div class="barcode-lines"></div>
@@ -401,8 +490,8 @@
     <article class="bento-card spotlight-card">
       <div class="bento-badge">Triagem de Risco</div>
       <div class="bento-content">
-        <h3>Cardápio Contextual</h3>
-        <p>Identifica os pratos e ingredientes prováveis em restaurantes. Alerta sobre potenciais gatilhos de refluxo ou sobrecarga lipídica antes do pedido.</p>
+        <h3 data-i18n="bento_3_title">Cardápio Contextual</h3>
+        <p data-i18n="bento_3_desc">Identifica os pratos e ingredientes prováveis em restaurantes. Alerta sobre potenciais gatilhos de refluxo ou sobrecarga lipídica antes do pedido.</p>
         
         <div class="micro-menu-alert">
           <div class="menu-alert-pill">
@@ -418,27 +507,27 @@
     <article class="bento-card bento-span-2 spotlight-card">
       <div class="bento-badge">Visão Computacional Honesta</div>
       <div class="bento-content">
-        <h3>Prato Assistido sem Alucinação</h3>
-        <p>Reconhece componentes visuais sem inventar gramaturas milagrosas. Se há dúvida sobre a densidade ou porção, o EatControl declara a incerteza e pede sua confirmação.</p>
+        <h3 data-i18n="bento_4_title">Prato Assistido sem Alucinação</h3>
+        <p data-i18n="bento_4_desc">Reconhece componentes visuais sem inventar gramaturas milagrosas. Se há dúvida sobre a densidade ou porção, o EatControl declara a incerteza e pede sua confirmação.</p>
         
         <div class="micro-plate-tags">
           <span class="plate-tag"><span class="hud-dot green"></span> Proteína Magra (Salmão)</span>
           <span class="plate-tag"><span class="hud-dot green"></span> Vegetal Fibroso (Brócolis)</span>
           <span class="plate-tag"><span class="hud-dot cyan"></span> Carboidrato Complexo (Quinoa)</span>
-          <span class="plate-tag uncertainty">? Gramatura Requer Confirmação</span>
+          <span class="plate-tag uncertainty"><span class="hud-dot amber"></span> Confirmação de Gramatura Necessária</span>
         </div>
       </div>
     </article>
 
-    <!-- BENTO 5: INTERAÇÃO POR VOZ & GARÇOM (SPAN 2) -->
-    <article class="bento-card bento-span-2 spotlight-card">
+    <!-- BENTO 5: INTERAÇÃO POR VOZ & GARÇOM (SPAN 3 FULL WIDTH) -->
+    <article class="bento-card bento-span-3 spotlight-card">
       <div class="bento-badge" style="background:rgba(66,201,139,0.15);color:var(--positive);border-color:rgba(66,201,139,0.3);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:4px;vertical-align:-2px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
         Voz On-Device &middot; Resposta Falada &lt; 1s
       </div>
       <div class="bento-content">
-        <h3>Ouça a descrição do garçom ou pergunte por voz</h3>
-        <p>No restaurante, buffet ou na cozinha, você não precisa ficar digitando. O EatControl escuta a descrição dos ingredientes falada pelo garçom (ou sua própria pergunta), extrai alérgenos e densidade lipídica no próprio smartphone, e devolve o veredito por voz discretamente no fone, óculos ou viva-voz.</p>
+        <h3 data-i18n="bento_5_title">Ouça a descrição do garçom ou pergunte por voz</h3>
+        <p data-i18n="bento_5_desc">No restaurante, buffet ou na cozinha, você não precisa ficar digitando. O EatControl escuta a descrição dos ingredientes falada pelo garçom (ou sua própria pergunta), extrai alérgenos e densidade lipídica no próprio smartphone, e devolve o veredito por voz discretamente no fone, óculos ou viva-voz.</p>
         
         <div class="micro-voice-chat" style="margin-top:1.2rem;display:grid;gap:0.75rem;">
           <div class="voice-bubble waiter" style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.85rem 1.1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;">
@@ -471,9 +560,9 @@
 <!-- HIERARQUIA DE EVIDÊNCIA: CLINICAL MATRIX -->
 <section id="evidencias" class="wrap section-evidence">
   <div class="section-head text-center">
-    <p class="section-eyebrow">Diferencial Inegociável</p>
-    <h2>Reliability-First: A Hierarquia de Evidência</h2>
-    <p class="section-muted">Enquanto aplicativos convencionais usam inteligência artificial para chutar calorias a partir de fotos, o EatControl opera sob uma régua matemática de precedência clínica:</p>
+    <p class="section-eyebrow" data-i18n="evid_eyebrow">Diferencial Inegociável</p>
+    <h2 data-i18n="evid_title">Reliability-First: A Hierarquia de Evidência</h2>
+    <p class="section-muted" data-i18n="evid_muted">Enquanto aplicativos convencionais usam inteligência artificial para chutar calorias a partir de fotos, o EatControl opera sob uma régua matemática de precedência clínica:</p>
   </div>
 
   <div class="evidence-matrix">
@@ -540,9 +629,9 @@
 <!-- PRIVACIDADE & SEGURANÇA LOCAL-FIRST -->
 <section id="privacidade" class="wrap section-privacy">
   <div class="section-head text-center">
-    <p class="section-eyebrow">Privacidade Soberana</p>
-    <h2>Dados de saúde pertencem a você, não à nuvem.</h2>
-    <p class="section-muted">Arquitetado sob conformidade estrita com a LGPD (Lei 13.709/2018, Arts. 7º e 11º) com processamento no aparelho:</p>
+    <p class="section-eyebrow" data-i18n="priv_eyebrow">Privacidade Soberana</p>
+    <h2 data-i18n="priv_title">Dados de saúde pertencem a você, não à nuvem.</h2>
+    <p class="section-muted" data-i18n="priv_muted">Arquitetado sob conformidade estrita com a LGPD (Lei 13.709/2018, Arts. 7º e 11º) com processamento no aparelho:</p>
   </div>
 
   <div class="privacy-grid">
@@ -648,40 +737,42 @@
   <div class="cta-card">
     <div class="cta-glow"></div>
     <div class="cta-head text-center">
-      <div class="cta-pill">Lote 01 · Vagas Limitadas</div>
-      <h2>Participe do teste fechado do EatControl</h2>
-      <p class="section-muted">Estamos selecionando os primeiros usuários em tratamento com GLP-1 para testar o aplicativo Android e nos ajudar a refinar as regras de segurança alimentar.</p>
+      <div class="cta-pill" data-i18n="cta_pill">Lote 01 · Vagas Limitadas</div>
+      <h2 data-i18n="cta_title">Participe do teste fechado do EatControl</h2>
+      <p class="section-muted" data-i18n="cta_desc">Estamos selecionando os primeiros usuários em tratamento com GLP-1 para testar o aplicativo Android e nos ajudar a refinar as regras de segurança alimentar.</p>
     </div>
 
     <form class="cta-form" data-waitlist>
       <div class="form-row">
         <div class="form-field">
-          <label for="nome">Seu nome</label>
+          <label for="nome" data-i18n="cta_label_name">Seu nome</label>
           <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Como devemos te chamar?" required>
         </div>
         <div class="form-field">
-          <label for="email">Seu e-mail principal</label>
+          <label for="email" data-i18n="cta_label_email">Seu e-mail principal</label>
           <input id="email" name="email" type="email" autocomplete="email" placeholder="nome@exemplo.com" required>
         </div>
       </div>
 
       <div class="form-field">
-        <label for="desafio">Qual seu maior desafio alimentar com a medicação? (opcional)</label>
+        <label for="desafio" data-i18n="cta_label_challenge">Qual seu maior desafio alimentar com a medicação? (opcional)</label>
         <textarea id="desafio" name="desafio" rows="2" placeholder="Ex.: náusea com certos molhos, dificuldade em atingir meta de proteína, azia à noite..."></textarea>
       </div>
 
       <div class="form-consent">
         <label class="consent-label">
           <input type="checkbox" id="consent_training" name="consent_training" value="yes">
-          <span><strong>Opt-in de Pesquisa (Opcional):</strong> Concordo em compartilhar rótulos escaneados de forma 100% anonimizada para a calibração dos motores de inteligência alimentar do EatControl.</span>
+          <span data-i18n="cta_consent"><strong>Opt-in de Pesquisa (Opcional):</strong> Concordo em compartilhar rótulos escaneados de forma 100% anonimizada para a calibração dos motores de inteligência alimentar do EatControl.</span>
         </label>
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary btn-lg">Garantir vaga no teste</button>
+        <button type="submit" class="btn btn-primary btn-lg" data-i18n="cta_submit">Garantir vaga no teste</button>
         <a href="https://wa.me/5511999999999?text=Olá!%20Quero%20participar%20do%20teste%20fechado%20do%20EatControl" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-lg">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-          <span>Falar no WhatsApp</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17.472 14.382c-.301-.15-1.78-.878-2.056-.978-.276-.1-.476-.15-.676.15-.2.301-.776.978-.951 1.179-.175.2-.35.226-.651.075s-1.271-.468-2.42-1.493c-.895-.798-1.5-1.784-1.676-2.085-.175-.301-.019-.464.132-.614.136-.134.301-.35.451-.526.15-.176.2-.301.301-.502.1-.2.05-.376-.025-.526s-.676-1.63-.927-2.233c-.244-.588-.492-.508-.676-.517-.175-.008-.376-.01-.577-.01-.2 0-.526.075-.802.376s-1.053 1.028-1.053 2.508 1.078 2.909 1.229 3.109c.15.201 2.122 3.24 5.141 4.544.718.31 1.278.496 1.716.634.721.229 1.378.197 1.9-.12.582-.355 1.78-1.78 2.03-2.457.25-.677.25-1.254.175-1.379-.075-.125-.276-.2-.577-.35zm-5.466 7.618c-2.084 0-4.12-.56-5.897-1.621l-.422-.251-4.381 1.149 1.17-4.271-.275-.438C1.047 14.772.47 12.632.47 10.435.47 4.681 5.147.004 10.903.004c2.788 0 5.409 1.086 7.379 3.058s3.055 4.593 3.055 7.382c0 5.755-4.678 10.431-10.431 10.431z"/>
+          </svg>
+          <span data-i18n="cta_whatsapp">Falar no WhatsApp</span>
         </a>
       </div>
     </form>
@@ -714,6 +805,6 @@
 </footer>
 
 <script src="/assets/analytics.js?v=2.1" defer></script>
-<script src="/assets/eatcontrol.js?v=3.0" defer></script>
+<script src="/assets/eatcontrol.js?v=3.1" defer></script>
 </body>
 </html>
