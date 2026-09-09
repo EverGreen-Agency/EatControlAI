@@ -22,6 +22,21 @@
 
 ## Histórico de Sessões
 
+### [2026-09-09 — Fim de Tarde] Correção do Colapso de Altura do Viewfinder, Novos Assets e Deploy v3.2
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Corrigir problemas de posicionamento e visibilidade nas cenas do simulador fotográfico (Rótulo por OCR, Prato Assistido e Cardápio/Menu) reportados pelo usuário com prints da tela, eliminando colapso de altura e faixas pretas.
+- **Causa Raiz & Solução**:
+  - `.scene-rotulo`, `.scene-prato` e `.scene-cardapio` possuíam `position: relative` na cascata que sobrescrevia o `position: absolute; inset: 0;` de `.viewfinder-scene`.
+  - No Prato Assistido (`.scene-prato`), o único filho era absoluto, colapsando a altura do pai para 0px (tela 100% preta).
+  - No Rótulo e no Cardápio, as cenas expandiam apenas até a altura dos cartões (~120px), deixando 100px de vácuo preto no viewfinder de 220px.
+  - Correção: forçado `.viewfinder-scene { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; }`, removido `position: relative` de todas as cenas, centralizados vertical e horizontalmente os cartões HUD com backdrop blur, e distribuídas as tags HUD do prato com `align-self` orgânico (salmão à esquerda, brócolis à direita, confirmação ao centro).
+  - Gerados novos assets fotorrealistas sem molduras de celular: `bistro_menu_scan.jpg` e `yogurt_label_macro.jpg`.
+  - Cache buster elevado para `?v=3.2` no HTML e nos assets do CSS para forçar revalidação imediata nos navegadores dos usuários.
+  - Sincronizado `web/assets/site.css` e deploy em produção na Vercel (`https://www.eatcontrol.com.br`) realizado com sucesso.
+- **Arquivos Tocados**: `web/assets/eatcontrol.css`, `web/assets/site.css`, `web/index.html`, `web/assets/bistro_menu_scan.jpg`, `web/assets/yogurt_label_macro.jpg`.
+- **Próximas Pendências**: Nenhuma no simulador; acompanhar feedback do usuário com o cache atualizado.
+
+
 ### [2026-09-09 — Tarde] Resolução da Simulação Fotográfica, Responsividade em Laptops e Deploy em Produção
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Atender solicitação do usuário gerando assets fotorrealistas de alta fidelidade para as 5 cenas do simulador (especialmente o prato assistido), corrigir quebras de responsividade em laptops (1280x800), blindar caminhos de assets com `/assets/`, implementar bilinguismo completo PT/EN sem reload, atualizar o ícone oficial do WhatsApp, executar o deploy na Vercel e registrar os commits no Git.
