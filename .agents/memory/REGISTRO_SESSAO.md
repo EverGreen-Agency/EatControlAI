@@ -22,6 +22,33 @@
 
 ## Histórico de Sessões
 
+### [2026-09-09 — Tarde] Resolução da Simulação Fotográfica, Responsividade em Laptops e Deploy em Produção
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Atender solicitação do usuário gerando assets fotorrealistas de alta fidelidade para as 5 cenas do simulador (especialmente o prato assistido), corrigir quebras de responsividade em laptops (1280x800), blindar caminhos de assets com `/assets/`, implementar bilinguismo completo PT/EN sem reload, atualizar o ícone oficial do WhatsApp, executar o deploy na Vercel e registrar os commits no Git.
+- **Entregas**:
+  - **Assets Fotorrealistas & Blindagem de URLs**:
+    - `assisted_plate_dish.jpg`: Salmão grelhado, brócolis ao vapor e quinoa em prato escuro de ardósia (fotografia culinária de alta definição) para a cena do Prato Assistido.
+    - `yogurt_label_macro.jpg`: Fotografia macro de embalagem de iogurte com tabela nutricional para a cena de Rótulo OCR.
+    - `bistro_menu_scan.jpg`: Fotografia editorial de cardápio bistrô em ambiente elegante para a cena de Menu Scan.
+    - Atualizadas URLs para caminhos absolutos (`/assets/...`) com `background-color` escuro de fallback em `eatcontrol.css` e `site.css`.
+  - **Viewfinder da Câmera Fotográfica & 5ª Aba de Voz**:
+    - Componente `.camera-viewfinder` dentro do smartphone com 5 cenas dinâmicas (`rotulo`, `barcode`, `prato`, `cardapio`, `voz`), com laser ciano varrendo a superfície da imagem diretamente sem passar atrás de texto opaco.
+    - Aba `5. Comando por Voz` com síntese TTS nativa (`window.speechSynthesis`) em PT-BR e EN-US sincronizada com as ondas sonoras.
+  - **Correção de Responsividade em Laptops (1280x800)**:
+    - Ajuste em `.console-meta` com `justify-content: space-between` e `flex-wrap: wrap`, e `.console-latency` com `white-space: nowrap`, impedindo que "140ms" quebre para baixo de "Latência".
+    - Strings de rank calibradas de forma concisa (`RANK 6: VISÃO → RANK 4: AUDITORIA` / `RANK 6: VISION → RANK 4: AUDIT`).
+    - Ajuste no card do smartphone: `.decision-head` com `flex-wrap: wrap`, `.verdict-tag` com `white-space: nowrap` e textos enxutos (`ATENÇÃO · CONFIRMAR` / `CAUTION · CONFIRM`), eliminando a quebra em 2 linhas e colisões com a audit tag.
+    - Breakpoint do simulador expandido para `@media (max-width: 1040px)` para transição fluida em laptops e tablets.
+  - **Bilinguismo Completo no Visor**:
+    - Adicionados atributos `data-i18n` em todos os elementos internos do visor (tabela nutricional, alérgenos, prato assistido, cardápio do chef, voz do garçom, latência e formulário).
+    - Dicionário `I18N_DICT` expandido com todas as chaves sincronizadas entre PT e EN reativamente sem reload, com versão atualizada para `?v=3.1` para bust de cache.
+  - **Ícone Oficial do WhatsApp**:
+    - Substituição do SVG no botão de WhatsApp pelo vetor oficial completo com o contorno e o monofone interno característico, com texto adaptável `Falar no WhatsApp` / `Chat on WhatsApp`.
+  - **Deploy em Produção**:
+    - Deploy realizado com sucesso na Vercel (`dpl_D5feaVuz8kXgRU5w7c6cQwWe5B9M`, aliased `https://www.eatcontrol.com.br`).
+- **Arquivos Tocados**: `web/index.html`, `web/assets/eatcontrol.css`, `web/assets/site.css`, `web/assets/eatcontrol.js`, `web/assets/site.js`, `web/assets/assisted_plate_dish.jpg`, `web/assets/yogurt_label_macro.jpg`, `web/assets/bistro_menu_scan.jpg`, `web/assets/apple-touch-icon.png`, `web/assets/eatcontrol-app-icon-*.png`.
+- **Próximas Pendências**: Nenhuma no frontend web. Próximo foco: Publicação do app Android na Play Store.
+
 ### [2026-09-08 — Noite/Madrugada] Modo Automático Multimodal Completo, Câmera Fullscreen Imersiva & Detecção Contínua
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Implementar o Modo Automático contínuo sem necessidade de botão manual de foto (estilo leitor de QR code nativo), integrando detecção contínua de código de barras (com feedback tátil/haptic), leitura de rótulos, detecção visual de pratos de comida e escuta inteligente de voz (hands-free) com fusão multimodal em tela cheia.
