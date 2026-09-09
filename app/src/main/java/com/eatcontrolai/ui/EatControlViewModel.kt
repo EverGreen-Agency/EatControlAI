@@ -1,9 +1,16 @@
 package com.eatcontrolai.ui
 
 import android.app.Activity
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.eatcontrolai.glasses.LiveDetection
+import com.eatcontrolai.inference.androidstt.ContinuousSpeechSession
 import com.eatcontrolai.AppContainer
 import com.eatcontrolai.benchmark.ProviderBenchmark
 import com.eatcontrolai.core.model.Allergen
@@ -102,7 +109,7 @@ data class LabState(
 
 data class AnalyzeState(
     val mode: AnalyzeMode = AnalyzeMode.AUTO,
-    val source: CaptureSource = CaptureSource.MOCK_GLASSES,
+    val source: CaptureSource = CaptureSource.PHONE_CAMERA,
     val selectedSceneId: String = MockScenes.default.id,
     val isAnalyzing: Boolean = false,
     val result: InteractionResult? = null,
@@ -114,7 +121,15 @@ data class AnalyzeState(
     /** `true` depois de o consumo desta refeição entrar no total do dia. */
     val consumptionLogged: Boolean = false,
     /** Lembretes do histórico local: meta abaixo em dias fechados e desconforto que a pessoa anotou. */
-    val historyAlerts: List<HistoryAlert> = emptyList()
+    val historyAlerts: List<HistoryAlert> = emptyList(),
+    /** Detecção contínua ao vivo da câmera (código de barras, rótulo ou prato). */
+    val liveDetection: LiveDetection = LiveDetection.Idle,
+    /** Se a escuta inteligente por voz contínua está ativa. */
+    val isContinuousListening: Boolean = false,
+    /** Fala capturada em tempo real pelo microfone. */
+    val liveSpokenText: String = "",
+    /** Se o microfone está detectando voz no momento. */
+    val isListeningSpeech: Boolean = false
 ) {
     /** Consumo desta refeição. Vazio quando a tabela não permite conta honesta. */
     val consumedNutrients: List<NutrientAmount>
@@ -200,11 +215,104 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
     private val _toast = MutableStateFlow<String?>(null)
     val toast: StateFlow<String?> = _toast.asStateFlow()
 
+    private var lastAutoTriggerBarcode: String? = null
+    private var continuousSpeechSession: ContinuousSpeechSession? = null
+
     init {
         viewModelScope.launch {
             container.glasses.connect()
             refreshGlasses()
         }
+        viewModelScope.launch {
+            container.phoneCamera.liveDetection.collect { detection ->
+                handleLiveDetection(detection)
+            }
+        }
+    }
+
+    private fun handleLiveDetection(detection: LiveDetection) {
+        _analyze.update { it.copy(liveDetection = detection) }
+
+        val current = _analyze.value
+        if (current.isAnalyzing || current.showResult) return
+
+        when (detection) {
+            is LiveDetection.Barcode -> {
+                if (detection.ean != lastAutoTriggerBarcode) {
+                    lastAutoTriggerBarcode = detection.ean
+                    triggerHapticFeedback()
+                    container.phoneCamera.resetLiveDetection()
+                    analyze()
+                }
+            }
+            else -> Unit
+        }
+    }
+
+    fun triggerHapticFeedback() {
+        try {
+            val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val vm = container.application.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+                vm?.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                container.application.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator?.vibrate(VibrationEffect.createOneShot(45, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator?.vibrate(45)
+            }
+        } catch (_: Exception) {}
+    }
+
+    fun startContinuousSpeech() {
+        if (continuousSpeechSession != null) return
+        val stt = container.stt
+        if (stt.isAvailable()) {
+            _analyze.update { it.copy(isContinuousListening = true) }
+            continuousSpeechSession = stt.startContinuousListening(
+                onSpeechStarted = {
+                    _analyze.update { it.copy(isListeningSpeech = true) }
+                },
+                onPartialResult = { partial ->
+                    _analyze.update { it.copy(liveSpokenText = partial) }
+                },
+                onFinalResult = { final ->
+                    _analyze.update { it.copy(isListeningSpeech = false, liveSpokenText = final) }
+                    triggerHapticFeedback()
+                    onMultimodalVoiceSpoken(final)
+                },
+                onError = {
+                    _analyze.update { it.copy(isListeningSpeech = false) }
+                }
+            )
+        }
+    }
+
+    fun stopContinuousSpeech() {
+        continuousSpeechSession?.stop()
+        continuousSpeechSession = null
+        _analyze.update { it.copy(isContinuousListening = false, isListeningSpeech = false) }
+    }
+
+    private fun onMultimodalVoiceSpoken(transcript: String) {
+        if (transcript.isBlank()) return
+        _voice.update { it.copy(transcript = transcript, listening = false) }
+        viewModelScope.launch {
+            container.audioRouter.routeToGlasses()
+            try {
+                analyzeCurrent()
+            } finally {
+                container.audioRouter.release()
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopContinuousSpeech()
     }
 
     fun showToast(message: String) {
@@ -411,8 +519,12 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     /** Fecha a visualização e remove da memória o único objeto que mantém os bytes da foto. */
-    fun dismissResult() = _analyze.update {
-        it.copy(result = null, resultRecordId = null, showResult = false, historyAlerts = emptyList())
+    fun dismissResult() {
+        lastAutoTriggerBarcode = null
+        container.phoneCamera.resetLiveDetection()
+        _analyze.update {
+            it.copy(result = null, resultRecordId = null, showResult = false, historyAlerts = emptyList(), liveDetection = LiveDetection.Idle)
+        }
     }
 
     // ------------------------------------------------------------------- GLP-1

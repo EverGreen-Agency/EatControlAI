@@ -92,8 +92,90 @@ class AndroidSttProvider(context: Context) : SttProvider {
         )
     }
 
+    /** Sessão ativa de escuta contínua; chame [stop] ao sair da tela. */
+    fun startContinuousListening(
+        onSpeechStarted: () -> Unit = {},
+        onPartialResult: (String) -> Unit = {},
+        onFinalResult: (String) -> Unit,
+        onError: (Int) -> Unit = {}
+    ): ContinuousSpeechSession {
+        if (!isAvailable()) {
+            return object : ContinuousSpeechSession { override fun stop() = Unit }
+        }
+
+        var recognizer: SpeechRecognizer? = null
+        var isStopped = false
+
+        fun listen() {
+            if (isStopped) return
+            try {
+                recognizer?.destroy()
+                val sr = SpeechRecognizer.createOnDeviceSpeechRecognizer(appContext)
+                recognizer = sr
+                val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                    putExtra(RecognizerIntent.EXTRA_LANGUAGE, LANGUAGE)
+                    putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+                    putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+                    putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
+                }
+                sr.setRecognitionListener(object : RecognitionListener {
+                    override fun onBeginningOfSpeech() {
+                        onSpeechStarted()
+                    }
+
+                    override fun onPartialResults(partialResults: Bundle?) {
+                        val partial = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
+                        if (partial.isNotBlank()) onPartialResult(partial)
+                    }
+
+                    override fun onResults(results: Bundle?) {
+                        val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
+                        if (text.isNotBlank()) {
+                            onFinalResult(text)
+                        }
+                        if (!isStopped) {
+                            listen()
+                        }
+                    }
+
+                    override fun onError(error: Int) {
+                        onError(error)
+                        if (!isStopped && (error == SpeechRecognizer.ERROR_NO_MATCH || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT)) {
+                            listen()
+                        }
+                    }
+
+                    override fun onReadyForSpeech(params: Bundle?) = Unit
+                    override fun onRmsChanged(rmsdB: Float) = Unit
+                    override fun onBufferReceived(buffer: ByteArray?) = Unit
+                    override fun onEndOfSpeech() = Unit
+                    override fun onEvent(eventType: Int, params: Bundle?) = Unit
+                })
+                sr.startListening(intent)
+            } catch (_: Exception) {}
+        }
+
+        listen()
+
+        return object : ContinuousSpeechSession {
+            override fun stop() {
+                isStopped = true
+                try {
+                    recognizer?.cancel()
+                    recognizer?.destroy()
+                } catch (_: Exception) {}
+                recognizer = null
+            }
+        }
+    }
+
     companion object {
         const val PROVIDER_ID = "android_stt_on_device"
         private const val LANGUAGE = "pt-BR"
     }
+}
+
+interface ContinuousSpeechSession {
+    fun stop()
 }

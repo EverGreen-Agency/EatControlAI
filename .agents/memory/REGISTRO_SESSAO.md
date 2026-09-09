@@ -22,6 +22,18 @@
 
 ## Histórico de Sessões
 
+### [2026-09-08 — Noite/Madrugada] Modo Automático Multimodal Completo, Câmera Fullscreen Imersiva & Detecção Contínua
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Implementar o Modo Automático contínuo sem necessidade de botão manual de foto (estilo leitor de QR code nativo), integrando detecção contínua de código de barras (com feedback tátil/haptic), leitura de rótulos, detecção visual de pratos de comida e escuta inteligente de voz (hands-free) com fusão multimodal em tela cheia.
+- **Entregas**:
+  - **PhoneCameraGateway & ImageAnalysis Contínuo**: Adicionado `ImageAnalysis` com `STRATEGY_KEEP_ONLY_LATEST` e amostragem throttled (~4 FPS) para não superaquecer nem drenar bateria. Cascata inteligente com ML Kit Barcode, OCR e Image Labeling para identificação passiva de comida/pratos.
+  - **Detecção Háptica & Zero Toque**: Ao mirar em qualquer código de barras de alimento, o aparelho vibra suavemente e abre o veredito instantaneamente sem toque.
+  - **Escuta Contínua de Voz (Auto-STT)**: Adicionado `startContinuousListening` em `AndroidSttProvider` para captar a fala do usuário ou oitiva do garçom ("esse prato tem manteiga?") com fusão multimodal imediata do áudio com o frame da câmera.
+  - **UX Camera-First Fullscreen (`AnalyzeScreen.kt`)**: Redesenho completo da tela de análise para Viewport de tela inteira com cantoneiras animadas de mira (HUD), pílula de ação flutuante e menu sutil de hardware (Meta DAT e Mock).
+  - **Testes & Compilação**: Suíte de 172 testes unitários 100% aprovada e APK de debug gerado com sucesso em `app/build/outputs/apk/debug/app-debug.apk`.
+- **Arquivos Tocados**: `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/eatcontrolai/EatControlApp.kt`, `app/src/main/java/com/eatcontrolai/glasses/PhoneCameraGateway.kt`, `app/src/main/java/com/eatcontrolai/inference/androidstt/AndroidSttProvider.kt`, `app/src/main/java/com/eatcontrolai/ui/EatControlViewModel.kt`, `app/src/main/java/com/eatcontrolai/ui/analyze/AnalyzeScreen.kt`.
+- **Próximas Pendências**: Testes no aparelho físico e exportação do APK para os testadores.
+
 ### [2026-09-08 — Noite] Implementação de GEO/SEO Avançado, Favicon Adaptável, Telemetria Full-Stack & Interface de Voz
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Incorporar a dimensão de voz/garçom no site, garantir rastreamento imediato do Clarity e PostHog no site e no app Android, adaptar favicons claro/escuro e atualizar canais da marca.

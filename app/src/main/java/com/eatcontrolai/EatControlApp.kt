@@ -63,7 +63,7 @@ class EatControlApp : Application() {
     }
 }
 
-class AppContainer(application: Application) {
+class AppContainer(val application: Application) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
