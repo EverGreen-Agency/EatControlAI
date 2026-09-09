@@ -22,6 +22,22 @@
 
 ## Histórico de Sessões
 
+### [2026-09-09 — Noite] Internacionalização Completa (Roadmap e BrandKit), Otimizações AI-SEO/CRO/Copywriting e Deploy em Produção
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Implementar suporte bilíngue (PT/EN) sem reload em todo o Roadmap e BrandKit, criar package.json para suporte nativo a `npm run dev`, aplicar melhorias de AI-SEO, CRO e Copywriting (canonicalização estrita para `www.eatcontrol.com.br`, `web/pricing.md` para LLMs, selo de confiança LGPD no formulário) e realizar deploy de produção na Vercel.
+- **Entregas**:
+  - **Internacionalização Integral**: Adicionadas todas as chaves de tradução (`roadmap_*` e `brand_*`) em `web/assets/eatcontrol.js` e `web/assets/site.js`. Páginas `web/roadmap/index.html` e `web/marca/index.html` integradas com seletores PT/EN funcionais e persistência em `localStorage`.
+  - **Ambiente de Desenvolvimento Local**: Criado `web/package.json` configurado com scripts `"dev": "npx serve ."` e `"start": "npx serve ."`, permitindo rodar `npm run dev` diretamente dentro do diretório `web/`.
+  - **AI-SEO & Presença em Mecanismos de IA**:
+    - Criado `web/pricing.md` em Markdown estruturado para consumo direto por agentes de IA e crawlers.
+    - Atualizados `web/llms.txt`, `web/sitemap.xml` e `web/robots.txt` para padronizar o domínio canônico `https://www.eatcontrol.com.br/`.
+    - Atualizadas todas as tags `<link rel="canonical">` e `og:url` em todas as páginas HTML (`index.html`, `roadmap/`, `marca/`, `privacidade/`, `termos/`).
+  - **CRO & Copywriting**: Adicionado selo visual de confiança e conformidade LGPD/criptografia no formulário de lista de espera ("🔒 Seus dados estão seguros e protegidos. Conformidade estrita com LGPD. Zero spam.").
+  - **Deploy em Produção**: Deploy Vercel executado com sucesso e ativo em `https://www.eatcontrol.com.br`.
+- **Arquivos Tocados**: `web/assets/eatcontrol.js`, `web/assets/site.js`, `web/index.html`, `web/roadmap/index.html`, `web/marca/index.html`, `web/privacidade/index.html`, `web/termos/index.html`, `web/llms.txt`, `web/sitemap.xml`, `web/robots.txt`, `web/pricing.md`, `web/package.json`, `web/vercel.json`, `.agents/memory/REGISTRO_SESSAO.md`.
+- **Próximas Pendências**: Prosseguir com os preparativos da esteira de release do app Android.
+
+
 ### [2026-09-09 — Noite] Correção de SyntaxError no Dicionário i18n, Atualização de Cache-Buster v3.4 e Deploy em Produção
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Diagnosticar e corrigir erro fatal de console `Uncaught SyntaxError: Unexpected token ';'` que impedia a execução dos scripts na landing page e orientar sobre a ausência de npm no subdiretório `web/`.

@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Roadmap Aberto — EatControl</title>
 <meta name="description" content="O que já está pronto, o que estamos construindo agora e o que ficou de fora do EatControl. Transparência radical sobre o desenvolvimento clínico.">
-<link rel="canonical" href="https://eatcontrol-ai.vercel.app/roadmap/">
+<link rel="canonical" href="https://www.eatcontrol.com.br/roadmap/">
 
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="EatControl">
 <meta property="og:title" content="Roadmap Aberto — EatControl">
 <meta property="og:description" content="Construindo em público: o que está pronto, o que falta e o que decidimos não fazer.">
-<meta property="og:url" content="https://eatcontrol-ai.vercel.app/roadmap/">
+<meta property="og:url" content="https://www.eatcontrol.com.br/roadmap/">
 <meta property="og:image" content="/assets/app_scanner_mockup.jpg">
 
 <link rel="icon" href="/assets/eatcontrol-mark-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: light)">
@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
-<link rel="stylesheet" href="/assets/eatcontrol.css?v=3.0">
+<link rel="stylesheet" href="/assets/eatcontrol.css?v=3.5">
 
 <!-- Microsoft Clarity Official Tracking Code -->
 <script type="text/javascript">
@@ -44,14 +44,19 @@
       <span>EatControl</span>
     </a>
     <nav class="nav-links" aria-label="Navegação Principal">
-      <a href="/#como-funciona">Tecnologia</a>
-      <a href="/#simulador">Simulador</a>
-      <a href="/#evidencias">Hierarquia</a>
-      <a href="/#privacidade">Privacidade</a>
-      <a href="/roadmap/" style="color:var(--signal-cyan);">Roadmap</a>
+      <a href="/#como-funciona" data-i18n="nav_tech">Tecnologia</a>
+      <a href="/#simulador" data-i18n="nav_sim">Simulador</a>
+      <a href="/#evidencias" data-i18n="nav_hierarchy">Hierarquia</a>
+      <a href="/#privacidade" data-i18n="nav_privacy">Privacidade</a>
+      <a href="/roadmap/" style="color:var(--signal-cyan);" data-i18n="nav_roadmap">Roadmap</a>
     </nav>
     <div class="nav-cta">
-      <a href="/#testar" class="btn btn-primary btn-sm">Acesso Antecipado</a>
+      <div class="lang-switch" role="group" aria-label="Seletor de idioma / Language Switcher">
+        <button type="button" class="lang-btn is-active" data-lang="pt" aria-pressed="true">PT</button>
+        <span class="lang-divider">/</span>
+        <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <a href="/#testar" class="btn btn-primary btn-sm" data-i18n="nav_cta">Acesso Antecipado</a>
     </div>
   </div>
 </header>
@@ -63,11 +68,11 @@
   <div class="stack" style="gap:1.4rem;">
     <div class="badge-pulse">
       <span class="badge-dot"></span>
-      CONSTRUINDO EM PÚBLICO · TRANSPARÊNCIA RADICAL
+      <span data-i18n="roadmap_hero_badge">CONSTRUINDO EM PÚBLICO · TRANSPARÊNCIA RADICAL</span>
     </div>
-    <h1>Roadmap aberto</h1>
-    <p class="lede">O que está pronto no aplicativo, o que estamos construindo agora e o que decidimos deixar de fora. Inclui o que deu errado — é a parte que costuma ensinar mais.</p>
-    <p class="faint">Última auditoria técnica: 7 de setembro de 2026.</p>
+    <h1 data-i18n="roadmap_hero_title">Roadmap aberto</h1>
+    <p class="lede" data-i18n="roadmap_hero_lede">O que está pronto no aplicativo, o que estamos construindo agora e o que decidimos deixar de fora. Inclui o que deu errado — é a parte que costuma ensinar mais.</p>
+    <p class="faint" data-i18n="roadmap_hero_faint">Última auditoria técnica: 7 de setembro de 2026.</p>
   </div>
 </section>
 
@@ -78,90 +83,90 @@
     <!-- COLUNA 1: PRONTO NO APP -->
     <div class="roadmap-col">
       <div class="roadmap-col-header">
-        <h2>Pronto</h2>
-        <span class="tag" data-state="done">Concluído</span>
+        <h2 data-i18n="roadmap_col1_title">Pronto</h2>
+        <span class="tag" data-state="done" data-i18n="roadmap_tag_done">Concluído</span>
       </div>
 
       <article class="roadmap-card" data-state="done">
         <time>ago 2026</time>
-        <h3>Quatro trilhas de análise</h3>
-        <p>Código de barras, rótulo por OCR, cardápio e prato assistido — todas rodando no aparelho, com roteamento autônomo pelo caminho mais rápido e seguro.</p>
+        <h3 data-i18n="roadmap_card1_title">Quatro trilhas de análise</h3>
+        <p data-i18n="roadmap_card1_desc">Código de barras, rótulo por OCR, cardápio e prato assistido — todas rodando no aparelho, com roteamento autônomo pelo caminho mais rápido e seguro.</p>
       </article>
 
       <article class="roadmap-card" data-state="done">
         <time>ago 2026</time>
-        <h3>Motor de decisão com hierarquia de evidência</h3>
-        <p>Quatro estados possíveis, incluindo declaração expressa de incerteza. O que o fabricante declara em rótulo legal prevalece sobre inferência probabilística de IA.</p>
+        <h3 data-i18n="roadmap_card2_title">Motor de decisão com hierarquia de evidência</h3>
+        <p data-i18n="roadmap_card2_desc">Quatro estados possíveis, incluindo declaração expressa de incerteza. O que o fabricante declara em rótulo legal prevalece sobre inferência probabilística de IA.</p>
       </article>
 
       <article class="roadmap-card" data-state="done">
         <time>5 set 2026</time>
-        <h3>Base pública de produtos (Open Food Facts)</h3>
-        <p>Catálogo conectado à maior base aberta de alimentos: escanear um código de barras real traz ingredientes, alérgenos declarados e composição por 100g.</p>
+        <h3 data-i18n="roadmap_card3_title">Base pública de produtos (Open Food Facts)</h3>
+        <p data-i18n="roadmap_card3_desc">Catálogo conectado à maior base aberta de alimentos: escanear um código de barras real traz ingredientes, alérgenos declarados e composição por 100g.</p>
       </article>
 
       <article class="roadmap-card" data-state="done">
         <time>4 set 2026</time>
-        <h3>Camada clínica GLP-1 ligada ao app</h3>
-        <p>Regras parametrizadas para limites de rotulagem Anvisa (RDC 727) sobre composição declarada, com triagem imediata de gatilhos gástricos para quem usa Ozempic, Mounjaro ou Wegovy.</p>
+        <h3 data-i18n="roadmap_card4_title">Camada clínica GLP-1 ligada ao app</h3>
+        <p data-i18n="roadmap_card4_desc">Regras parametrizadas para limites de rotulagem Anvisa (RDC 727) sobre composição declarada, com triagem imediata de gatilhos gástricos para quem usa Ozempic, Mounjaro ou Wegovy.</p>
       </article>
 
       <article class="roadmap-card" data-state="done">
         <time>5 set 2026</time>
-        <h3>Regras pessoais e registro de sintomas</h3>
-        <p>Cadastro de intolerâncias e gatilhos individuais. Ao registrar sinal de alerta médico, o app interrompe a avaliação alimentar e orienta buscar atendimento profissional.</p>
+        <h3 data-i18n="roadmap_card5_title">Regras pessoais e registro de sintomas</h3>
+        <p data-i18n="roadmap_card5_desc">Cadastro de intolerâncias e gatilhos individuais. Ao registrar sinal de alerta médico, o app interrompe a avaliação alimentar e orienta buscar atendimento profissional.</p>
       </article>
     </div>
 
     <!-- COLUNA 2: AGORA EM CONSTRUÇÃO -->
     <div class="roadmap-col">
       <div class="roadmap-col-header">
-        <h2>Construindo</h2>
-        <span class="tag" data-state="doing">Em Andamento</span>
+        <h2 data-i18n="roadmap_col2_title">Construindo</h2>
+        <span class="tag" data-state="doing" data-i18n="roadmap_tag_doing">Em Andamento</span>
       </div>
 
       <article class="roadmap-card" data-state="doing">
-        <time>meta: 20 set 2026</time>
-        <h3>Publicação na Google Play Store</h3>
-        <p>Assinatura de release, ficha da loja e distribuição para teste fechado. Transição de projeto de engenharia para produto instalável em escala.</p>
+        <time data-i18n="roadmap_card6_time">meta: 20 set 2026</time>
+        <h3 data-i18n="roadmap_card6_title">Publicação na Google Play Store</h3>
+        <p data-i18n="roadmap_card6_desc">Assinatura de release, ficha da loja e distribuição para teste fechado. Transição de projeto de engenharia para produto instalável em escala.</p>
       </article>
 
       <article class="roadmap-card" data-state="doing">
-        <time>em decisão clínica</time>
-        <h3>Reconhecimento de prato assistido</h3>
-        <p>Hoje o app reconhece categorias amplas (salada, frango, legumes). Decidindo o caminho para receitas compostas e misturas culinárias complexas com salvaguarda total de privacidade.</p>
+        <time data-i18n="roadmap_card7_time">em decisão clínica</time>
+        <h3 data-i18n="roadmap_card7_title">Reconhecimento de prato assistido</h3>
+        <p data-i18n="roadmap_card7_desc">Hoje o app reconhece categorias amplas (salada, frango, legumes). Decidindo o caminho para receitas compostas e misturas culinárias complexas com salvaguarda total de privacidade.</p>
       </article>
 
       <article class="roadmap-card" data-state="doing">
-        <time>meta: 25 set 2026</time>
-        <h3>Planos e Assinatura</h3>
-        <p>Nível gratuito funcional para decisões rotineiras no mercado e plano Pro para acompanhamento nutricional contínuo com relatórios de tolerância.</p>
+        <time data-i18n="roadmap_card8_time">meta: 25 set 2026</time>
+        <h3 data-i18n="roadmap_card8_title">Planos e Assinatura</h3>
+        <p data-i18n="roadmap_card8_desc">Nível gratuito funcional para decisões rotineiras no mercado e plano Pro para acompanhamento nutricional contínuo com relatórios de tolerância.</p>
       </article>
     </div>
 
     <!-- COLUNA 3: DECIDIMOS NÃO FAZER -->
     <div class="roadmap-col">
       <div class="roadmap-col-header">
-        <h2>Fora de Escopo</h2>
-        <span class="tag" data-state="todo">Decisão Consciente</span>
+        <h2 data-i18n="roadmap_col3_title">Fora de Escopo</h2>
+        <span class="tag" data-state="todo" data-i18n="roadmap_tag_todo">Decisão Consciente</span>
       </div>
 
       <article class="roadmap-card">
-        <time>decisão de segurança</time>
-        <h3>Deduzir gramatura por foto</h3>
-        <p>Calculamos macronutrientes a partir do rótulo legal e da porção que você confirma. Não inferimos peso por imagem porque esse método erra centenas de calorias sem avisar. Preferimos perguntar a alucinar.</p>
+        <time data-i18n="roadmap_card9_time">decisão de segurança</time>
+        <h3 data-i18n="roadmap_card9_title">Deduzir gramatura por foto</h3>
+        <p data-i18n="roadmap_card9_desc">Calculamos macronutrientes a partir do rótulo legal e da porção que você confirma. Não inferimos peso por imagem porque esse método erra centenas de calorias sem avisar. Preferimos perguntar a alucinar.</p>
       </article>
 
       <article class="roadmap-card">
-        <time>decisão de privacidade</time>
-        <h3>Sincronização de saúde na nuvem</h3>
-        <p>Exigiria transmitir dados médicos sensíveis para servidores remotos. Enquanto não houver necessidade explícita autorizada, seu histórico permanece criptografado no próprio dispositivo.</p>
+        <time data-i18n="roadmap_card10_time">decisão de privacidade</time>
+        <h3 data-i18n="roadmap_card10_title">Sincronização de saúde na nuvem</h3>
+        <p data-i18n="roadmap_card10_desc">Exigiria transmitir dados médicos sensíveis para servidores remotos. Enquanto não houver necessidade explícita autorizada, seu histórico permanece criptografado no próprio dispositivo.</p>
       </article>
 
       <article class="roadmap-card">
-        <time>etapa futura</time>
-        <h3>Óculos inteligentes no lançamento</h3>
-        <p>O app nasceu com compatibilidade com o Meta Wearables Toolkit. No entanto, o smartphone no supermercado é onde 99% das decisões acontecem agora. Wearables virão em fases posteriores.</p>
+        <time data-i18n="roadmap_card11_time">etapa futura</time>
+        <h3 data-i18n="roadmap_card11_title">Óculos inteligentes no lançamento</h3>
+        <p data-i18n="roadmap_card11_desc">O app nasceu com compatibilidade com o Meta Wearables Toolkit. No entanto, o smartphone no supermercado é onde 99% das decisões acontecem agora. Wearables virão em fases posteriores.</p>
       </article>
     </div>
 
@@ -173,13 +178,13 @@
   <div class="panel stack" style="gap:1.5rem;text-align:center;align-items:center;background:radial-gradient(ellipse at 50% 0%, rgba(6,36,57,0.7), rgba(14,23,34,0.85));">
     <div class="badge-pulse">
       <span class="badge-dot"></span>
-      FEEDBACK CLÍNICO
+      <span data-i18n="roadmap_cta_badge">FEEDBACK CLÍNICO</span>
     </div>
-    <h2 style="font-size:clamp(1.8rem, 3.2vw, 2.6rem);">Acompanhe de perto ou participe do teste</h2>
-    <p class="muted" style="max-width:56ch;font-size:1.1rem;">Publicamos abertamente o que funcionou e o que quebrou. Se você está em tratamento com GLP-1 e deseja testar as versões antecipadas no seu smartphone, entre na lista fechada.</p>
+    <h2 style="font-size:clamp(1.8rem, 3.2vw, 2.6rem);" data-i18n="roadmap_cta_title">Acompanhe de perto ou participe do teste</h2>
+    <p class="muted" style="max-width:56ch;font-size:1.1rem;" data-i18n="roadmap_cta_desc">Publicamos abertamente o que funcionou e o que quebrou. Se você está em tratamento com GLP-1 e deseja testar as versões antecipadas no seu smartphone, entre na lista fechada.</p>
     <div class="actions" style="justify-content:center;margin-top:0.5rem;">
-      <a class="btn btn-primary btn-lg" href="/#testar">Garantir vaga no teste</a>
-      <a class="btn btn-glass btn-lg" href="/">← Voltar à página principal</a>
+      <a class="btn btn-primary btn-lg" href="/#testar" data-i18n="roadmap_cta_btn">Garantir vaga no teste</a>
+      <a class="btn btn-glass btn-lg" href="/" data-i18n="roadmap_cta_back">← Voltar à página principal</a>
     </div>
   </div>
 </section>
@@ -194,22 +199,22 @@
         <img src="/assets/mark.svg" alt="EatControl" width="24" height="24">
         <span>EatControl</span>
       </a>
-      <p class="footer-disclaimer">Orientação contextual e educativa. O aplicativo não formula diagnósticos, não altera posologias e não substitui o acompanhamento de endocrinologista ou nutricionista.</p>
+      <p class="footer-disclaimer" data-i18n="footer_disclaimer">Orientação contextual e educativa. O aplicativo não formula diagnósticos, não altera posologias e não substitui o acompanhamento de endocrinologista ou nutricionista.</p>
     </div>
     <div class="footer-links">
-      <a href="/roadmap/">Roadmap Aberto</a>
-      <a href="/marca/">BrandKit Oficial</a>
-      <a href="/privacidade/">Privacidade</a>
-      <a href="/termos/">Termos de Uso</a>
+      <a href="/roadmap/" data-i18n="footer_roadmap">Roadmap Aberto</a>
+      <a href="/marca/" data-i18n="footer_brand">BrandKit Oficial</a>
+      <a href="/privacidade/" data-i18n="footer_privacy">Privacidade</a>
+      <a href="/termos/" data-i18n="footer_terms">Termos de Uso</a>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 EatControl AI. Todos os direitos reservados.</span>
-    <span>Feito com rigor clínico no Brasil.</span>
+    <span data-i18n="footer_rights">© 2026 EatControl AI. Todos os direitos reservados.</span>
+    <span data-i18n="footer_clinical">Feito com rigor clínico no Brasil.</span>
   </div>
 </footer>
 
-<script src="/assets/eatcontrol.js?v=3.0" defer></script>
+<script src="/assets/eatcontrol.js?v=3.5" defer></script>
 <script src="/assets/analytics.js" defer></script>
 </body>
 </html>

@@ -20,6 +20,5 @@ Allow: /
 # Documentação canônica para LLMs
 # https://eatcontrol-ai.vercel.app/llms.txt
 
-Sitemap: https://eatcontrol-ai.vercel.app/sitemap.xml
-Sitemap: https://eatcontrol.com.br/sitemap.xml
+Sitemap: https://www.eatcontrol.com.br/sitemap.xml
 

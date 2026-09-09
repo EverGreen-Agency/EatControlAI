@@ -1,0 +1,10 @@
+{
+  "name": "eatcontrol-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EatControl landing page, roadmap and brandkit",
+  "scripts": {
+    "dev": "npx serve .",
+    "start": "npx serve ."
+  }
+}

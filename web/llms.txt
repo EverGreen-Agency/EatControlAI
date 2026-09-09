@@ -34,11 +34,12 @@ Food Facts, sem qualquer identificador do usuário.
 
 ## Páginas Canônicas
 
-- [Início](https://eatcontrol-ai.vercel.app/): visão geral, simulador interativo e como funciona.
-- [Roadmap aberto](https://eatcontrol-ai.vercel.app/roadmap/): o que está pronto, em construção e descartado.
-- [Manual da Marca / BrandKit](https://eatcontrol-ai.vercel.app/marca/): identidade visual oficial e diretrizes.
-- [Privacidade](https://eatcontrol-ai.vercel.app/privacidade/): tratamento de dados em detalhe e LGPD.
-- [Termos](https://eatcontrol-ai.vercel.app/termos/): escopo e limites clínicos.
+- [Início](https://www.eatcontrol.com.br/): visão geral, simulador interativo e como funciona.
+- [Roadmap aberto](https://www.eatcontrol.com.br/roadmap/): o que está pronto, em construção e descartado.
+- [Manual da Marca / BrandKit](https://www.eatcontrol.com.br/marca/): identidade visual oficial e diretrizes.
+- [Privacidade](https://www.eatcontrol.com.br/privacidade/): tratamento de dados em detalhe e LGPD.
+- [Termos](https://www.eatcontrol.com.br/termos/): escopo e limites clínicos.
+- [Preços & Planos (AI Agent Readable)](https://www.eatcontrol.com.br/pricing.md): especificação de limites e planos para agentes de IA.
 
 ## Repositório Oficial de Ativos (BrandKit)
 

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Termos de Uso — Eat Control</title>
 <meta name="description" content="Termos de uso do Eat Control: escopo educativo, limites clínicos explícitos e responsabilidades de quem usa.">
-<link rel="canonical" href="https://eatcontrol-ai.vercel.app/termos/">
+<link rel="canonical" href="https://www.eatcontrol.com.br/termos/">
 <link rel="icon" href="/assets/eatcontrol-mark-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: light)">
 <link rel="icon" href="/assets/eatcontrol-mark-light.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700&family=Inter:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="/assets/eatcontrol.css?v=3.0">
+<link rel="stylesheet" href="/assets/eatcontrol.css?v=3.5">
 
 <!-- Microsoft Clarity Official Tracking Code -->
 <script type="text/javascript">
@@ -35,14 +35,19 @@
       <span>EatControl</span>
     </a>
     <nav class="nav-links" aria-label="Navegação Principal">
-      <a href="/#como-funciona">Tecnologia</a>
-      <a href="/#simulador">Simulador</a>
-      <a href="/#evidencias">Hierarquia</a>
-      <a href="/#privacidade">Privacidade</a>
-      <a href="/roadmap/">Roadmap</a>
+      <a href="/#como-funciona" data-i18n="nav_tech">Tecnologia</a>
+      <a href="/#simulador" data-i18n="nav_sim">Simulador</a>
+      <a href="/#evidencias" data-i18n="nav_hierarchy">Hierarquia</a>
+      <a href="/privacidade/" data-i18n="nav_privacy">Privacidade</a>
+      <a href="/roadmap/" data-i18n="nav_roadmap">Roadmap</a>
     </nav>
     <div class="nav-cta">
-      <a href="/#testar" class="btn btn-primary btn-sm">Acesso Antecipado</a>
+      <div class="lang-switch" role="group" aria-label="Seletor de idioma / Language Switcher">
+        <button type="button" class="lang-btn is-active" data-lang="pt" aria-pressed="true">PT</button>
+        <span class="lang-divider">/</span>
+        <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <a href="/#testar" class="btn btn-primary btn-sm" data-i18n="nav_cta">Acesso Antecipado</a>
     </div>
   </div>
 </header>
@@ -102,19 +107,19 @@
       <p class="footer-disclaimer">Orientação contextual e educativa. O aplicativo não formula diagnósticos, não altera posologias e não substitui o acompanhamento de endocrinologista ou nutricionista.</p>
     </div>
     <div class="footer-links">
-      <a href="/roadmap/">Roadmap Aberto</a>
-      <a href="/marca/">BrandKit Oficial</a>
-      <a href="/privacidade/">Privacidade</a>
-      <a href="/termos/">Termos de Uso</a>
+      <a href="/roadmap/" data-i18n="footer_roadmap">Roadmap Aberto</a>
+      <a href="/marca/" data-i18n="footer_brand">BrandKit Oficial</a>
+      <a href="/privacidade/" data-i18n="footer_privacy">Privacidade</a>
+      <a href="/termos/" data-i18n="footer_terms">Termos de Uso</a>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 EatControl AI. Todos os direitos reservados.</span>
-    <span>Feito com rigor clínico no Brasil.</span>
+    <span data-i18n="footer_rights">© 2026 EatControl AI. Todos os direitos reservados.</span>
+    <span data-i18n="footer_clinical">Feito com rigor clínico no Brasil.</span>
   </div>
 </footer>
 
-<script src="/assets/eatcontrol.js?v=3.0" defer></script>
+<script src="/assets/eatcontrol.js?v=3.5" defer></script>
 <script src="/assets/analytics.js" defer></script>
 </body>
 </html>
