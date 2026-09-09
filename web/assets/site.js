@@ -375,7 +375,6 @@
       footer_rights: '© 2026 EatControl AI. All rights reserved.',
       footer_clinical: 'Engineered with clinical rigor in Brazil.'
     }
-    }
   };
 
   // ---------------------------------------------------- Cenários do Simulador (PT / EN)
@@ -735,8 +734,8 @@
       var heroImg = document.getElementById('hero-device-img');
       if (heroImg) {
         heroImg.src = lang === 'en' 
-          ? '/assets/app_scanner_mockup_en.jpg?v=3.3' 
-          : '/assets/app_scanner_mockup.jpg?v=3.3';
+          ? '/assets/app_scanner_mockup_en.jpg?v=3.4' 
+          : '/assets/app_scanner_mockup.jpg?v=3.4';
         heroImg.alt = lang === 'en'
           ? 'EatControl Camera Scanner in action on smartphone'
           : 'EatControl Camera Scanner em funcionamento no smartphone';

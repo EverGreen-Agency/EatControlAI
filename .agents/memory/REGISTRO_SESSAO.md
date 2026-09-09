@@ -22,6 +22,36 @@
 
 ## Histórico de Sessões
 
+### [2026-09-09 — Noite] Correção de SyntaxError no Dicionário i18n, Atualização de Cache-Buster v3.4 e Deploy em Produção
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Diagnosticar e corrigir erro fatal de console `Uncaught SyntaxError: Unexpected token ';'` que impedia a execução dos scripts na landing page e orientar sobre a ausência de npm no subdiretório `web/`.
+- **Causa Raiz & Solução**:
+  - Uma chave extra de fechamento `}` havia sido inserida no encerramento de `en` dentro de `I18N_DICT` (linha 378 de `eatcontrol.js` e `site.js`), fazendo com que o encerramento do objeto `};` fosse avaliado como token inesperado fora de bloco.
+  - Removida a chave excedente em `web/assets/eatcontrol.js` e `web/assets/site.js`.
+  - Sintaxe validada via Node.js (`node -c`) com 100% de aprovação em todos os scripts.
+  - Cache-buster atualizado para `?v=3.4` em `web/index.html`, `eatcontrol.js` e `site.js`.
+  - Deploy em produção executado na Vercel (`https://www.eatcontrol.com.br`) e validado visualmente e via console F12 por subagente de browser (sem erros de JS, alternância PT/EN perfeita).
+- **Arquivos Tocados**: `web/assets/eatcontrol.js`, `web/assets/site.js`, `web/index.html`, `.agents/memory/REGISTRO_SESSAO.md`.
+- **Próximas Pendências**: Seguir com o fluxo de release do app Android na Play Store.
+
+### [2026-09-09 — Noite] Atualização Global e Local de Marketing Skills (50 Skills) para Todos os Agentes
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Integrar 50 skills de marketing e growth (coreyhaines31/marketingskills) localmente no repositório EatControlAI e globalmente nos ambientes Claude Code, OpenAI Codex e Antigravity.
+- **Entregas**:
+  - **Repositório EatControlAI**:
+    - Instaladas 50 skills em `.agents/skills/` (totalizando 211 skills no projeto).
+    - Criada Junction `.codex/skills` e `.codex/tools` apontando para `.agents/skills` e `.agents/tools`, unificando a interoperabilidade nativa com o OpenAI Codex no repo.
+    - Criada Junction `.claude/tools` apontando para `.agents/tools` (além de `.claude/skills` já existente).
+    - Criado [.agents/product-marketing.md](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/.agents/product-marketing.md) contendo o contexto canônico de marketing do EatControl (Beachhead GLP-1, posicionamento, brandkit, dores e diferenciais) para consumo automático pelas skills.
+    - Atualizados os catálogos de skills em [AGENTS.md](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/AGENTS.md) e [CLAUDE.md](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/CLAUDE.md).
+    - Ajustado [.gitignore](file:///c:/Users/Lenovo/AndroidStudioProjects/EatControlAI/.gitignore) para rastrear `product-marketing.md`.
+  - **Ambientes Globais**:
+    - **Claude Code**: Instaladas 50 skills em `C:\Users\Lenovo\.claude\skills` (total de 251 skills) e ferramentas em `C:\Users\Lenovo\.claude\tools`.
+    - **Antigravity (Gemini)**: Instaladas 50 skills em `C:\Users\Lenovo\.gemini\config\skills` (total de 232 skills) e ferramentas em `C:\Users\Lenovo\.gemini\config\tools`.
+    - **OpenAI Codex**: Instaladas 50 skills em `C:\Users\Lenovo\.codex\skills` (total de 51 skills) e ferramentas em `C:\Users\Lenovo\.codex\tools`.
+- **Arquivos Tocados**: `.agents/skills/*`, `.agents/tools/*`, `.agents/product-marketing.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`, `C:\Users\Lenovo\.claude\skills\*`, `C:\Users\Lenovo\.gemini\config\skills\*`, `C:\Users\Lenovo\.codex\skills\*`, `.agents/memory/REGISTRO_SESSAO.md`.
+- **Próximas Pendências**: Nenhuma pendência na instalação de skills. Seguir para preparação de build de release na Play Store.
+
 ### [2026-09-09 — Noite] Hero Mockup em Inglês, Tradução Completa (PT/EN), Responsividade da Navbar e Deploy v3.3
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Implementar mockup em inglês no Hero com alternância dinâmica conforme idioma, cobrir todas as strings restantes na internacionalização (Bento Grid, Evidence Matrix, Privacy Cards, FAQ, Footer), corrigir corte lateral da navbar flutuante em smartphones estreitos (<= 400px), diagnosticar erro de console F12 e orientar benchmarks e exportação de APK.
