@@ -22,6 +22,17 @@
 
 ## Histórico de Sessões
 
+### [2026-09-09 — Noite] Atualização dos Ícones Nativo Android com Asset Oficial do BrandKit v1.0
+- **Agente / Modelo**: Antigravity (Gemini 3.6 Flash)
+- **Objetivo**: Substituir o ícone legado do app no Android pelo ícone oficial da marca de 1024x1024 (`eatcontrol-app-icon-1024.png`) presente no BrandKit v1.0 (`EatControl_Precision_Intelligence_BrandKit_v1.0/02_Visual_Identity/Logos/`).
+- **Entregas**:
+  - Redimensionado e atualizado `ic_launcher.webp` e `ic_launcher_round.webp` para todas as densidades (`mipmap-mdpi`, `mipmap-hdpi`, `mipmap-xhdpi`, `mipmap-xxhdpi`, `mipmap-xxxhdpi`).
+  - Removido o XML legado de adaptative icon para forçar a exibição da arte PNG/WEBP oficial com alta fidelidade visual.
+  - Recompilado e instalado com sucesso no dispositivo físico via `.\gradlew installDebug`.
+- **Arquivos Tocados**: `app/src/main/res/mipmap-*/ic_launcher.webp`, `app/src/main/res/mipmap-*/ic_launcher_round.webp`, `app/src/main/res/mipmap-anydpi/ic_launcher.xml`, `app/src/main/res/mipmap-anydpi/ic_launcher_round.xml`, `.agents/memory/REGISTRO_SESSAO.md`.
+- **Próximas Pendências**: Dar sequência aos testes e esteira de publicação na Play Store.
+
+
 ### [2026-09-09 — Noite] Aprimoramento Integral de Responsividade Mobile (Header Fixo, Tabs Horizontais com Snap, Hierarquia e Privacidade)
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Resolver os 3 problemas de UX mobile reportados pelo usuário: eliminação do jitter/movimento estranho do header no scroll móvel, conversão dos botões de simulação empilhados em lista para trilho horizontal deslizável com snap, e correção do overflow/quebra de margem nos cards de Hierarquia de Evidência e Privacidade.
