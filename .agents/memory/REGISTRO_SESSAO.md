@@ -22,6 +22,20 @@
 
 ## Histórico de Sessões
 
+### [2026-09-09 — Noite] Hero Mockup em Inglês, Tradução Completa (PT/EN), Responsividade da Navbar e Deploy v3.3
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Implementar mockup em inglês no Hero com alternância dinâmica conforme idioma, cobrir todas as strings restantes na internacionalização (Bento Grid, Evidence Matrix, Privacy Cards, FAQ, Footer), corrigir corte lateral da navbar flutuante em smartphones estreitos (<= 400px), diagnosticar erro de console F12 e orientar benchmarks e exportação de APK.
+- **Entregas**:
+  - `web/assets/app_scanner_mockup_en.jpg`: Mockup fotográfico idêntico em proporção e composição ao original, com a UI traduzida para o inglês ("Plain Greek Yogurt", "COMPATIBLE · GLP-1 SAFE", "Audited: Open Food Facts").
+  - Alternância dinâmica do hero: `setLanguage(lang)` troca o `src` de `#hero-device-img` entre os mockups PT e EN sem piscar.
+  - Tradução exaustiva: 100% dos cartões clínicos do Bento Grid (Alerta de Esvaziamento Gástrico, tags de macronutrientes, diálogo do Garçom e Resposta por Áudio), matriz de evidência e rodapé agora respondem ao seletor `PT / EN`.
+  - Responsividade Mobile: Adicionadas media queries `@media (max-width: 600px)` e `@media (max-width: 400px)` na `.nav-pill`, recolhendo o texto da marca e preservando o logo SVG, seletor de idiomas e CTA sem corte lateral.
+  - Diagnóstico do F12: Identificado que o erro `fd_content_pre_check.js` é gerado pela extensão de terceiros Free Download Manager (FDM) instalada no navegador do usuário, com zero interferência na aplicação.
+  - Deploy em produção na Vercel (`https://www.eatcontrol.com.br`) realizado com sucesso.
+- **Arquivos Tocados**: `web/assets/eatcontrol.css`, `web/assets/eatcontrol.js`, `web/assets/site.css`, `web/assets/site.js`, `web/index.html`, `web/assets/app_scanner_mockup_en.jpg`, `.agents/memory/REGISTRO_SESSAO.md`.
+- **Próximas Pendências**: Pipeline de publicação na Play Store (keystore de release, flavors, teste fechado com 12 testadores).
+
+
 ### [2026-09-09 — Fim de Tarde] Correção do Colapso de Altura do Viewfinder, Novos Assets e Deploy v3.2
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Corrigir problemas de posicionamento e visibilidade nas cenas do simulador fotográfico (Rótulo por OCR, Prato Assistido e Cardápio/Menu) reportados pelo usuário com prints da tela, eliminando colapso de altura e faixas pretas.
