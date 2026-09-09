@@ -59,5 +59,6 @@ docs/fontes/endocrino/
 # cada pessoa, não código do produto — e são milhares de arquivos.
 .agents/*
 !.agents/memory/
+!.agents/product-marketing.md
 .claude/
 .codex/

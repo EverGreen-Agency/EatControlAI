@@ -35,5 +35,14 @@ Consulte os arquivos `SKILL.md` e `DESIGN.md` em cada pasta de estilo dentro de 
 - **Matt Pocock**: `code-review`, `tdd`, `codebase-design`, `diagnosing-bugs`, `domain-modeling`, `implement`, `wayfinder`.
 - **Qualidade & Pesquisa**: `gauntlet-loop`, `last30days`, suite `geo-*` (SEO generativo).
 
+### 5. Marketing, Growth, Conversão & Go-To-Market (MarketingSkills)
+- **Estratégia & Mercado**: `product-marketing` (lê `.agents/product-marketing.md`), `marketing-plan`, `marketing-ideas`, `marketing-psychology`, `marketing-council`, `marketing-loops`, `offers`, `pricing`, `customer-research`, `competitors`, `competitor-profiling`.
+- **CRO & Conversão**: `cro`, `signup`, `onboarding`, `paywalls`, `popups`, `ab-testing`.
+- **Conteúdo & Criativos**: `copywriting`, `copy-editing`, `content-strategy`, `ad-creative`, `image`, `video`.
+- **SEO & Otimização para IA**: `seo-audit`, `ai-seo`, `schema`, `programmatic-seo`, `site-architecture`, `aso`.
+- **Aquisição & Outbound**: `ads`, `cold-email`, `emails`, `sms`, `social`, `prospecting`, `lead-magnets`, `directory-submissions`.
+- **Growth Loops & Parcerias**: `referrals`, `churn-prevention`, `community-marketing`, `co-marketing`, `influencer-marketing`, `events`, `free-tools`, `public-relations`, `launch`.
+- **Receita & Mensuração**: `analytics`, `attribution`, `revops`, `sales-enablement`.
+
 ## Como Executar
 O Claude Code pode ler e carregar qualquer uma dessas skills diretamente pelo caminho `.claude/skills/<skill-name>/SKILL.md` ou usando a skill global correspondente em `~/.claude/skills/<skill-name>/`.

@@ -34,5 +34,14 @@ Antes de iniciar qualquer tarefa ou raciocínio neste projeto, o agente **DEVE c
   - `last30days`: Pesquisa e síntese de dados atualizados na web.
   - `geo-audit`, `geo-schema`, `geo-content`, `geo-crawlers`: Otimização para motores de busca generativos (GEO).
 
+- **Marketing, Growth & Conversão (MarketingSkills por Corey Haines):**
+  - **Estratégia & Contexto**: `product-marketing` (lê `.agents/product-marketing.md`), `marketing-plan`, `marketing-ideas`, `marketing-psychology`, `marketing-council`, `marketing-loops`, `offers`, `pricing`, `customer-research`, `competitors`, `competitor-profiling`.
+  - **CRO & Otimização de Conversão**: `cro`, `signup`, `onboarding`, `paywalls`, `popups`, `ab-testing`.
+  - **Conteúdo, Copywriting & Criativos**: `copywriting`, `copy-editing`, `content-strategy`, `ad-creative`, `image`, `video`.
+  - **SEO, ASO & Busca por IA (AEO)**: `seo-audit`, `ai-seo`, `schema`, `programmatic-seo`, `site-architecture`, `aso`.
+  - **Aquisição, Tráfego Pago & Outreach**: `ads`, `cold-email`, `emails`, `sms`, `social`, `prospecting`, `lead-magnets`, `directory-submissions`.
+  - **Growth Loops, Retenção & Parcerias**: `referrals`, `churn-prevention`, `community-marketing`, `co-marketing`, `influencer-marketing`, `events`, `free-tools`, `public-relations`, `launch`.
+  - **Receita, Atribuição & Operações**: `analytics`, `attribution`, `revops`, `sales-enablement`.
+
 ## Como Utilizar
-Os agentes devem consultar o arquivo `SKILL.md` dentro de `.agents/skills/<skill-name>/` (ou `.claude/skills/<skill-name>/`) para carregar as instruções específicas de cada procedimento.
+Os agentes devem consultar o arquivo `SKILL.md` dentro de `.agents/skills/<skill-name>/` (ou `.claude/skills/<skill-name>/`, ou `.codex/skills/<skill-name>/`) para carregar as instruções específicas de cada procedimento.
