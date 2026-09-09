@@ -829,6 +829,9 @@
       tab.addEventListener('click', function () {
         tabs.forEach(function (t) { t.classList.remove('is-active'); });
         tab.classList.add('is-active');
+        if (typeof tab.scrollIntoView === 'function') {
+          tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
         loadScenario(tab.getAttribute('data-tab'));
       });
     });

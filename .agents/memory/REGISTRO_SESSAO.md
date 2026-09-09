@@ -22,6 +22,19 @@
 
 ## Histórico de Sessões
 
+### [2026-09-09 — Noite] Aprimoramento Integral de Responsividade Mobile (Header Fixo, Tabs Horizontais com Snap, Hierarquia e Privacidade)
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Resolver os 3 problemas de UX mobile reportados pelo usuário: eliminação do jitter/movimento estranho do header no scroll móvel, conversão dos botões de simulação empilhados em lista para trilho horizontal deslizável com snap, e correção do overflow/quebra de margem nos cards de Hierarquia de Evidência e Privacidade.
+- **Entregas**:
+  - **Header Mobile Fixo & Estável**: No mobile (`<= 768px`), o header flutuante com `sticky` e margens que oscilavam com a barra de URL do navegador foi transformado em uma **Top Bar Fixa Contínua de Borda a Borda** (`position: fixed; top: 0; left: 0; right: 0; width: 100%`) com vidro fosco escuro, safe-area inset e aceleração GPU (`transform: translateZ(0)`), garantindo estabilidade absoluta sem jitter.
+  - **Trilha Horizontal com Snap para Abas de Simulação**: No mobile, os 5 botões de cenários deixaram de ficar empilhados em uma lista vertical verticalmente excessiva e passaram para um **Trilho Deslizável Horizontal com Snap Nativo** (`overflow-x: auto; flex-wrap: nowrap; scroll-snap-type: x mandatory; scrollbar-width: none`), com scroll suave centralizado ao tocar na aba.
+  - **Contenção Perfeita do Smartphone Chassis e Viewfinder**: Ajustado padding adaptativo e dimensões responsivas (`box-sizing: border-box`, `max-width: 100%`), eliminando o corte na borda direita do celular virtual.
+  - **Reestruturação dos Cards de Hierarquia (`.evidence-tier`)**: No mobile (`<= 680px`), o grid de 3 colunas rígidas foi reformulado para 2 níveis fluidos (Rank `01` à esquerda e badge `Precedência Absoluta` à direita no topo; título e descrição em 100% de largura abaixo), sem transbordo de margens.
+  - **Ajuste na Grade de Privacidade (`.privacy-grid`)**: Coluna única no mobile respeitando o padding do container `.wrap`.
+  - **Validação Visual**: Testado via subagente de browser no Chrome em viewport mobile de 375x812, validando os 4 pontos visuais e 0 erros de JavaScript.
+- **Arquivos Tocados**: `web/assets/eatcontrol.css`, `web/assets/site.css`, `web/assets/eatcontrol.js`, `web/assets/site.js`, `web/index.html`, `web/roadmap/index.html`, `web/marca/index.html`, `web/privacidade/index.html`, `web/termos/index.html`, `.agents/memory/REGISTRO_SESSAO.md`.
+
+
 ### [2026-09-09 — Noite] Internacionalização Completa (Roadmap e BrandKit), Otimizações AI-SEO/CRO/Copywriting e Deploy em Produção
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Implementar suporte bilíngue (PT/EN) sem reload em todo o Roadmap e BrandKit, criar package.json para suporte nativo a `npm run dev`, aplicar melhorias de AI-SEO, CRO e Copywriting (canonicalização estrita para `www.eatcontrol.com.br`, `web/pricing.md` para LLMs, selo de confiança LGPD no formulário) e realizar deploy de produção na Vercel.
