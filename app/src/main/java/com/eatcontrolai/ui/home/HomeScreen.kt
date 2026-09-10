@@ -80,9 +80,14 @@ fun HomeScreen(
                         color = EcColors.TextMuted
                     )
                 }
+                val (dotTone, dotLabel) = when {
+                    glasses.connected -> EcColors.Mint to "EDGE AI PRONTO"
+                    glasses.sourceLabel.contains("celular", ignoreCase = true) -> EcColors.Mint to "IA LOCAL PRONTA"
+                    else -> EcColors.Amber to "PROCURANDO ÓCULOS"
+                }
                 StatusDot(
-                    tone = if (glasses.connected) EcColors.Mint else EcColors.Amber,
-                    label = if (glasses.connected) "EDGE AI PRONTO" else "CONECTANDO"
+                    tone = dotTone,
+                    label = dotLabel
                 )
             }
         }

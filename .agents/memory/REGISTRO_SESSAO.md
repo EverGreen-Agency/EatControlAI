@@ -22,17 +22,20 @@
 
 ## Histórico de Sessões
 
-### [2026-09-10 — Dia] Implementação do Carrossel de Câmera Nativa (Conceito 1), Pílula Live de Decisão no Buffet / Macros e Remoção de Mocks de Produção
+### [2026-09-10 — Tarde] Correção de UX/UI (Padding Plano, Status Edge AI, Filtro da Câmera) e Validação de Conectividade API/S3
 - **Agente / Modelo**: Antigravity (Advanced Agentic Coding)
-- **Objetivo**: Substituir o card retangular rígido inferior pelo Carrossel Horizontal Estilo Câmera Nativa (`PRATO` · `RÓTULO` · `AUTOMÁTICO` · `CARDÁPIO` · `CÓDIGO`), adicionar pílula flutuante de estimativa rápida de macros e contornos dinâmicos (Verde Mint para aprovado / Vermelho Coral para alérgenos e fritura com GLP-1) e remover "Óculos simulados" do modal de hardware da câmera de produção.
+- **Objetivo**: Eliminar o badge de "CONECTANDO" falso na Home, corrigir o padding cortado no final da tela de Plano, transformar o texto solto "· ovo" no topo da câmera em um indicador claro de filtros de perfil, atualizar rota estável do Gemini (`gemini-3.5-flash` na rota `v1`), ajustar concatenação de bucket no S3 e testar conectividade real de todas as chaves.
 - **Entregas**:
-  - **Carrossel Horizontal Nativo**: Implementado em `AnalyzeScreen.kt` um seletor fluido com snap horizontal e tipografia limpa, eliminando a quebra de texto de `Prato/Buffet` e deixando o visor completamente desobstruído.
-  - **Pílula Live de Decisão no Buffet / Macros**: Adicionada pílula translúcida com glassmorphism exibindo estimativa de proteína/fibras e alertas clínicos instantâneos para fritura e alérgenos vinculados ao perfil do usuário.
-  - **HUD com Contornos Dinâmicos**: `HudViewfinder` agora pulsa em Vermelho (`EcColors.Red`) em casos de alerta clínico (fritura pesada ou alérgeno conflitante) e em Verde (`EcColors.Mint`) quando o alimento é seguro e rico em proteína/fibras.
-  - **Remoção de Óculos Simulados para Usuários**: Modal de hardware restrito estritamente a `PHONE_CAMERA` e `DAT_GLASSES` (Ray-Ban Meta), isolando os mocks na aba Lab.
+  - **Status Edge AI na Home**: `HomeScreen.kt` agora exibe `IA LOCAL PRONTA` (verde) quando a fonte é a câmera do celular, eliminando o status de "CONECTANDO" falso que acontecia porque a câmera nativa só dá bind ao abrir a tela de análise.
+  - **Respiro no Final do Plano**: `PlanScreen.kt` equipado com espaçador inferior (`Spacer(Modifier.height(40.dp))`), permitindo que a lista e o card de "Acompanhamento de hoje" rolem com folga acima da barra de navegação sem corte.
+  - **Filtro de Perfil na Câmera**: `AnalyzeScreen.kt` atualizado para exibir `Automático • Filtro: ovo` ou `X filtros ativos` (em vez de `${state.mode.label} · ovo` que parecia mock ou bug).
+  - **Validação de Chaves de API**:
+    - **Google Gemini**: A chave do usuário é 100% válida (50 modelos ativos); testado com sucesso com retorno `PONG_OK` usando o modelo `gemini-3.5-flash` na rota oficial `v1` (`CloudVisionProvider.kt` atualizado).
+    - **OpenRouter**: Retornou `402 Pagamento Obrigatório` para modelos pagos (`gpt-4o-mini`), indicando necessidade de créditos na plataforma ou uso de modelos gratuitos (`:free`).
+    - **S3 Storage**: Endpoint `https://t3.storageapi.dev` testado (403 Forbidden para requisição anônima, confirmando bucket privado ativo). `S3TelemetryClient.kt` ajustado para concatenar bucket dinamicamente.
   - **Validação**: 100% dos testes unitários JVM aprovados e APK compilado com sucesso em `app/build/outputs/apk/debug/app-debug.apk`.
-- **Arquivos Tocados**: `app/src/main/java/com/eatcontrolai/ui/analyze/AnalyzeScreen.kt`, `.agents/memory/REGISTRO_SESSAO.md`.
-- **Próximas Pendências**: Validação em dispositivo físico na esteira de publicação.
+- **Arquivos Tocados**: `app/src/main/java/com/eatcontrolai/data/telemetry/S3TelemetryClient.kt`, `app/src/main/java/com/eatcontrolai/inference/cloud/CloudVisionProvider.kt`, `app/src/main/java/com/eatcontrolai/ui/analyze/AnalyzeScreen.kt`, `app/src/main/java/com/eatcontrolai/ui/home/HomeScreen.kt`, `app/src/main/java/com/eatcontrolai/ui/plan/PlanScreen.kt`, `.agents/memory/REGISTRO_SESSAO.md`.
+- **Próximas Pendências**: O usuário deve conectar o aparelho via USB com depuração ativa para instalar com `.\gradlew installDebug`.
 
 ### [2026-09-10 — Madrugada] Correção do Roteamento de Rótulos, Identificação Multimodal de Pratos (Shawarma/Wraps), HUD de Buffet e Chaves Reais de API/S3
 - **Agente / Modelo**: Antigravity (Advanced Agentic Coding)

@@ -233,6 +233,10 @@ fun PlanScreen(viewModel: EatControlViewModel) {
                 }
             }
         }
+
+        item {
+            Spacer(Modifier.height(40.dp))
+        }
     }
 }
 

@@ -293,10 +293,13 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(state.mode.glyph, color = EcColors.Mint, style = MaterialTheme.typography.labelMedium)
-                val restrictionSummary = profile.restrictions.firstOrNull()?.allergen?.displayName
-                    ?: "Sem restrições"
+                val filterSummary = when {
+                    profile.restrictions.isEmpty() -> "Sem restrições"
+                    profile.restrictions.size == 1 -> "Filtro: ${profile.restrictions.first().allergen.displayName}"
+                    else -> "${profile.restrictions.size} filtros ativos"
+                }
                 Text(
-                    "${state.mode.label} · $restrictionSummary",
+                    "${state.mode.label}  •  $filterSummary",
                     style = MaterialTheme.typography.labelSmall,
                     color = EcColors.TextPrimary
                 )

@@ -57,7 +57,7 @@ class CloudVisionProvider(
 
     private fun callGemini(imageBytes: ByteArray, apiKey: String, startedAt: Long): DetectionResult? = runCatching {
         val base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP)
-        val endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$apiKey"
+        val endpoint = "https://generativelanguage.googleapis.com/v1/models/gemini-3.5-flash:generateContent?key=$apiKey"
         val url = URL(endpoint)
         val connection = (url.openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"

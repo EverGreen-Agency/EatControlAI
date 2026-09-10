@@ -27,7 +27,11 @@ class S3TelemetryClient(
 
         runCatching {
             val targetUrl = if (!endpoint.isNullOrBlank()) {
-                "$endpoint/$recordId.jpg"
+                if (bucket != null && !endpoint.contains(bucket)) {
+                    "${endpoint.trimEnd('/')}/$bucket/$recordId.jpg"
+                } else {
+                    "${endpoint.trimEnd('/')}/$recordId.jpg"
+                }
             } else {
                 "https://$bucket.s3.$region.amazonaws.com/optin_dataset/$recordId.jpg"
             }
