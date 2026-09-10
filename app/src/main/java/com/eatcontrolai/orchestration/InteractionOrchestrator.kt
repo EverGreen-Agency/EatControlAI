@@ -461,11 +461,14 @@ class InteractionOrchestrator(
                 )
             }
             .orEmpty()
+        val detectedDish = analysis.detectedDishName
+            ?: detection?.detections?.firstOrNull()?.label?.replaceFirstChar { it.uppercase() }
         return Perception(
             evidence = evidence,
             recognizedText = detection?.detections
                 ?.joinToString(separator = "\n") { "${it.label}: ${(it.confidence * 100).toInt()}%" }
                 .orEmpty(),
+            productName = detectedDish,
             plateAnalysis = analysis
         )
     }

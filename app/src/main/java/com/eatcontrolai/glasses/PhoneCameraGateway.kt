@@ -158,9 +158,13 @@ class PhoneCameraGateway(
                         .addOnSuccessListener { visionText ->
                             val text = visionText.text
                             val normalized = TextNormalizer.normalize(text)
+                            val density = text.count { it.isLetterOrDigit() }
                             val hasMarker = LABEL_MARKERS.any { it in normalized }
-                            val density = normalized.count { it.isLetterOrDigit() }
-                            if (hasMarker || density >= 35) {
+                            val hasFormula = density >= 50 && (
+                                listOf("FARINHA", "ACUCAR", "SAL", "OLEO", "GORDURA", "AROMA", "CONSERVANTE", "ACIDO").any { it in normalized } ||
+                                (text.contains(",") && density >= 75)
+                            )
+                            if (hasMarker || hasFormula) {
                                 _liveDetection.value = LiveDetection.Label(text.take(80))
                                 imageProxy.close()
                             } else {
@@ -168,7 +172,7 @@ class PhoneCameraGateway(
                                 imageLabeler.process(inputImage)
                                     .addOnSuccessListener { labels ->
                                         val components = labels.mapNotNull { detection ->
-                                            if (detection.confidence >= 0.55f) {
+                                            if (detection.confidence >= 0.50f) {
                                                 PlateLabelMapper.classFor(detection.text)
                                             } else null
                                         }.distinct()
@@ -176,7 +180,15 @@ class PhoneCameraGateway(
                                         if (components.isNotEmpty()) {
                                             _liveDetection.value = LiveDetection.Plate(components)
                                         } else {
-                                            _liveDetection.value = LiveDetection.Idle
+                                            val textDishClass = listOf("shawarma", "wrap", "frango", "carne", "salada", "massa", "arroz", "peixe")
+                                                .firstOrNull { it in normalized.lowercase() }
+                                                ?.let { PlateLabelMapper.classFor(it) }
+
+                                            if (textDishClass != null) {
+                                                _liveDetection.value = LiveDetection.Plate(listOf(textDishClass))
+                                            } else {
+                                                _liveDetection.value = LiveDetection.Idle
+                                            }
                                         }
                                         imageProxy.close()
                                     }

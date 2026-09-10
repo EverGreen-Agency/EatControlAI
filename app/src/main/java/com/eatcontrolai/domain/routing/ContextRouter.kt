@@ -43,7 +43,15 @@ object ContextRouter {
     /** Uma linha com preço pode ser coincidência; duas já desenham um cardápio. */
     const val MIN_PRICED_LINES_FOR_MENU = 2
 
-    private val labelMarkers = listOf("INGREDIENTES", "CONTEM", "ALERGICOS", "PODE CONTER", "NAO CONTEM")
+    private val labelMarkers = listOf(
+        "INGREDIENTES", "CONTEM", "ALERGICOS", "PODE CONTER", "NAO CONTEM",
+        "TABELA NUTRICIONAL", "INFORMACAO NUTRICIONAL", "VALOR ENERGETICO"
+    )
+
+    private val ingredientTerms = listOf(
+        "FARINHA", "ACUCAR", "SAL", "OLEO", "GORDURA", "AROMA", "CONSERVANTE",
+        "EMULSIFICANTE", "ACIDO", "AMIDO", "ESTABILIZANTE", "CORANTE"
+    )
 
     sealed interface Decision {
         val track: AnalysisTrack?
@@ -97,12 +105,17 @@ object ContextRouter {
         }
 
         val density = normalized.count { it.isLetterOrDigit() }
-        if (density >= MIN_CHARS_FOR_LABEL) {
-            return Decision.Label("texto denso o suficiente ($density caracteres)")
+        val hasIngredientStructure = density >= MIN_CHARS_FOR_LABEL && (
+            ingredientTerms.any { it in normalized } ||
+            (recognizedText.contains(",") && density >= 60) ||
+            density >= 140
+        )
+        if (hasIngredientStructure) {
+            return Decision.Label("texto denso de ingredientes ($density caracteres)")
         }
 
         return Decision.Plate(
-            "sem código de barras e com pouco texto ($density caracteres): trata como prato"
+            "sem código de barras e sem marcadores de rótulo ($density caracteres): trata como alimento/prato"
         )
     }
 }

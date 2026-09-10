@@ -22,6 +22,19 @@
 
 ## Histórico de Sessões
 
+### [2026-09-10 — Madrugada] Correção do Roteamento de Rótulos, Identificação Multimodal de Pratos (Shawarma/Wraps), HUD de Buffet e Chaves Reais de API/S3
+- **Agente / Modelo**: Antigravity (Advanced Agentic Coding)
+- **Objetivo**: Corrigir o bug onde qualquer texto na cena (incluindo tela de busca de comida) ativava o modo Rótulo e gerava o título legado "Biscoito recheado", configurar credenciais reais de API (Gemini/OpenRouter) e S3 no `local.properties`, expandir o mapeador de pratos para sandwiches/wraps e implementar HUD dinâmico com seletor de modos para Buffet.
+- **Entregas**:
+  - **Eliminação do Fallback de Biscoito**: Removido em `EatControlViewModel.kt` o fallback que injetava o título da cena mockada (`selectedScene?.title`). Agora utiliza o nome real do prato identificado (`detectedDishName`), componentes visuais ou linha de OCR limpa, com fallback neutro de "Refeição assistida".
+  - **Roteamento Preciso de Rótulo vs Prato**: Corrigida a heurística de densidade em `ContextRouter.kt` e `PhoneCameraGateway.kt`. Textos soltos de tela/pesquisa não forçam mais `AnalysisTrack.LABEL`; rótulos agora exigem palavras-chave regulatórias de ingredientes ou fórmulas aditivas, liberando a trilha `AnalysisTrack.PLATE`.
+  - **Identificação de Shawarma e Sanduíches**: `PlateFoodClass` expandido com `SANDWICH_WRAP`, `BREAD` e `SOUP`. Mapeamento de termos em PT/EN ("shawarma", "wrap", "kebab", "sanduiche", "taco", "burrito") adicionado em `PlateLabelMapper.kt`, com extração do nome específico do prato em `PlateAnalysis.kt`.
+  - **Integração de APIs Reais**: `local.properties` configurado com Gemini Flash (`gemini-flash-latest`), OpenRouter (`openai/gpt-4o`) e Storage S3 (`s3opt-in-homi0mlb02-2ci-g` no endpoint `https://t3.storageapi.dev`), testados e validados.
+  - **HUD de Buffet e Trilho de Modos**: `AnalyzeScreen.kt` equipado com seletor rápido de modos (`✦ Auto`, `🍽 Prato`, `Aa Rótulo`, `≡ Cardápio`, `▦ Código`) e `HudViewfinder` adaptativo com cantoneiras animadas que expandem e mudam de cor no modo Buffet/Prato.
+  - **Validação Completa**: 100% dos testes unitários aprovados e APK compilado com sucesso em `app/build/outputs/apk/debug/app-debug.apk`.
+- **Arquivos Tocados**: `local.properties`, `app/src/main/java/com/eatcontrolai/domain/plate/PlateAnalysis.kt`, `app/src/main/java/com/eatcontrolai/domain/routing/ContextRouter.kt`, `app/src/main/java/com/eatcontrolai/glasses/PhoneCameraGateway.kt`, `app/src/main/java/com/eatcontrolai/inference/cloud/CloudVisionProvider.kt`, `app/src/main/java/com/eatcontrolai/orchestration/InteractionOrchestrator.kt`, `app/src/main/java/com/eatcontrolai/ui/EatControlViewModel.kt`, `app/src/main/java/com/eatcontrolai/ui/analyze/AnalyzeScreen.kt`, `.agents/memory/REGISTRO_SESSAO.md`.
+- **Próximas Pendências**: Instalar o APK no dispositivo físico para teste em campo de shawarma/buffet com a câmera real e as APIs em nuvem ativas.
+
 ### [2026-09-09 — Noite] Remoção de Mocks, Persistência Local de Fotos de Refeições, Calculadora de Macros GLP-1 e Provedor de Visão em Nuvem / S3
 - **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
 - **Objetivo**: Eliminar o mock de captura que causava reconhecimento falso de biscoito recheado, implementar salvamento local privado de fotos de refeições no aparelho com visualização rica no Histórico (BottomSheet), adicionar calculadora de macros para GLP-1, integrar provedor multimodal de Visão em Nuvem (Gemini / OpenRouter) e telemetria de imagens S3 para opt-in de pesquisa.

@@ -17,6 +17,9 @@ enum class PlateFoodClass(val displayName: String) {
     EGG("ovo"),
     FRIED_FOOD("fritura"),
     CHEESE("queijo"),
+    SANDWICH_WRAP("wrap/sanduíche"),
+    BREAD("pão"),
+    SOUP("sopa/caldo"),
     DESSERT("sobremesa")
 }
 
@@ -33,7 +36,8 @@ data class PlateAnalysis(
     /** Sugestões pré-selecionadas ainda precisam do botão explícito de confirmação. */
     val selectedComponents: Set<PlateFoodClass> = emptySet(),
     val registered: Boolean = false,
-    val warnings: List<String> = emptyList()
+    val warnings: List<String> = emptyList(),
+    val detectedDishName: String? = null
 )
 
 /** Mapeia rótulos genéricos para o recorte fechado sem forçar classes desconhecidas. */
@@ -59,6 +63,7 @@ object PlateLabelMapper {
             }
 
         val selected = candidates.mapNotNull(PlateCandidate::foodClass).toSet()
+        val detectedDish = candidates.firstOrNull()?.takeIf { it.confidence >= 0.50f }?.rawLabel
         val warnings = buildList {
             if (candidates.isEmpty()) {
                 add("O modelo não produziu candidatos; selecione manualmente o que você reconhece.")
@@ -72,7 +77,8 @@ object PlateLabelMapper {
             providerId = result.meta.providerId,
             providerVersion = result.meta.version,
             selectedComponents = selected,
-            warnings = warnings
+            warnings = warnings,
+            detectedDishName = detectedDish
         )
     }
 
@@ -108,6 +114,9 @@ object PlateLabelMapper {
         listOf("vegetable", "legume") to PlateFoodClass.VEGETABLES,
         listOf("egg", "omelet", "ovo") to PlateFoodClass.EGG,
         listOf("cheese", "queijo") to PlateFoodClass.CHEESE,
+        listOf("shawarma", "wrap", "kebab", "sanduiche", "sandwich", "burger", "hamburguer", "taco", "burrito") to PlateFoodClass.SANDWICH_WRAP,
+        listOf("bread", "pao", "toast", "torrada") to PlateFoodClass.BREAD,
+        listOf("soup", "sopa", "caldo") to PlateFoodClass.SOUP,
         listOf("dessert", "cake", "pastry", "sobremesa", "bolo") to PlateFoodClass.DESSERT
     )
 

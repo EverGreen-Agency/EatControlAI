@@ -1201,16 +1201,21 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
             .sortedBy(PlateFoodClass::ordinal)
             .map(PlateFoodClass::displayName)
         val confirmedItems = menuItem?.let { listOf(it.name) } ?: plateItems
+        val detectedFood = plateAnalysis?.detectedDishName
+            ?: plateAnalysis?.candidates?.firstOrNull()?.rawLabel
+            ?: recognizedText.lines().map { it.trim() }
+                .firstOrNull { it.length in 3..40 && !it.startsWith("Ingredientes", ignoreCase = true) }
         val title = productName
             ?: menuItem?.name
             ?: plateItems.takeIf { it.isNotEmpty() }
                 ?.joinToString(prefix = "Prato · ", limit = 3, truncated = "…")
-            ?: _analyze.value.selectedScene?.title
+            ?: detectedFood
+            ?: (if (container.glasses.active == CaptureSource.MOCK_GLASSES) _analyze.value.selectedScene?.title else null)
             ?: when (track) {
                 AnalysisTrack.LABEL -> "Rótulo analisado"
                 AnalysisTrack.BARCODE -> "Produto escaneado"
                 AnalysisTrack.MENU -> "Opção de cardápio"
-                AnalysisTrack.PLATE -> "Prato assistido"
+                AnalysisTrack.PLATE -> "Refeição assistida"
             }
         val recordId = UUID.randomUUID().toString()
         val photoPath = runCatching {

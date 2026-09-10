@@ -26,7 +26,7 @@ import java.net.URL
 class CloudVisionProvider(
     var geminiApiKey: String? = null,
     var openRouterApiKey: String? = null,
-    var customModel: String = "google/gemini-2.0-flash-exp:free",
+    var customModel: String = "openai/gpt-4o",
     private val fallback: ObjectDetectionProvider = MlKitImageLabelingProvider()
 ) : ObjectDetectionProvider {
 
@@ -57,7 +57,7 @@ class CloudVisionProvider(
 
     private fun callGemini(imageBytes: ByteArray, apiKey: String, startedAt: Long): DetectionResult? = runCatching {
         val base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP)
-        val endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
+        val endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$apiKey"
         val url = URL(endpoint)
         val connection = (url.openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"
@@ -67,9 +67,9 @@ class CloudVisionProvider(
             setRequestProperty("Content-Type", "application/json")
         }
 
-        val prompt = "Analyze this food image. Identify the dish and its main food components/ingredients. " +
-            "Return ONLY a raw JSON array of objects with 'label' (in Portuguese or English, e.g. 'frango', 'arroz', 'salada') and 'confidence' (number between 0.0 and 1.0). " +
-            "Example: [{\"label\": \"frango\", \"confidence\": 0.95}, {\"label\": \"salada\", \"confidence\": 0.90}]. Do not wrap in markdown."
+        val prompt = "Analyze this food/dish image. Identify the main dish (e.g. 'Shawarma', 'Wrap de frango', 'Frango grelhado') and its visible components/ingredients. " +
+            "Return ONLY a raw JSON array of objects with 'label' (name in Portuguese or English) and 'confidence' (number between 0.0 and 1.0). " +
+            "Example: [{\"label\": \"Shawarma de frango\", \"confidence\": 0.98}, {\"label\": \"frango\", \"confidence\": 0.95}, {\"label\": \"salada\", \"confidence\": 0.90}]. Do not wrap in markdown."
 
         val payload = JSONObject().apply {
             put("contents", JSONArray().apply {
@@ -132,7 +132,7 @@ class CloudVisionProvider(
             setRequestProperty("X-Title", "EatControl AI")
         }
 
-        val prompt = "Identifique os alimentos deste prato. Retorne APENAS um array JSON: [{\"label\": \"frango\", \"confidence\": 0.95}]. Sem markdown."
+        val prompt = "Identifique o prato principal (ex: 'Shawarma de frango', 'Wrap', etc.) e seus componentes visíveis. Retorne APENAS um array JSON de objetos com 'label' e 'confidence': [{\"label\": \"Shawarma de frango\", \"confidence\": 0.98}, {\"label\": \"frango\", \"confidence\": 0.95}]. Sem markdown."
 
         val payload = JSONObject().apply {
             put("model", model)

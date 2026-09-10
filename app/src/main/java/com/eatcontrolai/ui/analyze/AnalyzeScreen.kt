@@ -260,6 +260,7 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
 
         // ------------------------------------------------------------- 2. HUD de Mira Central
         HudViewfinder(
+            mode = state.mode,
             detection = state.liveDetection,
             modifier = Modifier.align(Alignment.Center)
         )
@@ -283,11 +284,11 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text("✦", color = EcColors.Mint, style = MaterialTheme.typography.labelMedium)
+                Text(state.mode.glyph, color = EcColors.Mint, style = MaterialTheme.typography.labelMedium)
                 val restrictionSummary = profile.restrictions.firstOrNull()?.allergen?.displayName
                     ?: "Sem restrições"
                 Text(
-                    "Automático · $restrictionSummary",
+                    "${state.mode.label} · $restrictionSummary",
                     style = MaterialTheme.typography.labelSmall,
                     color = EcColors.TextPrimary
                 )
@@ -370,6 +371,35 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                 }
             }
 
+            // Trilho de Seleção Rápida de Modos (Auto, Prato/Buffet, Rótulo, Cardápio, Código)
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color.Black.copy(alpha = 0.70f))
+                    .border(1.dp, EcColors.Line, RoundedCornerShape(20.dp))
+                    .padding(horizontal = 4.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                com.eatcontrolai.ui.AnalyzeMode.entries.forEach { mode ->
+                    val isSelected = state.mode == mode
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(if (isSelected) EcColors.Mint else Color.Transparent)
+                            .clickable { viewModel.selectMode(mode) }
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${mode.glyph} ${if (mode == com.eatcontrolai.ui.AnalyzeMode.PLATE) "Prato/Buffet" else mode.label}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isSelected) Color.Black else EcColors.TextMuted
+                        )
+                    }
+                }
+            }
+
             // Controles de Ação na Base
             Row(
                 modifier = Modifier
@@ -433,9 +463,14 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                     }
                 }
 
-                // Indicador de modo (Auto)
+                // Indicador e alternador de modo (cicla entre Auto, Prato, Rótulo, etc.)
                 IconButton(
-                    onClick = { viewModel.showToast("Modo Automático Multimodal Ativo") },
+                    onClick = {
+                        val modes = com.eatcontrolai.ui.AnalyzeMode.entries
+                        val nextMode = modes[(state.mode.ordinal + 1) % modes.size]
+                        viewModel.selectMode(nextMode)
+                        viewModel.showToast("Modo: ${nextMode.label}")
+                    },
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
@@ -586,9 +621,10 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
     }
 }
 
-/** HUD com cantoneiras animadas de mira central. */
+/** HUD com cantoneiras animadas de mira central e contorno adaptativo para Buffet / Rótulo. */
 @Composable
 private fun HudViewfinder(
+    mode: AnalyzeMode,
     detection: LiveDetection,
     modifier: Modifier = Modifier
 ) {
@@ -603,30 +639,44 @@ private fun HudViewfinder(
         label = "pulseAlpha"
     )
 
-    val color = when (detection) {
-        is LiveDetection.Barcode -> EcColors.Mint
-        is LiveDetection.Label -> EcColors.MintSoft
-        is LiveDetection.Plate -> EcColors.Amber
-        LiveDetection.Idle -> Color.White.copy(alpha = 0.35f)
+    val isPlateContext = mode == AnalyzeMode.PLATE || detection is LiveDetection.Plate
+    val boxSize = if (isPlateContext) 310.dp else 280.dp
+
+    val color = when {
+        detection is LiveDetection.Barcode -> EcColors.Mint
+        detection is LiveDetection.Label -> EcColors.MintSoft
+        detection is LiveDetection.Plate -> EcColors.Amber
+        mode == AnalyzeMode.PLATE -> EcColors.Amber.copy(alpha = 0.85f)
+        mode == AnalyzeMode.BARCODE -> EcColors.Mint.copy(alpha = 0.85f)
+        mode == AnalyzeMode.LABEL -> EcColors.MintSoft.copy(alpha = 0.85f)
+        mode == AnalyzeMode.MENU -> Color(0xFF64B5F6)
+        else -> Color.White.copy(alpha = 0.35f)
     }
 
-    val labelText = when (detection) {
-        is LiveDetection.Barcode -> "Código de barras detectado"
-        is LiveDetection.Label -> "Rótulo de ingredientes"
-        is LiveDetection.Plate -> "Prato de comida identificado"
-        LiveDetection.Idle -> "Aponte para código de barras, rótulo ou prato"
+    val labelText = when {
+        detection is LiveDetection.Barcode -> "Código de barras detectado"
+        detection is LiveDetection.Label -> "Rótulo de ingredientes"
+        detection is LiveDetection.Plate -> {
+            val items = detection.components.take(2).joinToString { it.displayName }
+            if (items.isNotBlank()) "🍽 Prato: $items" else "🍽 Alimento identificado"
+        }
+        mode == AnalyzeMode.PLATE -> "🍽 Modo Prato / Buffet · Mira contínua ativada"
+        mode == AnalyzeMode.BARCODE -> "▦ Modo Código · Enquadre o código de barras"
+        mode == AnalyzeMode.LABEL -> "Aa Modo Rótulo · Enquadre os ingredientes"
+        mode == AnalyzeMode.MENU -> "≡ Modo Cardápio · Enquadre o texto"
+        else -> "Aponte para código de barras, rótulo ou prato"
     }
 
     Box(
-        modifier = modifier.size(280.dp),
+        modifier = modifier.size(boxSize),
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val strokeWidth = 3.5.dp.toPx()
-            val cornerLength = 30.dp.toPx()
+            val strokeWidth = (if (isPlateContext) 4.0.dp else 3.5.dp).toPx()
+            val cornerLength = (if (isPlateContext) 36.dp else 30.dp).toPx()
             val w = size.width
             val h = size.height
-            val strokeColor = color.copy(alpha = if (detection != LiveDetection.Idle) alpha else 0.45f)
+            val strokeColor = color.copy(alpha = if (detection != LiveDetection.Idle || mode != AnalyzeMode.AUTO) alpha else 0.45f)
 
             // Top-Left
             drawLine(strokeColor, Offset(0f, 0f), Offset(cornerLength, 0f), strokeWidth)
@@ -650,9 +700,9 @@ private fun HudViewfinder(
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 10.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color.Black.copy(alpha = 0.70f))
-                .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                .padding(horizontal = 10.dp, vertical = 5.dp)
+                .background(Color.Black.copy(alpha = 0.75f))
+                .border(1.dp, color.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+                .padding(horizontal = 12.dp, vertical = 6.dp)
         ) {
             Text(
                 text = labelText,
