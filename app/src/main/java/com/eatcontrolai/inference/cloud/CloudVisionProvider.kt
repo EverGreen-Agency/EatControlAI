@@ -26,6 +26,7 @@ import java.net.URL
 class CloudVisionProvider(
     var geminiApiKey: String? = null,
     var openRouterApiKey: String? = null,
+    var groqApiKey: String? = null,
     var customModel: String = "openrouter/free",
     private val fallback: ObjectDetectionProvider = MlKitImageLabelingProvider()
 ) : ObjectDetectionProvider {

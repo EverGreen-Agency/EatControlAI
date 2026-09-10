@@ -24,10 +24,12 @@ import com.eatcontrolai.core.model.LabelClaim
 import com.eatcontrolai.core.model.MealRecord
 import com.eatcontrolai.core.model.NutrientAmount
 import com.eatcontrolai.core.model.NutrientProgress
+import com.eatcontrolai.core.model.PrivacySettings
 import com.eatcontrolai.core.model.Restriction
 import com.eatcontrolai.core.model.RestrictionSeverity
 import com.eatcontrolai.core.model.UncertaintyPolicy
 import com.eatcontrolai.core.model.UserProfile
+import kotlinx.coroutines.Dispatchers
 import com.eatcontrolai.domain.glp1.EscalationLevel
 import com.eatcontrolai.domain.glp1.Glp1Context
 import com.eatcontrolai.domain.glp1.Glp1HistoryAlerts
@@ -1117,6 +1119,31 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
         showToast("Perfil local removido. Configure um novo perfil para continuar.")
     }
 
+    val privacySettings: StateFlow<PrivacySettings> = container.privacy.settings
+
+    fun toggleShareForImprovement(enabled: Boolean) {
+        container.privacy.update { it.copy(shareForImprovement = enabled) }
+        if (enabled) {
+            showToast("Opt-in ativado: fotos anônimas serão enviadas para o S3.")
+        } else {
+            showToast("Opt-in desativado: fotos ficam estritamente locais.")
+        }
+    }
+
+    fun testS3Upload() {
+        viewModelScope.launch {
+            val dummyBytes = "EATCONTROL_OPTIN_VERIFY".toByteArray(Charsets.UTF_8)
+            val testId = "test_${System.currentTimeMillis()}"
+            showToast("Enviando foto de teste para o S3...")
+            val success = container.s3Telemetry.uploadMealPhoto(testId, dummyBytes)
+            if (success) {
+                showToast("S3: Upload realizado com sucesso (HTTP 200/201)!")
+            } else {
+                showToast("S3: Falha no upload (403 AccessDenied - configure as chaves de acesso)")
+            }
+        }
+    }
+
     // ------------------------------------------------------------------ óculos
 
     fun testAudio() {
@@ -1223,6 +1250,14 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
                 val dir = java.io.File(container.application.filesDir, "meal_photos").apply { mkdirs() }
                 val file = java.io.File(dir, "$recordId.jpg")
                 file.writeBytes(frameJpeg)
+
+                // Opt-in de telemetria e pesquisa para o S3 (Railway / AWS)
+                if (container.privacy.settings.value.shareForImprovement) {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        container.s3Telemetry.uploadMealPhoto(recordId, frameJpeg)
+                    }
+                }
+
                 file.absolutePath
             } else null
         }.getOrNull()

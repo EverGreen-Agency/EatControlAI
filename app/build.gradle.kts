@@ -93,15 +93,21 @@ android {
 
         val geminiKey = localProperties.getProperty("gemini.api.key") ?: ""
         val openRouterKey = localProperties.getProperty("openrouter.api.key") ?: ""
+        val groqKey = localProperties.getProperty("groq.api.key") ?: ""
         val s3Bucket = localProperties.getProperty("s3.bucket") ?: ""
-        val s3Region = localProperties.getProperty("s3.region") ?: "sa-east-1"
+        val s3Region = localProperties.getProperty("s3.region") ?: "auto"
         val s3Endpoint = localProperties.getProperty("s3.endpoint") ?: ""
+        val s3AccessKey = localProperties.getProperty("s3.access.key") ?: ""
+        val s3SecretKey = localProperties.getProperty("s3.secret.key") ?: ""
 
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
         buildConfigField("String", "OPENROUTER_API_KEY", "\"$openRouterKey\"")
+        buildConfigField("String", "GROQ_API_KEY", "\"$groqKey\"")
         buildConfigField("String", "S3_BUCKET", "\"$s3Bucket\"")
         buildConfigField("String", "S3_REGION", "\"$s3Region\"")
         buildConfigField("String", "S3_ENDPOINT", "\"$s3Endpoint\"")
+        buildConfigField("String", "S3_ACCESS_KEY", "\"$s3AccessKey\"")
+        buildConfigField("String", "S3_SECRET_KEY", "\"$s3SecretKey\"")
     }
 
     buildTypes {

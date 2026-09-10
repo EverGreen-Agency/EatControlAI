@@ -93,13 +93,16 @@ class AppContainer(val application: Application) {
     val cloudVision = com.eatcontrolai.inference.cloud.CloudVisionProvider(
         geminiApiKey = BuildConfig.GEMINI_API_KEY.takeIf { it.isNotBlank() },
         openRouterApiKey = BuildConfig.OPENROUTER_API_KEY.takeIf { it.isNotBlank() },
+        groqApiKey = BuildConfig.GROQ_API_KEY.takeIf { it.isNotBlank() },
         fallback = MlKitImageLabelingProvider()
     )
 
     val s3Telemetry = com.eatcontrolai.data.telemetry.S3TelemetryClient(
         bucketName = BuildConfig.S3_BUCKET.takeIf { it.isNotBlank() },
-        region = BuildConfig.S3_REGION.takeIf { it.isNotBlank() } ?: "sa-east-1",
-        customEndpoint = BuildConfig.S3_ENDPOINT.takeIf { it.isNotBlank() }
+        region = BuildConfig.S3_REGION.takeIf { it.isNotBlank() } ?: "auto",
+        customEndpoint = BuildConfig.S3_ENDPOINT.takeIf { it.isNotBlank() },
+        accessKey = BuildConfig.S3_ACCESS_KEY.takeIf { it.isNotBlank() },
+        secretKey = BuildConfig.S3_SECRET_KEY.takeIf { it.isNotBlank() }
     )
 
     val models = ModelRegistry(

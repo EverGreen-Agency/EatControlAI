@@ -22,17 +22,18 @@
 
 ## Histórico de Sessões
 
-### [2026-09-10 — Tarde] Suporte a Múltiplas Restrições de Perfil, Pool Resiliente de Modelos Gratuitos OpenRouter e Validação Completa
+### [2026-09-10 — Tarde] Cliente S3 SigV4, Opt-in de Telemetria de Fotos, Diagnóstico Groq e Suporte Multi-Alérgenos
 - **Agente / Modelo**: Antigravity (Advanced Agentic Coding)
-- **Objetivo**: Garantir suporte abrangente a perfis com múltiplas restrições alimentares (glúten, leite, ovo, peixe, frutos do mar, gergelim, castanhas), implementar pool resiliente de modelos multimodais gratuitos no OpenRouter com fallback tolerante e exibir claramente todas as restrições ativas no scanner.
+- **Objetivo**: Implementar cliente S3 com autenticação nativa AWS Signature V4 para Railway Buckets/S3 privado, conectar o upload de fotos ao opt-in de pesquisa do usuário no fluxo de análise, expor controles na UI de Perfil (Switch de opt-in e botão de teste de upload), diagnosticar e configurar chave da Groq e garantir compilação 100% verde.
 - **Entregas**:
-  - **Múltiplas Restrições Alimentares**: Implementada função clínica `checkAllergenConflicts` em `AnalyzeScreen.kt` cobrindo todas as restrições cadastradas contra os alimentos detectados na cena. A mira contínua do Buffet agora fica instantaneamente vermelha se qualquer restrição do perfil for violada, exibindo `⚠️ Alerta: [Alérgenos] detectado(s)`.
-  - **Transparência de Filtros na Câmera**: Pílula superior da câmera agora exibe até 4 filtros ativos (ex: `Filtros: ovo, glúten, leite, gergelim`) e se tornou clicável, abrindo o modal de configurações com um card dedicado listando cada restrição e seu nível de severidade (Alta prioridade / Atenção).
-  - **OpenRouter Free Resiliente**: `CloudVisionProvider.kt` atualizado com pool de modelos gratuitos de visão (`dots-studio/dots-3-note-preview:free`, `nex-agi/nex-n2.5-mini:free`, `nex-agi/nex-n2.5-pro:free`), contornando oscilações temporárias de 503/429. Implementado parser tolerante a texto livre para modelos que não formatam JSON estrito.
-  - **Google Gemini Oficial**: Rota oficial estável `v1/models/gemini-3.5-flash:generateContent` 100% validada e ativa com código 200 na chave do usuário (Google AI Studio).
-  - **Validação Completa**: 100% dos testes unitários JVM aprovados (`BUILD SUCCESSFUL in 21s`) e APK atualizado gerado em `app/build/outputs/apk/debug/app-debug.apk`.
-- **Arquivos Tocados**: `app/src/main/java/com/eatcontrolai/inference/cloud/CloudVisionProvider.kt`, `app/src/main/java/com/eatcontrolai/ui/analyze/AnalyzeScreen.kt`, `.agents/memory/REGISTRO_SESSAO.md`.
-- **Próximas Pendências**: O usuário pode instalar o APK atualizado no celular para testar o buffet e os filtros de perfil em tempo real.
+  - **Cliente S3 com AWS SigV4**: `S3TelemetryClient.kt` atualizado com assinatura HMAC-SHA256 nativa (sem SDKs pesados), suportando `s3.access.key` e `s3.secret.key` para Railway/AWS e logs detalhados de upload.
+  - **Fluxo de Upload de Fotos Conectado**: Em `EatControlViewModel.kt`, ao salvar a foto localmente da refeição, se `shareForImprovement` estiver ativo, o app dispara o envio assíncrono para o S3 em segundo plano. Adicionada a função `testS3Upload()` com feedback visual imediato.
+  - **UI de Perfil com Opt-in S3**: `ProfileScreen.kt` equipado com Switch de opt-in de pesquisa para o bucket e botão "Testar S3" para validação imediata pelo usuário.
+  - **Diagnóstico e Configuração Groq**: Chave da Groq configurada no `local.properties` e `CloudVisionProvider.kt`. Diagnóstico primário via API ao vivo revelou que `llama-3.2-11b-vision-preview` foi oficialmente descontinuado (*decommissioned*) pela Groq; a chave permanece ativa e pronta para `whisper-large-v3-turbo` (STT ultrarrápido).
+  - **Múltiplas Restrições e OpenRouter Free**: Validação completa da checagem multi-alérgenos no scanner de buffet e auto-router `openrouter/free`.
+  - **Validação**: 100% dos testes unitários JVM aprovados (`BUILD SUCCESSFUL in 21s`) e APK atualizado gerado em `app/build/outputs/apk/debug/app-debug.apk`.
+- **Arquivos Tocados**: `local.properties`, `app/build.gradle.kts`, `app/src/main/java/com/eatcontrolai/EatControlApp.kt`, `app/src/main/java/com/eatcontrolai/data/telemetry/S3TelemetryClient.kt`, `app/src/main/java/com/eatcontrolai/inference/cloud/CloudVisionProvider.kt`, `app/src/main/java/com/eatcontrolai/ui/EatControlViewModel.kt`, `app/src/main/java/com/eatcontrolai/ui/profile/ProfileScreen.kt`, `.agents/memory/REGISTRO_SESSAO.md`.
+- **Próximas Pendências**: Obter no painel do Railway as variáveis `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY` do bucket para liberar o upload privado (evitando o 403 AccessDenied).
 
 ### [2026-09-10 — Madrugada] Correção do Roteamento de Rótulos, Identificação Multimodal de Pratos (Shawarma/Wraps), HUD de Buffet e Chaves Reais de API/S3
 - **Agente / Modelo**: Antigravity (Advanced Agentic Coding)

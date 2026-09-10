@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,6 +31,7 @@ import com.eatcontrolai.ui.theme.EcColors
 fun ProfileScreen(viewModel: EatControlViewModel, onNavigate: (Destination) -> Unit) {
     val profile by viewModel.profile.collectAsState()
     val glasses by viewModel.glasses.collectAsState()
+    val privacySettings by viewModel.privacySettings.collectAsState()
 
     LazyColumn(
         modifier = Modifier.fillMaxWidth().statusBarsPadding(),
@@ -73,40 +76,63 @@ fun ProfileScreen(viewModel: EatControlViewModel, onNavigate: (Destination) -> U
 
         item {
             EcCard(
-                title = "Privacidade",
-                subtitle = "Comportamentos reais do MVP — sem controles que ainda não têm efeito."
+                title = "Privacidade & Telemetria S3",
+                subtitle = "Transparência total sobre o armazenamento local e envio para pesquisa."
             ) {
                 EcRow(
                     glyph = "EDGE",
                     title = "Processamento no telefone",
-                    detail = "OCR, barcode e regras rodam localmente.",
+                    detail = "OCR, barcode e regras rodam localmente com fallback offline.",
                     glyphTone = EcColors.Mint
                 )
                 EcRow(
                     glyph = "IMG",
-                    title = "Fotos não são salvas",
-                    detail = "O frame existe só durante a análise e a visualização do resultado.",
+                    title = "Fotos salvas no aparelho",
+                    detail = "Armazenadas na pasta privada do app para consulta no Histórico.",
                     glyphTone = EcColors.Mint
                 )
-                EcRow(
-                    glyph = "HIST",
-                    title = "Histórico local",
-                    detail = "Texto e decisões ficam no DataStore deste aparelho, fora do backup.",
-                    glyphTone = EcColors.Mint
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    "Não há upload, compartilhamento para melhoria nem sincronização no MVP. " +
-                        "A telemetria em memória contém somente latências, provider e versão do modelo.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = EcColors.TextFaint
-                )
-                Spacer(Modifier.height(12.dp))
-                OutlinedButton(
-                    onClick = viewModel::clearHistory,
-                    modifier = Modifier.fillMaxWidth()
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                 ) {
-                    Text("Apagar meu histórico deste aparelho")
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "Opt-in de pesquisa (S3)",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = EcColors.TextPrimary
+                        )
+                        Text(
+                            "Permite enviar cópias anonimizadas das fotos ao bucket S3 para treinamento do modelo.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = EcColors.TextMuted
+                        )
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Switch(
+                        checked = privacySettings.shareForImprovement,
+                        onCheckedChange = viewModel::toggleShareForImprovement,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = EcColors.OnMint,
+                            checkedTrackColor = EcColors.Mint
+                        )
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(
+                        onClick = viewModel::testS3Upload,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Testar S3")
+                    }
+                    OutlinedButton(
+                        onClick = viewModel::clearHistory,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Limpar histórico")
+                    }
                 }
             }
         }
