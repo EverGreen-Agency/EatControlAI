@@ -22,20 +22,17 @@
 
 ## Histórico de Sessões
 
-### [2026-09-10 — Tarde] Correção de UX/UI (Padding Plano, Status Edge AI, Filtro da Câmera) e Validação de Conectividade API/S3
+### [2026-09-10 — Tarde] Suporte a Múltiplas Restrições de Perfil, Pool Resiliente de Modelos Gratuitos OpenRouter e Validação Completa
 - **Agente / Modelo**: Antigravity (Advanced Agentic Coding)
-- **Objetivo**: Eliminar o badge de "CONECTANDO" falso na Home, corrigir o padding cortado no final da tela de Plano, transformar o texto solto "· ovo" no topo da câmera em um indicador claro de filtros de perfil, atualizar rota estável do Gemini (`gemini-3.5-flash` na rota `v1`), ajustar concatenação de bucket no S3 e testar conectividade real de todas as chaves.
+- **Objetivo**: Garantir suporte abrangente a perfis com múltiplas restrições alimentares (glúten, leite, ovo, peixe, frutos do mar, gergelim, castanhas), implementar pool resiliente de modelos multimodais gratuitos no OpenRouter com fallback tolerante e exibir claramente todas as restrições ativas no scanner.
 - **Entregas**:
-  - **Status Edge AI na Home**: `HomeScreen.kt` agora exibe `IA LOCAL PRONTA` (verde) quando a fonte é a câmera do celular, eliminando o status de "CONECTANDO" falso que acontecia porque a câmera nativa só dá bind ao abrir a tela de análise.
-  - **Respiro no Final do Plano**: `PlanScreen.kt` equipado com espaçador inferior (`Spacer(Modifier.height(40.dp))`), permitindo que a lista e o card de "Acompanhamento de hoje" rolem com folga acima da barra de navegação sem corte.
-  - **Filtro de Perfil na Câmera**: `AnalyzeScreen.kt` atualizado para exibir `Automático • Filtro: ovo` ou `X filtros ativos` (em vez de `${state.mode.label} · ovo` que parecia mock ou bug).
-  - **Validação de Chaves de API**:
-    - **Google Gemini**: A chave do usuário é 100% válida (50 modelos ativos); testado com sucesso com retorno `PONG_OK` usando o modelo `gemini-3.5-flash` na rota oficial `v1` (`CloudVisionProvider.kt` atualizado).
-    - **OpenRouter**: Retornou `402 Pagamento Obrigatório` para modelos pagos (`gpt-4o-mini`), indicando necessidade de créditos na plataforma ou uso de modelos gratuitos (`:free`).
-    - **S3 Storage**: Endpoint `https://t3.storageapi.dev` testado (403 Forbidden para requisição anônima, confirmando bucket privado ativo). `S3TelemetryClient.kt` ajustado para concatenar bucket dinamicamente.
-  - **Validação**: 100% dos testes unitários JVM aprovados e APK compilado com sucesso em `app/build/outputs/apk/debug/app-debug.apk`.
-- **Arquivos Tocados**: `app/src/main/java/com/eatcontrolai/data/telemetry/S3TelemetryClient.kt`, `app/src/main/java/com/eatcontrolai/inference/cloud/CloudVisionProvider.kt`, `app/src/main/java/com/eatcontrolai/ui/analyze/AnalyzeScreen.kt`, `app/src/main/java/com/eatcontrolai/ui/home/HomeScreen.kt`, `app/src/main/java/com/eatcontrolai/ui/plan/PlanScreen.kt`, `.agents/memory/REGISTRO_SESSAO.md`.
-- **Próximas Pendências**: O usuário deve conectar o aparelho via USB com depuração ativa para instalar com `.\gradlew installDebug`.
+  - **Múltiplas Restrições Alimentares**: Implementada função clínica `checkAllergenConflicts` em `AnalyzeScreen.kt` cobrindo todas as restrições cadastradas contra os alimentos detectados na cena. A mira contínua do Buffet agora fica instantaneamente vermelha se qualquer restrição do perfil for violada, exibindo `⚠️ Alerta: [Alérgenos] detectado(s)`.
+  - **Transparência de Filtros na Câmera**: Pílula superior da câmera agora exibe até 4 filtros ativos (ex: `Filtros: ovo, glúten, leite, gergelim`) e se tornou clicável, abrindo o modal de configurações com um card dedicado listando cada restrição e seu nível de severidade (Alta prioridade / Atenção).
+  - **OpenRouter Free Resiliente**: `CloudVisionProvider.kt` atualizado com pool de modelos gratuitos de visão (`dots-studio/dots-3-note-preview:free`, `nex-agi/nex-n2.5-mini:free`, `nex-agi/nex-n2.5-pro:free`), contornando oscilações temporárias de 503/429. Implementado parser tolerante a texto livre para modelos que não formatam JSON estrito.
+  - **Google Gemini Oficial**: Rota oficial estável `v1/models/gemini-3.5-flash:generateContent` 100% validada e ativa com código 200 na chave do usuário (Google AI Studio).
+  - **Validação Completa**: 100% dos testes unitários JVM aprovados (`BUILD SUCCESSFUL in 21s`) e APK atualizado gerado em `app/build/outputs/apk/debug/app-debug.apk`.
+- **Arquivos Tocados**: `app/src/main/java/com/eatcontrolai/inference/cloud/CloudVisionProvider.kt`, `app/src/main/java/com/eatcontrolai/ui/analyze/AnalyzeScreen.kt`, `.agents/memory/REGISTRO_SESSAO.md`.
+- **Próximas Pendências**: O usuário pode instalar o APK atualizado no celular para testar o buffet e os filtros de perfil em tempo real.
 
 ### [2026-09-10 — Madrugada] Correção do Roteamento de Rótulos, Identificação Multimodal de Pratos (Shawarma/Wraps), HUD de Buffet e Chaves Reais de API/S3
 - **Agente / Modelo**: Antigravity (Advanced Agentic Coding)

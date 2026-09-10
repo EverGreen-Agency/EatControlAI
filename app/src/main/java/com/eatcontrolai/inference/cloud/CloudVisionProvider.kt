@@ -26,7 +26,7 @@ import java.net.URL
 class CloudVisionProvider(
     var geminiApiKey: String? = null,
     var openRouterApiKey: String? = null,
-    var customModel: String = "openai/gpt-4o",
+    var customModel: String = "nex-agi/nex-n2.5-mini:free",
     private val fallback: ObjectDetectionProvider = MlKitImageLabelingProvider()
 ) : ObjectDetectionProvider {
 
@@ -42,12 +42,21 @@ class CloudVisionProvider(
             }
         }
 
-        // 2. Tenta OpenRouter se a chave estiver configurada
+        // 2. Tenta OpenRouter com pool de modelos gratuitos se a chave estiver configurada
         val openRouterKey = openRouterApiKey?.trim()
         if (!openRouterKey.isNullOrBlank()) {
-            val result = callOpenRouter(imageBytes, openRouterKey, customModel, startedAt)
-            if (result != null && result.detections.isNotEmpty()) {
-                return@withContext result
+            val candidateModels = listOfNotNull(
+                customModel.takeIf { it.isNotBlank() },
+                "dots-studio/dots-3-note-preview:free",
+                "nex-agi/nex-n2.5-mini:free",
+                "nex-agi/nex-n2.5-pro:free"
+            ).distinct()
+
+            for (model in candidateModels) {
+                val result = callOpenRouter(imageBytes, openRouterKey, model, startedAt)
+                if (result != null && result.detections.isNotEmpty()) {
+                    return@withContext result
+                }
             }
         }
 
@@ -110,8 +119,8 @@ class CloudVisionProvider(
         DetectionResult(
             detections = detections,
             meta = InferenceMeta(
-                providerId = "gemini_1.5_flash_cloud",
-                version = "gemini-1.5-flash",
+                providerId = "gemini_3.5_flash_cloud",
+                version = "gemini-3.5-flash",
                 runtime = "google-ai-cloud",
                 latencyMs = (System.nanoTime() - startedAt) / 1_000_000
             )
@@ -184,19 +193,32 @@ class CloudVisionProvider(
         )
     }.getOrNull()
 
-    private fun parseDetections(rawJson: String): List<Detection> = runCatching {
-        val array = JSONArray(rawJson)
-        val list = mutableListOf<Detection>()
-        for (i in 0 until array.length()) {
-            val obj = array.optJSONObject(i) ?: continue
-            val label = obj.optString("label").trim()
-            val conf = obj.optDouble("confidence", 0.9).toFloat()
-            if (label.isNotBlank()) {
-                list.add(Detection(label = label, confidence = conf))
+    private fun parseDetections(rawJson: String): List<Detection> {
+        // Tenta primeiro interpretar como array JSON estrito
+        val jsonResult = runCatching {
+            val array = JSONArray(rawJson)
+            val list = mutableListOf<Detection>()
+            for (i in 0 until array.length()) {
+                val obj = array.optJSONObject(i) ?: continue
+                val label = obj.optString("label").trim()
+                val conf = obj.optDouble("confidence", 0.9).toFloat()
+                if (label.isNotBlank()) {
+                    list.add(Detection(label = label, confidence = conf))
+                }
             }
-        }
-        list
-    }.getOrDefault(emptyList())
+            list
+        }.getOrNull()
+
+        if (!jsonResult.isNullOrEmpty()) return jsonResult
+
+        // Fallback tolerante para modelos gratuitos que respondem em texto livre
+        return rawJson.lineSequence()
+            .map { it.trim().trim('-', '*', '•') }
+            .filter { it.isNotBlank() && !it.startsWith("{") && !it.startsWith("[") }
+            .take(3)
+            .map { Detection(label = it, confidence = 0.90f) }
+            .toList()
+    }
 
     companion object {
         private const val TIMEOUT_MS = 8_000

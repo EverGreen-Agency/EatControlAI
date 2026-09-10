@@ -74,6 +74,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.eatcontrolai.EatControlApp
 import com.eatcontrolai.core.model.Allergen
+import com.eatcontrolai.core.model.RestrictionSeverity
 import com.eatcontrolai.core.model.UserProfile
 import com.eatcontrolai.domain.plate.PlateFoodClass
 import com.eatcontrolai.glasses.CaptureSource
@@ -288,6 +289,7 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                     .clip(RoundedCornerShape(20.dp))
                     .background(Color.Black.copy(alpha = 0.65f))
                     .border(1.dp, EcColors.Line, RoundedCornerShape(20.dp))
+                    .clickable { showHardwareMenu = true }
                     .padding(horizontal = 12.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -295,11 +297,11 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                 Text(state.mode.glyph, color = EcColors.Mint, style = MaterialTheme.typography.labelMedium)
                 val filterSummary = when {
                     profile.restrictions.isEmpty() -> "Sem restrições"
-                    profile.restrictions.size == 1 -> "Filtro: ${profile.restrictions.first().allergen.displayName}"
-                    else -> "${profile.restrictions.size} filtros ativos"
+                    profile.restrictions.size <= 4 -> profile.restrictions.joinToString(", ") { it.allergen.displayName }
+                    else -> "${profile.restrictions.take(3).joinToString(", ") { it.allergen.displayName }} (+${profile.restrictions.size - 3})"
                 }
                 Text(
-                    "${state.mode.label}  •  $filterSummary",
+                    "${state.mode.label}  •  Filtros: $filterSummary",
                     style = MaterialTheme.typography.labelSmall,
                     color = EcColors.TextPrimary
                 )
@@ -360,18 +362,14 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
             ) {
                 when (val det = state.liveDetection) {
                     is LiveDetection.Plate -> {
+                        val allergenConflict = checkAllergenConflicts(det.components, profile)
                         val hasFried = det.components.contains(PlateFoodClass.FRIED_FOOD)
                         val hasProtein = det.components.any { it in listOf(PlateFoodClass.CHICKEN, PlateFoodClass.MEAT, PlateFoodClass.FISH, PlateFoodClass.EGG) }
-                        val isAllergenConflict = profile.restrictions.any { r ->
-                            (r.allergen == Allergen.MILK && det.components.contains(PlateFoodClass.CHEESE)) ||
-                            (r.allergen == Allergen.EGG && det.components.contains(PlateFoodClass.EGG)) ||
-                            (r.allergen == Allergen.FISH && det.components.contains(PlateFoodClass.FISH))
-                        }
 
-                        val isAlert = hasFried || isAllergenConflict
+                        val isAlert = hasFried || allergenConflict != null
                         val badgeColor = if (isAlert) EcColors.Red else EcColors.Mint
                         val badgeText = when {
-                            isAllergenConflict -> "⚠️ Alerta Alérgeno: Conflito com seu perfil"
+                            allergenConflict != null -> "⚠️ Alerta Alérgeno: $allergenConflict detectado"
                             hasFried -> "⚠️ Fritura detectada · Risco de náusea GLP-1"
                             hasProtein -> "🥩 Alta Proteína (~25-30g) · Alinhado ao GLP-1"
                             det.components.contains(PlateFoodClass.SALAD) -> "🥗 Fibras e Saciedade · Liberado"
@@ -661,6 +659,37 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                 }
 
                 item {
+                    EcCard(
+                        title = "Restrições ativas na IA (${profile.restrictions.size})",
+                        subtitle = if (profile.restrictions.isEmpty()) "Nenhuma restrição cadastrada. Configure na aba Meu Plano."
+                        else "Todas as restrições abaixo disparam alerta na mira e na decisão:"
+                    ) {
+                        if (profile.restrictions.isNotEmpty()) {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                profile.restrictions.forEach { res ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            "• ${res.allergen.displayName.replaceFirstChar { it.uppercase() }}",
+                                            color = EcColors.TextPrimary,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                        Text(
+                                            res.severity.label,
+                                            color = if (res.severity == RestrictionSeverity.CRITICAL) EcColors.Red else EcColors.Amber,
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                item {
                     Button(
                         onClick = { showHardwareMenu = false },
                         modifier = Modifier.fillMaxWidth(),
@@ -696,20 +725,16 @@ private fun HudViewfinder(
     val isPlateContext = mode == AnalyzeMode.PLATE || detection is LiveDetection.Plate
     val boxSize = if (isPlateContext) 310.dp else 280.dp
 
-    // Avaliação clínica em tempo real no Buffet
-    val isAllergenAlert = if (detection is LiveDetection.Plate) {
-        profile.restrictions.any { r ->
-            (r.allergen == Allergen.MILK && detection.components.contains(PlateFoodClass.CHEESE)) ||
-            (r.allergen == Allergen.EGG && detection.components.contains(PlateFoodClass.EGG)) ||
-            (r.allergen == Allergen.FISH && detection.components.contains(PlateFoodClass.FISH))
-        }
-    } else false
+    // Avaliação clínica abrangente em tempo real no Buffet
+    val allergenConflict = if (detection is LiveDetection.Plate) {
+        checkAllergenConflicts(detection.components, profile)
+    } else null
 
     val isFriedAlert = if (detection is LiveDetection.Plate) {
         detection.components.contains(PlateFoodClass.FRIED_FOOD)
     } else false
 
-    val isPlateAlert = isAllergenAlert || isFriedAlert
+    val isPlateAlert = allergenConflict != null || isFriedAlert
 
     val color = when {
         detection is LiveDetection.Barcode -> EcColors.Mint
@@ -726,8 +751,8 @@ private fun HudViewfinder(
     val labelText = when {
         detection is LiveDetection.Barcode -> "Código de barras detectado"
         detection is LiveDetection.Label -> "Rótulo de ingredientes"
+        detection is LiveDetection.Plate && allergenConflict != null -> "⚠️ Alerta: $allergenConflict detectado"
         detection is LiveDetection.Plate && isFriedAlert -> "⚠️ Fritura detectada · Risco de náusea GLP-1"
-        detection is LiveDetection.Plate && isAllergenAlert -> "⚠️ Alerta Alérgeno · Conflito com perfil"
         detection is LiveDetection.Plate -> {
             val items = detection.components.take(2).joinToString { it.displayName }
             if (items.isNotBlank()) "🍽 Prato: $items" else "🍽 Alimento identificado"
@@ -815,3 +840,44 @@ private tailrec fun android.content.Context.findActivity(): android.app.Activity
     is android.content.ContextWrapper -> baseContext.findActivity()
     else -> null
 }
+
+/**
+ * Avalia conflitos imediatos entre alimentos detectados na cena e todas as restrições cadastradas no perfil.
+ * Dispara alerta instantâneo e contorno vermelho na mira contínua do Buffet.
+ */
+private fun checkAllergenConflicts(components: List<PlateFoodClass>, profile: UserProfile): String? {
+    if (profile.restrictions.isEmpty() || components.isEmpty()) return null
+
+    val matched = mutableListOf<String>()
+
+    for (restriction in profile.restrictions) {
+        val allergen = restriction.allergen
+        val hasConflict = when (allergen) {
+            Allergen.GLUTEN -> components.any {
+                it == PlateFoodClass.PASTA || it == PlateFoodClass.BREAD ||
+                it == PlateFoodClass.SANDWICH_WRAP || it == PlateFoodClass.FRIED_FOOD
+            }
+            Allergen.MILK -> components.any {
+                it == PlateFoodClass.CHEESE || it == PlateFoodClass.DESSERT
+            }
+            Allergen.EGG -> components.any {
+                it == PlateFoodClass.EGG || it == PlateFoodClass.DESSERT || it == PlateFoodClass.PASTA
+            }
+            Allergen.FISH -> components.any { it == PlateFoodClass.FISH }
+            Allergen.CRUSTACEANS -> components.any { it == PlateFoodClass.FISH }
+            Allergen.SESAME -> components.any {
+                it == PlateFoodClass.SANDWICH_WRAP || it == PlateFoodClass.BREAD
+            }
+            Allergen.PEANUT, Allergen.TREE_NUTS -> components.any { it == PlateFoodClass.DESSERT }
+            Allergen.SOY -> false
+        }
+        if (hasConflict) {
+            matched.add(allergen.displayName)
+        }
+    }
+
+    return if (matched.isNotEmpty()) {
+        matched.distinct().joinToString(" e ")
+    } else null
+}
+
