@@ -26,7 +26,7 @@ import java.net.URL
 class CloudVisionProvider(
     var geminiApiKey: String? = null,
     var openRouterApiKey: String? = null,
-    var customModel: String = "nex-agi/nex-n2.5-mini:free",
+    var customModel: String = "openrouter/free",
     private val fallback: ObjectDetectionProvider = MlKitImageLabelingProvider()
 ) : ObjectDetectionProvider {
 
@@ -47,6 +47,7 @@ class CloudVisionProvider(
         if (!openRouterKey.isNullOrBlank()) {
             val candidateModels = listOfNotNull(
                 customModel.takeIf { it.isNotBlank() },
+                "openrouter/free",
                 "dots-studio/dots-3-note-preview:free",
                 "nex-agi/nex-n2.5-mini:free",
                 "nex-agi/nex-n2.5-pro:free"
