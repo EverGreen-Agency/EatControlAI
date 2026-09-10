@@ -22,6 +22,18 @@
 
 ## Histórico de Sessões
 
+### [2026-09-10 — Dia] Implementação do Carrossel de Câmera Nativa (Conceito 1), Pílula Live de Decisão no Buffet / Macros e Remoção de Mocks de Produção
+- **Agente / Modelo**: Antigravity (Advanced Agentic Coding)
+- **Objetivo**: Substituir o card retangular rígido inferior pelo Carrossel Horizontal Estilo Câmera Nativa (`PRATO` · `RÓTULO` · `AUTOMÁTICO` · `CARDÁPIO` · `CÓDIGO`), adicionar pílula flutuante de estimativa rápida de macros e contornos dinâmicos (Verde Mint para aprovado / Vermelho Coral para alérgenos e fritura com GLP-1) e remover "Óculos simulados" do modal de hardware da câmera de produção.
+- **Entregas**:
+  - **Carrossel Horizontal Nativo**: Implementado em `AnalyzeScreen.kt` um seletor fluido com snap horizontal e tipografia limpa, eliminando a quebra de texto de `Prato/Buffet` e deixando o visor completamente desobstruído.
+  - **Pílula Live de Decisão no Buffet / Macros**: Adicionada pílula translúcida com glassmorphism exibindo estimativa de proteína/fibras e alertas clínicos instantâneos para fritura e alérgenos vinculados ao perfil do usuário.
+  - **HUD com Contornos Dinâmicos**: `HudViewfinder` agora pulsa em Vermelho (`EcColors.Red`) em casos de alerta clínico (fritura pesada ou alérgeno conflitante) e em Verde (`EcColors.Mint`) quando o alimento é seguro e rico em proteína/fibras.
+  - **Remoção de Óculos Simulados para Usuários**: Modal de hardware restrito estritamente a `PHONE_CAMERA` e `DAT_GLASSES` (Ray-Ban Meta), isolando os mocks na aba Lab.
+  - **Validação**: 100% dos testes unitários JVM aprovados e APK compilado com sucesso em `app/build/outputs/apk/debug/app-debug.apk`.
+- **Arquivos Tocados**: `app/src/main/java/com/eatcontrolai/ui/analyze/AnalyzeScreen.kt`, `.agents/memory/REGISTRO_SESSAO.md`.
+- **Próximas Pendências**: Validação em dispositivo físico na esteira de publicação.
+
 ### [2026-09-10 — Madrugada] Correção do Roteamento de Rótulos, Identificação Multimodal de Pratos (Shawarma/Wraps), HUD de Buffet e Chaves Reais de API/S3
 - **Agente / Modelo**: Antigravity (Advanced Agentic Coding)
 - **Objetivo**: Corrigir o bug onde qualquer texto na cena (incluindo tela de busca de comida) ativava o modo Rótulo e gerava o título legado "Biscoito recheado", configurar credenciais reais de API (Gemini/OpenRouter) e S3 no `local.properties`, expandir o mapeador de pratos para sandwiches/wraps e implementar HUD dinâmico com seletor de modos para Buffet.

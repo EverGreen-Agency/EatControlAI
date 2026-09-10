@@ -22,6 +22,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -65,10 +67,15 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.eatcontrolai.EatControlApp
+import com.eatcontrolai.core.model.Allergen
+import com.eatcontrolai.core.model.UserProfile
+import com.eatcontrolai.domain.plate.PlateFoodClass
 import com.eatcontrolai.glasses.CaptureSource
 import com.eatcontrolai.glasses.LiveDetection
 import com.eatcontrolai.ui.AnalyzeMode
@@ -262,6 +269,7 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
         HudViewfinder(
             mode = state.mode,
             detection = state.liveDetection,
+            profile = profile,
             modifier = Modifier.align(Alignment.Center)
         )
 
@@ -341,63 +349,128 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                 }
             }
 
-            // Pílula flutuante de ação rápida (Rótulo ou Prato identificado)
+            // Pílula Live de Decisão no Buffet / Macros Estimados em Tempo Real (Detalhe da Imagem 2)
             AnimatedVisibility(
-                visible = state.liveDetection is LiveDetection.Label || state.liveDetection is LiveDetection.Plate,
+                visible = state.liveDetection is LiveDetection.Plate || state.liveDetection is LiveDetection.Label,
                 enter = fadeIn() + slideInVertically { it / 2 },
                 exit = fadeOut() + slideOutVertically { it / 2 }
             ) {
-                val (pillText, pillColor) = when (val det = state.liveDetection) {
-                    is LiveDetection.Label -> "✦ Rótulo identificado · Toque para analisar" to EcColors.Mint
+                when (val det = state.liveDetection) {
                     is LiveDetection.Plate -> {
-                        val names = det.components.take(2).joinToString { it.displayName }
-                        "🍽 Prato: ${names.ifBlank { "alimento detectado" }} · Toque para ver GLP-1" to EcColors.Amber
-                    }
-                    else -> "" to EcColors.Mint
-                }
+                        val hasFried = det.components.contains(PlateFoodClass.FRIED_FOOD)
+                        val hasProtein = det.components.any { it in listOf(PlateFoodClass.CHICKEN, PlateFoodClass.MEAT, PlateFoodClass.FISH, PlateFoodClass.EGG) }
+                        val isAllergenConflict = profile.restrictions.any { r ->
+                            (r.allergen == Allergen.MILK && det.components.contains(PlateFoodClass.CHEESE)) ||
+                            (r.allergen == Allergen.EGG && det.components.contains(PlateFoodClass.EGG)) ||
+                            (r.allergen == Allergen.FISH && det.components.contains(PlateFoodClass.FISH))
+                        }
 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(pillColor)
-                        .clickable { viewModel.analyze() }
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
-                ) {
-                    Text(
-                        text = pillText,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.Black
-                    )
+                        val isAlert = hasFried || isAllergenConflict
+                        val badgeColor = if (isAlert) EcColors.Red else EcColors.Mint
+                        val badgeText = when {
+                            isAllergenConflict -> "⚠️ Alerta Alérgeno: Conflito com seu perfil"
+                            hasFried -> "⚠️ Fritura detectada · Risco de náusea GLP-1"
+                            hasProtein -> "🥩 Alta Proteína (~25-30g) · Alinhado ao GLP-1"
+                            det.components.contains(PlateFoodClass.SALAD) -> "🥗 Fibras e Saciedade · Liberado"
+                            else -> "🍽 Alimento identificado · Toque para ver detalhes"
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(Color.Black.copy(alpha = 0.82f))
+                                .border(1.5.dp, badgeColor.copy(alpha = 0.85f), RoundedCornerShape(20.dp))
+                                .clickable { viewModel.analyze() }
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(badgeColor)
+                                )
+                                Text(
+                                    text = badgeText,
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    }
+                    is LiveDetection.Label -> {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(Color.Black.copy(alpha = 0.82f))
+                                .border(1.5.dp, EcColors.Mint.copy(alpha = 0.85f), RoundedCornerShape(20.dp))
+                                .clickable { viewModel.analyze() }
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text("✦", color = EcColors.Mint, style = MaterialTheme.typography.labelSmall)
+                                Text(
+                                    text = "Rótulo detectado · Toque para checar",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    }
+                    else -> Unit
                 }
             }
 
-            // Trilho de Seleção Rápida de Modos (Auto, Prato/Buffet, Rótulo, Cardápio, Código)
+            // Carrossel de Modos Estilo Câmera Nativa (Conceito 1: Apple Camera / Google Lens)
+            val modesScrollState = rememberScrollState()
             Row(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color.Black.copy(alpha = 0.70f))
-                    .border(1.dp, EcColors.Line, RoundedCornerShape(20.dp))
-                    .padding(horizontal = 4.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    .fillMaxWidth()
+                    .horizontalScroll(modesScrollState)
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                com.eatcontrolai.ui.AnalyzeMode.entries.forEach { mode ->
+                Spacer(Modifier.size(16.dp))
+                AnalyzeMode.entries.forEach { mode ->
                     val isSelected = state.mode == mode
-                    Box(
+                    val modeLabel = when (mode) {
+                        AnalyzeMode.AUTO -> "AUTOMÁTICO"
+                        AnalyzeMode.PLATE -> "PRATO"
+                        AnalyzeMode.LABEL -> "RÓTULO"
+                        AnalyzeMode.MENU -> "CARDÁPIO"
+                        AnalyzeMode.BARCODE -> "CÓDIGO"
+                    }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(if (isSelected) EcColors.Mint else Color.Transparent)
                             .clickable { viewModel.selectMode(mode) }
-                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                        contentAlignment = Alignment.Center
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
                         Text(
-                            text = "${mode.glyph} ${if (mode == com.eatcontrolai.ui.AnalyzeMode.PLATE) "Prato/Buffet" else mode.label}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (isSelected) Color.Black else EcColors.TextMuted
+                            text = modeLabel,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                letterSpacing = 1.2.sp
+                            ),
+                            color = if (isSelected) EcColors.Mint else Color.White.copy(alpha = 0.55f)
+                        )
+                        Spacer(Modifier.height(3.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(4.dp)
+                                .clip(CircleShape)
+                                .background(if (isSelected) EcColors.Mint else Color.Transparent)
                         )
                     }
                 }
+                Spacer(Modifier.size(16.dp))
             }
 
             // Controles de Ação na Base
@@ -539,7 +612,7 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                 item {
                     EcCard(title = "Fonte de captura", subtitle = glasses.sourceLabel) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                            CaptureSource.entries.forEach { source ->
+                            CaptureSource.entries.filter { it != CaptureSource.MOCK_GLASSES }.forEach { source ->
                                 EcChip(
                                     label = source.label,
                                     tone = EcColors.BlueSoft,
@@ -584,29 +657,6 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
                     }
                 }
 
-                if (state.source == CaptureSource.MOCK_GLASSES && state.showsSceneSelector) {
-                    item {
-                        EcCard(title = "Cenas de Teste (Mock)") {
-                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                state.scenes.chunked(2).forEach { row ->
-                                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        row.forEach { scene ->
-                                            EcChip(
-                                                label = scene.title,
-                                                tone = EcColors.BlueSoft,
-                                                selected = scene.id == state.selectedSceneId,
-                                                onClick = { viewModel.selectScene(scene.id) },
-                                                modifier = Modifier.weight(1f)
-                                            )
-                                        }
-                                        if (row.size == 1) Spacer(Modifier.weight(1f))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
                 item {
                     Button(
                         onClick = { showHardwareMenu = false },
@@ -626,6 +676,7 @@ fun AnalyzeScreen(viewModel: EatControlViewModel) {
 private fun HudViewfinder(
     mode: AnalyzeMode,
     detection: LiveDetection,
+    profile: UserProfile,
     modifier: Modifier = Modifier
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
@@ -642,11 +693,27 @@ private fun HudViewfinder(
     val isPlateContext = mode == AnalyzeMode.PLATE || detection is LiveDetection.Plate
     val boxSize = if (isPlateContext) 310.dp else 280.dp
 
+    // Avaliação clínica em tempo real no Buffet
+    val isAllergenAlert = if (detection is LiveDetection.Plate) {
+        profile.restrictions.any { r ->
+            (r.allergen == Allergen.MILK && detection.components.contains(PlateFoodClass.CHEESE)) ||
+            (r.allergen == Allergen.EGG && detection.components.contains(PlateFoodClass.EGG)) ||
+            (r.allergen == Allergen.FISH && detection.components.contains(PlateFoodClass.FISH))
+        }
+    } else false
+
+    val isFriedAlert = if (detection is LiveDetection.Plate) {
+        detection.components.contains(PlateFoodClass.FRIED_FOOD)
+    } else false
+
+    val isPlateAlert = isAllergenAlert || isFriedAlert
+
     val color = when {
         detection is LiveDetection.Barcode -> EcColors.Mint
         detection is LiveDetection.Label -> EcColors.MintSoft
-        detection is LiveDetection.Plate -> EcColors.Amber
-        mode == AnalyzeMode.PLATE -> EcColors.Amber.copy(alpha = 0.85f)
+        detection is LiveDetection.Plate && isPlateAlert -> EcColors.Red
+        detection is LiveDetection.Plate -> EcColors.Mint
+        mode == AnalyzeMode.PLATE -> EcColors.Mint.copy(alpha = 0.85f)
         mode == AnalyzeMode.BARCODE -> EcColors.Mint.copy(alpha = 0.85f)
         mode == AnalyzeMode.LABEL -> EcColors.MintSoft.copy(alpha = 0.85f)
         mode == AnalyzeMode.MENU -> Color(0xFF64B5F6)
@@ -656,6 +723,8 @@ private fun HudViewfinder(
     val labelText = when {
         detection is LiveDetection.Barcode -> "Código de barras detectado"
         detection is LiveDetection.Label -> "Rótulo de ingredientes"
+        detection is LiveDetection.Plate && isFriedAlert -> "⚠️ Fritura detectada · Risco de náusea GLP-1"
+        detection is LiveDetection.Plate && isAllergenAlert -> "⚠️ Alerta Alérgeno · Conflito com perfil"
         detection is LiveDetection.Plate -> {
             val items = detection.components.take(2).joinToString { it.displayName }
             if (items.isNotBlank()) "🍽 Prato: $items" else "🍽 Alimento identificado"
