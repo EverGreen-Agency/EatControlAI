@@ -22,7 +22,20 @@
 
 ## Histórico de Sessões
 
-### [2026-09-09 — Noite] Atualização dos Ícones Nativo Android com Asset Oficial do BrandKit v1.0
+### [2026-09-09 — Noite] Remoção de Mocks, Persistência Local de Fotos de Refeições, Calculadora de Macros GLP-1 e Provedor de Visão em Nuvem / S3
+- **Agente / Modelo**: Antigravity (Gemini 3.8 Flash)
+- **Objetivo**: Eliminar o mock de captura que causava reconhecimento falso de biscoito recheado, implementar salvamento local privado de fotos de refeições no aparelho com visualização rica no Histórico (BottomSheet), adicionar calculadora de macros para GLP-1, integrar provedor multimodal de Visão em Nuvem (Gemini / OpenRouter) e telemetria de imagens S3 para opt-in de pesquisa.
+- **Entregas**:
+  - **Remoção de Mock de Câmera**: `CaptureSourceRouter.kt` agora inicia estritamente com `PHONE_CAMERA`. Fallbacks de recusa e erro do DAT alterados para câmera nativa real. O viewfinder e o botão de análise agora capturam o frame físico real da lente.
+  - **Armazenamento Privado de Fotos**: Cada análise real salva os bytes do JPEG em `context.filesDir/meal_photos/$recordId.jpg` (estilo WhatsApp) e associa `photoPath` ao `MealRecord`.
+  - **Histórico com BottomSheet Detalhado**: `HistoryScreen.kt` reescrito para exibir miniatura da foto real nos cards de refeição e abrir um `ModalBottomSheet` completo ao tocar (foto ampliada, decisão clínica GLP-1, evidências, alérgenos, macronutrientes consumidos e latência).
+  - **Calculadora de Metas GLP-1**: `PlanScreen.kt` equipado com `Glp1MacroCalculatorCard`, calculando proteína (1.4g/kg para proteção de massa magra em agonistas GLP-1), calorias e fibras com persistência no perfil.
+  - **Visão em Nuvem (CloudVisionProvider)**: Implementado suporte REST nativo (zero dependências pesadas) para Google Gemini (`gemini-1.5-flash`) e OpenRouter (`google/gemini-2.0-flash-exp:free`, `qwen/qwen-2.5-vl-72b-instruct:free`) com fallback automático para o ML Kit local.
+  - **Telemetria de Pesquisa (S3TelemetryClient)**: Implementado upload de imagens para bucket S3 / Cloudflare R2 para usuários com opt-in de melhoria ativo.
+  - **Configuração de Chaves no Lab & local.properties**: `LabScreen.kt` equipado com `CloudConfigCard` para inserção e teste direto de chaves no celular, com espelhamento para `local.properties`.
+  - **Validação**: 172 testes unitários JVM passando 100% (`BUILD SUCCESSFUL in 1m 14s`) e APK de debug gerado (`app/build/outputs/apk/debug/app-debug.apk`).
+- **Arquivos Tocados**: `app/build.gradle.kts`, `app/src/main/java/com/eatcontrolai/EatControlApp.kt`, `app/src/main/java/com/eatcontrolai/core/model/Models.kt`, `app/src/main/java/com/eatcontrolai/data/Serialization.kt`, `app/src/main/java/com/eatcontrolai/glasses/CaptureSourceRouter.kt`, `app/src/main/java/com/eatcontrolai/ui/EatControlViewModel.kt`, `app/src/main/java/com/eatcontrolai/ui/history/HistoryScreen.kt`, `app/src/main/java/com/eatcontrolai/ui/plan/PlanScreen.kt`, `app/src/main/java/com/eatcontrolai/ui/lab/LabScreen.kt`, `app/src/main/java/com/eatcontrolai/inference/cloud/CloudVisionProvider.kt`, `app/src/main/java/com/eatcontrolai/data/telemetry/S3TelemetryClient.kt`, `.agents/memory/REGISTRO_SESSAO.md`.
+- **Próximas Pendências**: O usuário deve adicionar as chaves no `local.properties` ou diretamente na tela do app (aba Lab) para testar reconhecimento em nuvem.
 - **Agente / Modelo**: Antigravity (Gemini 3.6 Flash)
 - **Objetivo**: Substituir o ícone legado do app no Android pelo ícone oficial da marca de 1024x1024 (`eatcontrol-app-icon-1024.png`) presente no BrandKit v1.0 (`EatControl_Precision_Intelligence_BrandKit_v1.0/02_Visual_Identity/Logos/`).
 - **Entregas**:

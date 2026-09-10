@@ -434,8 +434,8 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
             _datUi.update {
                 it.copy(connectionError = "A permissão de câmera DAT foi negada no Meta AI.")
             }
-            showToast("Câmera dos óculos não autorizada. Voltando para a fonte simulada.")
-            selectSource(CaptureSource.MOCK_GLASSES)
+            showToast("Câmera dos óculos não autorizada. Voltando para a câmera do celular.")
+            selectSource(CaptureSource.PHONE_CAMERA)
         }
     }
 
@@ -498,12 +498,12 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
             val baseMessage = throwable.message ?: "Falha ao analisar."
             if (usesDat) {
                 _datUi.update { it.copy(connecting = false, connectionError = baseMessage) }
-                container.glasses.select(CaptureSource.MOCK_GLASSES)
+                container.glasses.select(CaptureSource.PHONE_CAMERA)
                 _analyze.update {
                     it.copy(
-                        source = CaptureSource.MOCK_GLASSES,
+                        source = CaptureSource.PHONE_CAMERA,
                         isAnalyzing = false,
-                        error = "$baseMessage Fonte alterada para os óculos simulados."
+                        error = "$baseMessage Fonte alterada para a câmera do celular."
                     )
                 }
             } else {
@@ -1044,6 +1044,30 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
         showToast("Perfil e metas salvos neste aparelho.")
     }
 
+    fun updateMacroGoals(macroGoals: com.eatcontrolai.core.model.MacroGoals) {
+        container.profiles.update { current ->
+            current.copy(macroGoals = macroGoals)
+        }
+        showToast("Metas de macronutrientes calculadas e salvas!")
+    }
+
+    fun setGeminiApiKey(key: String) {
+        container.cloudVision.geminiApiKey = key.trim().takeIf { it.isNotBlank() }
+        showToast("Chave da API Gemini configurada.")
+    }
+
+    fun setOpenRouterApiKey(key: String) {
+        container.cloudVision.openRouterApiKey = key.trim().takeIf { it.isNotBlank() }
+        showToast("Chave da API OpenRouter configurada.")
+    }
+
+    fun setS3Config(bucket: String, region: String, endpoint: String) {
+        container.s3Telemetry.bucketName = bucket.trim().takeIf { it.isNotBlank() }
+        container.s3Telemetry.region = region.trim().ifBlank { "sa-east-1" }
+        container.s3Telemetry.customEndpoint = endpoint.trim().takeIf { it.isNotBlank() }
+        showToast("Configurações do S3 atualizadas.")
+    }
+
     fun toggleRestriction(allergen: Allergen) {
         container.profiles.update { current ->
             val existing = current.restrictionFor(allergen)
@@ -1188,8 +1212,18 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
                 AnalysisTrack.MENU -> "Opção de cardápio"
                 AnalysisTrack.PLATE -> "Prato assistido"
             }
+        val recordId = UUID.randomUUID().toString()
+        val photoPath = runCatching {
+            if (frameJpeg.isNotEmpty()) {
+                val dir = java.io.File(container.application.filesDir, "meal_photos").apply { mkdirs() }
+                val file = java.io.File(dir, "$recordId.jpg")
+                file.writeBytes(frameJpeg)
+                file.absolutePath
+            } else null
+        }.getOrNull()
+
         return MealRecord(
-            id = UUID.randomUUID().toString(),
+            id = recordId,
             timestampMillis = System.currentTimeMillis(),
             title = title,
             decisionState = decision.state,
@@ -1199,7 +1233,8 @@ class EatControlViewModel(private val container: AppContainer) : ViewModel() {
             endToEndMs = metrics.firstOrNull { it.stage.key == "end_to_end_ms" }?.latencyMs ?: 0L,
             userConfirmed = menuAnalysis?.registered == true || plateAnalysis?.registered == true,
             confirmedItems = confirmedItems,
-            containsVisualEstimate = plateAnalysis?.candidates?.isNotEmpty() == true
+            containsVisualEstimate = plateAnalysis?.candidates?.isNotEmpty() == true,
+            photoPath = photoPath
         )
     }
 

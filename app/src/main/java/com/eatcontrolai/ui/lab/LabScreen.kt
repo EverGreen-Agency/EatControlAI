@@ -18,14 +18,19 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import com.eatcontrolai.BuildConfig
 import com.eatcontrolai.benchmark.ProviderBenchmark
 import com.eatcontrolai.ui.EatControlViewModel
 import com.eatcontrolai.ui.components.EcCard
@@ -118,6 +123,14 @@ fun LabScreen(viewModel: EatControlViewModel, onClose: () -> Unit) {
         }
 
         item {
+            CloudConfigCard(
+                onSaveGemini = { viewModel.setGeminiApiKey(it) },
+                onSaveOpenRouter = { viewModel.setOpenRouterApiKey(it) },
+                onSaveS3 = { bucket, region, endpoint -> viewModel.setS3Config(bucket, region, endpoint) }
+            )
+        }
+
+        item {
             EcCard(
                 title = "Testar primeira execução",
                 subtitle = "Conveniência de desenvolvimento — não aparece para o usuário final."
@@ -204,5 +217,113 @@ private fun Metric(label: String, value: String) {
         Text(label, style = MaterialTheme.typography.labelSmall, color = EcColors.TextMuted)
         Spacer(Modifier.height(3.dp))
         Text(value, style = MaterialTheme.typography.titleSmall, fontFamily = FontFamily.Monospace)
+    }
+}
+
+@Composable
+private fun CloudConfigCard(
+    onSaveGemini: (String) -> Unit,
+    onSaveOpenRouter: (String) -> Unit,
+    onSaveS3: (String, String, String) -> Unit
+) {
+    var geminiKey by remember { mutableStateOf(BuildConfig.GEMINI_API_KEY) }
+    var openRouterKey by remember { mutableStateOf(BuildConfig.OPENROUTER_API_KEY) }
+    var s3Bucket by remember { mutableStateOf(BuildConfig.S3_BUCKET) }
+    var s3Region by remember { mutableStateOf(BuildConfig.S3_REGION) }
+    var s3Endpoint by remember { mutableStateOf(BuildConfig.S3_ENDPOINT) }
+
+    EcCard(
+        title = "Visão em Nuvem & Telemetria S3",
+        subtitle = "Conecte chaves de API para identificação de pratos complexos e bucket de pesquisa."
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                "Google Gemini (AI Studio - Tier Free)",
+                style = MaterialTheme.typography.labelLarge,
+                color = EcColors.Mint
+            )
+            Text(
+                "Obtenha gratuitamente em aistudio.google.com. 15 RPM grátis sem cartão.",
+                style = MaterialTheme.typography.bodySmall,
+                color = EcColors.TextMuted
+            )
+            OutlinedTextField(
+                value = geminiKey,
+                onValueChange = { geminiKey = it },
+                label = { Text("Chave API Gemini") },
+                placeholder = { Text("AIzaSy...") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "OpenRouter (Modelos Free como Gemini 2.0 / Qwen 2.5)",
+                style = MaterialTheme.typography.labelLarge,
+                color = EcColors.BlueSoft
+            )
+            OutlinedTextField(
+                value = openRouterKey,
+                onValueChange = { openRouterKey = it },
+                label = { Text("Chave API OpenRouter") },
+                placeholder = { Text("sk-or-v1-...") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "AWS S3 / Cloudflare R2 (Fotos Opt-in)",
+                style = MaterialTheme.typography.labelLarge,
+                color = EcColors.Amber
+            )
+            OutlinedTextField(
+                value = s3Bucket,
+                onValueChange = { s3Bucket = it },
+                label = { Text("Nome do Bucket S3") },
+                placeholder = { Text("eatcontrol-telemetry") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = s3Region,
+                    onValueChange = { s3Region = it },
+                    label = { Text("Região") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = s3Endpoint,
+                    onValueChange = { s3Endpoint = it },
+                    label = { Text("Endpoint (opcional)") },
+                    placeholder = { Text("R2 / MinIO") },
+                    modifier = Modifier.weight(1.5f),
+                    singleLine = true
+                )
+            }
+
+            Spacer(Modifier.height(6.dp))
+            Button(
+                onClick = {
+                    onSaveGemini(geminiKey)
+                    onSaveOpenRouter(openRouterKey)
+                    onSaveS3(s3Bucket, s3Region, s3Endpoint)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = EcColors.Mint,
+                    contentColor = EcColors.OnMint
+                )
+            ) {
+                Text("Salvar chaves no aparelho")
+            }
+
+            Text(
+                "Dica: você também pode definir permanentemente no arquivo local.properties do projeto.",
+                style = MaterialTheme.typography.bodySmall,
+                color = EcColors.TextFaint
+            )
+        }
     }
 }

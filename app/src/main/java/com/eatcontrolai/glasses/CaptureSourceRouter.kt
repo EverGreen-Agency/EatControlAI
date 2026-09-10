@@ -21,7 +21,7 @@ class CaptureSourceRouter(
     private val dat: DatGlassesGateway
 ) : GlassesGateway {
 
-    var active: CaptureSource = CaptureSource.MOCK_GLASSES
+    var active: CaptureSource = CaptureSource.PHONE_CAMERA
         private set
 
     fun select(source: CaptureSource) {

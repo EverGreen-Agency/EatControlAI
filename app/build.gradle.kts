@@ -90,6 +90,18 @@ android {
             localProperties.getProperty("mwdat_application_id") ?: "0"
         manifestPlaceholders["mwdat_client_token"] =
             localProperties.getProperty("mwdat_client_token") ?: "0"
+
+        val geminiKey = localProperties.getProperty("gemini.api.key") ?: ""
+        val openRouterKey = localProperties.getProperty("openrouter.api.key") ?: ""
+        val s3Bucket = localProperties.getProperty("s3.bucket") ?: ""
+        val s3Region = localProperties.getProperty("s3.region") ?: "sa-east-1"
+        val s3Endpoint = localProperties.getProperty("s3.endpoint") ?: ""
+
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
+        buildConfigField("String", "OPENROUTER_API_KEY", "\"$openRouterKey\"")
+        buildConfigField("String", "S3_BUCKET", "\"$s3Bucket\"")
+        buildConfigField("String", "S3_REGION", "\"$s3Region\"")
+        buildConfigField("String", "S3_ENDPOINT", "\"$s3Endpoint\"")
     }
 
     buildTypes {

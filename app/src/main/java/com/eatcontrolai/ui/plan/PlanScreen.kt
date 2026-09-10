@@ -12,17 +12,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.eatcontrolai.core.model.Allergen
 import com.eatcontrolai.core.model.EvidenceType
+import com.eatcontrolai.core.model.GoalSource
+import com.eatcontrolai.core.model.MacroGoals
+import kotlin.math.roundToInt
 import com.eatcontrolai.core.model.Restriction
 import com.eatcontrolai.core.model.RestrictionSeverity
 import com.eatcontrolai.core.model.UncertaintyPolicy
@@ -167,6 +178,12 @@ fun PlanScreen(viewModel: EatControlViewModel) {
         }
 
         item {
+            Glp1MacroCalculatorCard(
+                onCalculate = { goals -> viewModel.updateMacroGoals(goals) }
+            )
+        }
+
+        item {
             EcCard(
                 title = "Acompanhamento de hoje",
                 subtitle = if (profile.macroGoals.isConfigured) {
@@ -292,4 +309,111 @@ private fun explain(type: EvidenceType) = when (type) {
     EvidenceType.USER_CONFIRMATION -> "Sua resposta a uma pergunta de confirmação."
     EvidenceType.OCR_TEXT -> "Texto lido pela câmera, ainda não interpretado."
     EvidenceType.VISUAL_INFERENCE -> "Estimativa de modelo de visão. Ajuda, mas não certifica."
+}
+
+@Composable
+private fun Glp1MacroCalculatorCard(
+    onCalculate: (MacroGoals) -> Unit
+) {
+    var weightText by remember { mutableStateOf("75") }
+    var heightText by remember { mutableStateOf("170") }
+    var isMale by remember { mutableStateOf(false) }
+    var goalType by remember { mutableStateOf(0) }
+
+    EcCard(
+        title = "Calculadora de Metas GLP-1",
+        subtitle = "Calcule metas baseadas em ciência: proteína para evitar perda muscular e fibras para motilidade gástrica."
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                OutlinedTextField(
+                    value = weightText,
+                    onValueChange = { weightText = it.filter { c -> c.isDigit() || c == '.' } },
+                    label = { Text("Peso (kg)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedTextField(
+                    value = heightText,
+                    onValueChange = { heightText = it.filter { c -> c.isDigit() } },
+                    label = { Text("Altura (cm)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Text("SEXO BIOLÓGICO", style = MaterialTheme.typography.labelSmall, color = EcColors.TextMuted)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                EcChip("Feminino", tone = EcColors.Mint, selected = !isMale, onClick = { isMale = false })
+                EcChip("Masculino", tone = EcColors.Mint, selected = isMale, onClick = { isMale = true })
+            }
+
+            Text("OBJETIVO PRINCIPAL", style = MaterialTheme.typography.labelSmall, color = EcColors.TextMuted)
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                EcChip(
+                    label = "Emagrecer com GLP-1 (preservar músculo · 1.4g/kg)",
+                    tone = EcColors.Mint,
+                    selected = goalType == 0,
+                    onClick = { goalType = 0 },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                EcChip(
+                    label = "Manutenção e Saúde (1.2g/kg)",
+                    tone = EcColors.BlueSoft,
+                    selected = goalType == 1,
+                    onClick = { goalType = 1 },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                EcChip(
+                    label = "Adaptação a Doses Iniciais / Náusea (1.0g/kg)",
+                    tone = EcColors.Amber,
+                    selected = goalType == 2,
+                    onClick = { goalType = 2 },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Spacer(Modifier.height(4.dp))
+
+            Button(
+                onClick = {
+                    val weight = weightText.toDoubleOrNull() ?: 70.0
+                    val proteinFactor = when (goalType) {
+                        0 -> 1.4
+                        1 -> 1.2
+                        else -> 1.0
+                    }
+                    val protein = (weight * proteinFactor).roundToInt()
+                    val calories = when (goalType) {
+                        0 -> (weight * 22).roundToInt()
+                        1 -> (weight * 28).roundToInt()
+                        else -> (weight * 24).roundToInt()
+                    }
+                    val fiber = if (isMale) 35 else 25
+                    val fat = (weight * 0.7).roundToInt()
+
+                    onCalculate(
+                        MacroGoals(
+                            energyKcal = calories.toDouble(),
+                            proteinG = protein.toDouble(),
+                            fatG = fat.toDouble(),
+                            fiberG = fiber.toDouble(),
+                            sodiumMg = 2000.0,
+                            definedBy = GoalSource.USER
+                        )
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = EcColors.Mint,
+                    contentColor = EcColors.OnMint
+                )
+            ) {
+                Text("Calcular e Aplicar Metas Diárias")
+            }
+        }
+    }
 }

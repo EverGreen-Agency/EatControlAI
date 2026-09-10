@@ -193,5 +193,7 @@ data class MealRecord(
     /** Itens escolhidos/confirmados em MENU ou PLATE; nunca derivados silenciosamente. */
     val confirmedItems: List<String> = emptyList(),
     /** Verdadeiro quando a interação incluiu candidato de visão probabilístico. */
-    val containsVisualEstimate: Boolean = false
+    val containsVisualEstimate: Boolean = false,
+    /** Caminho absoluto da foto salva localmente no aparelho (estilo galeria privada / WhatsApp). */
+    val photoPath: String? = null
 )

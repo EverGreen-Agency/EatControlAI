@@ -155,6 +155,7 @@ object Serialization {
                     })
                     put("confirmedItems", JSONArray(record.confirmedItems))
                     put("containsVisualEstimate", record.containsVisualEstimate)
+                    record.photoPath?.let { put("photoPath", it) }
                 }
             )
         }
@@ -186,7 +187,8 @@ object Serialization {
                         )
                     },
                 confirmedItems = item.optJSONArray("confirmedItems").strings(),
-                containsVisualEstimate = item.optBoolean("containsVisualEstimate", false)
+                containsVisualEstimate = item.optBoolean("containsVisualEstimate", false),
+                photoPath = item.optString("photoPath").takeIf { it.isNotBlank() }
             )
         }
     }.getOrDefault(emptyList())

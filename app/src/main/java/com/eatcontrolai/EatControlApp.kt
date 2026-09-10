@@ -90,13 +90,25 @@ class AppContainer(val application: Application) {
      * O catálogo de candidatos está em `benchmark/candidates.yaml` e a régua de escolha em
      * `docs/MODEL_BENCHMARK.md`. Nenhuma outra parte do app conhece o ML Kit.
      */
+    val cloudVision = com.eatcontrolai.inference.cloud.CloudVisionProvider(
+        geminiApiKey = BuildConfig.GEMINI_API_KEY.takeIf { it.isNotBlank() },
+        openRouterApiKey = BuildConfig.OPENROUTER_API_KEY.takeIf { it.isNotBlank() },
+        fallback = MlKitImageLabelingProvider()
+    )
+
+    val s3Telemetry = com.eatcontrolai.data.telemetry.S3TelemetryClient(
+        bucketName = BuildConfig.S3_BUCKET.takeIf { it.isNotBlank() },
+        region = BuildConfig.S3_REGION.takeIf { it.isNotBlank() } ?: "sa-east-1",
+        customEndpoint = BuildConfig.S3_ENDPOINT.takeIf { it.isNotBlank() }
+    )
+
     val models = ModelRegistry(
         ProviderSet(
             ocr = MlKitOcrProvider(),
             tts = tts,
             barcode = MlKitBarcodeProvider(),
             stt = stt,
-            detector = MlKitImageLabelingProvider()
+            detector = cloudVision
         )
     )
 
